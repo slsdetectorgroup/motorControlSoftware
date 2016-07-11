@@ -3,8 +3,9 @@ GUIDIR = $(WD)/MotorControlGui
 DESTDIR =  $(WD)/bin
 
 #-DXRAYBOX -DLASERBOX -DVACUUMBOX
-TYPEFL = -DLASERBOX
-TYPE_FLAG = LASERBOX
+TYPEFL = -DVACUUMBOX
+TYPE_FLAG = VACUUMBOX
+#XRAYBOX LASERBOX VACUUMBOX
 
 INCLUDES= -I MotorControlServer -I MotorControlClient -I MySocketTCP -I .
 SERVER_FLAGS= -DLOCAL #-DVERY_VERBOSE #-DVERBOSE_MOTOR
@@ -12,7 +13,7 @@ CLIENT_FLAGS=-DREMOTE
 LOCAL_FLAGS=-DLOCAL
 
 
-all: clean socketServer socketClient localClient gui#doc
+all: clean socketServer socketClient localClient #gui#doc
 
 doc: $(SRC_CLNT)
 	doxygen doxy.config
@@ -42,5 +43,5 @@ gui:
 clean:
 	echo '*** compiling gui ***'
 	rm -rf bin/socketServer bin/socketClient bin/localClient *.*~ /MotorControlServer/*.*~ /MotorControlClient/*.*~ *~
-	cd $(GUIDIR) &&	$(MAKE) clean TYPE_FLAG=$(TYPE_FLAG) DESTDIR=$(DESTDIR); rm -rf bin/MotorControlGui mocs/* objs/*
+	cd $(GUIDIR) &&	 rm -rf bin/MotorControlGui mocs/* objs/*
 

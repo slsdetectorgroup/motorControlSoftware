@@ -20,5 +20,4 @@ mm:
 
 $(PROG): Makefile.gui $(DIR)
 	echo 'type flag' + $(TYPE_FLAG)
-	echo 'defines' + $(DEFINES)
 	$(MAKE) -f Makefile.gui DESTDIR=$(DESTDIR)   TYPE_FLAG=$(TYPE_FLAG)

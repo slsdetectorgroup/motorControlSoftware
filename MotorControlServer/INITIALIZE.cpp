@@ -2779,7 +2779,7 @@ INITIALIZE::~INITIALIZE()
  */
 
 #ifndef LASERBOX
-INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName3,string const fName4):NUMBER_OF_CONTROLLERS(0),NUMBER_OF_INTERFACES(0),slit1_exists(0),slit2_exists(0),xrayStatus(-9),fluor_exists(-1),set2_exists(0),maxTubePower(0)
+INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName3,string const fName4):NUMBER_OF_CONTROLLERS(0),slit1_exists(0),slit2_exists(0),xrayStatus(-9),fluor_exists(-1),set2_exists(0),maxTubePower(0)
 #else
 INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName3):NUMBER_OF_CONTROLLERS(0),NUMBER_OF_REFPOINTS(0)
 #endif
@@ -3432,7 +3432,7 @@ void INITIALIZE::init(int nArg, char *args[])
 		if(!strcasecmp(args[1],"Huber"))
 		{
 			char buffer[200];
-			strcpy(buffer,Interface[temp]->send_command("getvel ",1));
+			strcpy(buffer,Interface[temp]->send_command((char*)"getvel ",1));
 			//MOTOR::defaultSpeed = 30.00;//atof(buffer);
 			sprintf(buffer,"%f 1 %s setncalvel ",MOTOR::huberCalSpeed,args[2]);  // [velocity][index=1 for 'to the limit switch'][axis] setncalvel
 			Interface[temp]->send_command(buffer,0);

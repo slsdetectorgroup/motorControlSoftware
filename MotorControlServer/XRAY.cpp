@@ -20,10 +20,10 @@ XRAY::XRAY(INTERFACE* Interface)
 int XRAY::isOnStandby()
 {
   //-9999 = switched off and 76 = standby
-  Interface->send_command_to_tube("sr:12 ",1,value,value);
+  Interface->send_command_to_tube((char*)"sr:12 ",1,value,value);
   cout<<"value=:"<<value<<endl;
   if(value==-9999)
-	  Interface->send_command_to_tube("sr:12 ",1,value,value);
+	  Interface->send_command_to_tube((char*)"sr:12 ",1,value,value);
   if(value==-9999)
     return -9999;
   if(value==76)
@@ -45,8 +45,8 @@ int XRAY::getHVSwitch()
 {
   //doing this twice cuz it takes time for
   //hv to get set if u read right after
-  strcpy(message, Interface->send_command_to_tube("sr:1 ",1,value,value));
-  strcpy(message, Interface->send_command_to_tube("sr:1 ",1,value,value));
+  strcpy(message, Interface->send_command_to_tube((char*)"sr:1 ",1,value,value));
+  strcpy(message, Interface->send_command_to_tube((char*)"sr:1 ",1,value,value));
   return (message[1]-48);
 }
 
@@ -80,9 +80,9 @@ void XRAY::setVoltageAndCurrent(int Voltage, int Current)
  
 int XRAY::getVoltage()
 {
-  Interface->send_command_to_tube("vn ",1,value,value);
+  Interface->send_command_to_tube((char*)"vn ",1,value,value);
   if(value==-9999)
-	  Interface->send_command_to_tube("vn ",1,value,value);
+	  Interface->send_command_to_tube((char*)"vn ",1,value,value);
   return value;
 }
 
@@ -90,9 +90,9 @@ int XRAY::getVoltage()
  
 int XRAY::getVoltageActual()
 {
-  Interface->send_command_to_tube("va ",1,value,value);
+  Interface->send_command_to_tube((char*)"va ",1,value,value);
   if(value==-9999)
-	  Interface->send_command_to_tube("va ",1,value,value);
+	  Interface->send_command_to_tube((char*)"va ",1,value,value);
   return value;
 }
 
@@ -100,9 +100,9 @@ int XRAY::getVoltageActual()
 
 int XRAY::getCurrent()
 {
-  Interface->send_command_to_tube("cn ",1,value,value);
+  Interface->send_command_to_tube((char*)"cn ",1,value,value);
   if(value==-9999)
-	  Interface->send_command_to_tube("cn ",1,value,value);
+	  Interface->send_command_to_tube((char*)"cn ",1,value,value);
   return value;
 }
 
@@ -110,9 +110,9 @@ int XRAY::getCurrent()
  
 int XRAY::getCurrentActual()
 {
-  Interface->send_command_to_tube("ca ",1,value,value);
+  Interface->send_command_to_tube((char*)"ca ",1,value,value);
   if(value==-9999)
-	  Interface->send_command_to_tube("ca ",1,value,value);
+	  Interface->send_command_to_tube((char*)"ca ",1,value,value);
   return value;
 }
 
@@ -120,18 +120,18 @@ int XRAY::getCurrentActual()
  
 void XRAY::getVoltageAndCurrent(int &voltage, int &current)
 {
-  Interface->send_command_to_tube("gn ",1,voltage,current);
+  Interface->send_command_to_tube((char*)"gn ",1,voltage,current);
   if(voltage==-9999)
-	  Interface->send_command_to_tube("gn ",1,voltage,current);
+	  Interface->send_command_to_tube((char*)"gn ",1,voltage,current);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------
  
 void XRAY::getVoltageAndCurrentActual(int &voltage, int &current)
 {
-  Interface->send_command_to_tube("ga ",1,voltage,current);
+  Interface->send_command_to_tube((char*)"ga ",1,voltage,current);
   if(voltage==-9999)
-	  Interface->send_command_to_tube("gn ",1,voltage,current);
+	  Interface->send_command_to_tube((char*)"gn ",1,voltage,current);
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -153,9 +153,9 @@ void XRAY::setShutter(int Shutter, bool on)
 
 int XRAY::getShutter1()
 {
-  strcpy(message, Interface->send_command_to_tube("sr:3 ",1,value,value));
+  strcpy(message, Interface->send_command_to_tube((char*)"sr:3 ",1,value,value));
   if(value==-9999)
-	  strcpy(message, Interface->send_command_to_tube("sr:3 ",1,value,value));
+	  strcpy(message, Interface->send_command_to_tube((char*)"sr:3 ",1,value,value));
  return (message[0]-48);
 }
 
@@ -163,9 +163,9 @@ int XRAY::getShutter1()
 
 int XRAY::getShutter2()
 {
-  strcpy(message, Interface->send_command_to_tube("sr:3 ",1,value,value));
+  strcpy(message, Interface->send_command_to_tube((char*)"sr:3 ",1,value,value));
   if(value==-9999)
-	  strcpy(message, Interface->send_command_to_tube("sr:3 ",1,value,value));
+	  strcpy(message, Interface->send_command_to_tube((char*)"sr:3 ",1,value,value));
   return (message[4]-48);
 }
 
@@ -173,9 +173,9 @@ int XRAY::getShutter2()
 
 int XRAY::getShutter3()
 {
-  strcpy(message, Interface->send_command_to_tube("sr:4 ",1,value,value));
+  strcpy(message, Interface->send_command_to_tube((char*)"sr:4 ",1,value,value));
   if(value==-9999)
-	  strcpy(message, Interface->send_command_to_tube("sr:4 ",1,value,value));
+	  strcpy(message, Interface->send_command_to_tube((char*)"sr:4 ",1,value,value));
   return (message[0]-48);
 }
 
@@ -183,9 +183,9 @@ int XRAY::getShutter3()
 
 int XRAY::getShutter4()
 {
-  strcpy(message, Interface->send_command_to_tube("sr:4 ",1,value,value));
+  strcpy(message, Interface->send_command_to_tube((char*)"sr:4 ",1,value,value));
   if(value==-9999)
-	  strcpy(message, Interface->send_command_to_tube("sr:4 ",1,value,value));
+	  strcpy(message, Interface->send_command_to_tube((char*)"sr:4 ",1,value,value));
   return (message[4]-48);
 }
 
@@ -193,13 +193,13 @@ int XRAY::getShutter4()
 
 void XRAY::getShutters(int &s1,int &s2,int &s3,int &s4)
 {
-  strcpy(message, Interface->send_command_to_tube("sr:3 ",1,value,value));
+  strcpy(message, Interface->send_command_to_tube((char*)"sr:3 ",1,value,value));
   if(value==-9999)
-	  strcpy(message, Interface->send_command_to_tube("sr:3 ",1,value,value));
+	  strcpy(message, Interface->send_command_to_tube((char*)"sr:3 ",1,value,value));
   s1=(message[0]-48); s2=(message[4]-48);
-  strcpy(message, Interface->send_command_to_tube("sr:4 ",1,value,value));
+  strcpy(message, Interface->send_command_to_tube((char*)"sr:4 ",1,value,value));
   if(value==-9999)
-	  strcpy(message, Interface->send_command_to_tube("sr:4 ",1,value,value));
+	  strcpy(message, Interface->send_command_to_tube((char*)"sr:4 ",1,value,value));
  s3=(message[0]-48); s4= (message[4]-48);
 }
 
@@ -226,10 +226,10 @@ void XRAY::startWarmup(int warmupVoltage)
   cout<<"\ninside the startwarmup() in XRAY.cpp\n";
   int s1,s2,s3,s4;
   getShutters(s1,s2,s3,s4);
-  if(s1) Interface->send_command_to_tube("cs:1 ",0,value,value);
-  if(s2) Interface->send_command_to_tube("cs:2 ",0,value,value);
-  if(s3) Interface->send_command_to_tube("cs:3 ",0,value,value);
-  if(s4) Interface->send_command_to_tube("cs:4 ",0,value,value);
+  if(s1) Interface->send_command_to_tube((char*)"cs:1 ",0,value,value);
+  if(s2) Interface->send_command_to_tube((char*)"cs:2 ",0,value,value);
+  if(s3) Interface->send_command_to_tube((char*)"cs:3 ",0,value,value);
+  if(s4) Interface->send_command_to_tube((char*)"cs:4 ",0,value,value);
   sprintf(message,"wu:4,%d ",warmupVoltage);
    Interface->send_command_to_tube(message,0,value,value);
 }
@@ -239,17 +239,17 @@ void XRAY::startWarmup(int warmupVoltage)
 int XRAY::getWarmupTimeRemaining()
 {
   //again wt takes time/or more commands sent to show the right value
-  strcpy(message, Interface->send_command_to_tube("sr:6 ",1,value,value)); 
-  strcpy(message, Interface->send_command_to_tube("sr:6 ",1,value,value)); 
+  strcpy(message, Interface->send_command_to_tube((char*)"sr:6 ",1,value,value));
+  strcpy(message, Interface->send_command_to_tube((char*)"sr:6 ",1,value,value));
   if(value==-9999){
-	  strcpy(message, Interface->send_command_to_tube("sr:6 ",1,value,value));
-	  strcpy(message, Interface->send_command_to_tube("sr:6 ",1,value,value));
+	  strcpy(message, Interface->send_command_to_tube((char*)"sr:6 ",1,value,value));
+	  strcpy(message, Interface->send_command_to_tube((char*)"sr:6 ",1,value,value));
   }
-  strcpy(message, Interface->send_command_to_tube("wt ",1,value,value)); 
-  strcpy(message, Interface->send_command_to_tube("wt ",1,value,value)); 
+  strcpy(message, Interface->send_command_to_tube((char*)"wt ",1,value,value));
+  strcpy(message, Interface->send_command_to_tube((char*)"wt ",1,value,value));
   if(value==-9999){
-	  strcpy(message, Interface->send_command_to_tube("wt ",1,value,value));
-	  strcpy(message, Interface->send_command_to_tube("wt ",1,value,value));
+	  strcpy(message, Interface->send_command_to_tube((char*)"wt ",1,value,value));
+	  strcpy(message, Interface->send_command_to_tube((char*)"wt ",1,value,value));
   }
   return value;
 }
@@ -268,8 +268,8 @@ bool XRAY::isAccessPossible()
 
 int XRAY::getErrorCode()
 {
-  Interface->send_command_to_tube("sr:12 ",1,value,value);
-  Interface->send_command_to_tube("sr:12 ",1,value,value);
+  Interface->send_command_to_tube((char*)"sr:12 ",1,value,value);
+  Interface->send_command_to_tube((char*)"sr:12 ",1,value,value);
   return value;
 }
 
@@ -277,15 +277,15 @@ int XRAY::getErrorCode()
 
 char* XRAY::getErrorMessage()
 {
-  strcpy(message, Interface->send_command_to_tube("er ",1,value,value));
-  strcpy(message, Interface->send_command_to_tube("er ",1,value,value));
+  strcpy(message, Interface->send_command_to_tube((char*)"er ",1,value,value));
+  strcpy(message, Interface->send_command_to_tube((char*)"er ",1,value,value));
   return message;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------
 void XRAY::clearErrorCode()
 {
-  Interface->send_command_to_tube("cl ",0,value,value);
+  Interface->send_command_to_tube((char*)"cl ",0,value,value);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------

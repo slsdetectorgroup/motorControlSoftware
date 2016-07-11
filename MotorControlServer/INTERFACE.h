@@ -81,16 +81,15 @@ class INTERFACE
   */
    char* send_command_to_fw(char* c, int rb);
 
-   /**total number of interfaces for the motors
-     */
-    static int NumInterfaces;
 
     /**total number of interfaces for the filter wheels
       */
      static int NumFW_Interfaces;
 #endif
 
-
+     /**total number of interfaces for the motors
+      */
+     static int NumInterfaces;
  private:
 
  /**serial port of the object. For eg. '/dev/ttyUSB0'

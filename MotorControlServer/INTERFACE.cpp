@@ -11,8 +11,9 @@
 #include <unistd.h> //usleep in raspberrypi
 using namespace std;
 
-#ifdef LASERBOX
+
 	int INTERFACE::NumInterfaces(0);
+#ifdef LASERBOX
 	int INTERFACE::NumFW_Interfaces(0);
 #endif
 
@@ -131,8 +132,8 @@ INTERFACE::INTERFACE(char* serial, bool* success, bool xray)
 		tcsetattr(serialfd, TCSANOW, &new_serial_conf);
 
 		int a,b;
-		send_command_to_tube("sr:12 ", 1, a,b);
-		send_command_to_tube("sr:12 ", 1, a,b);
+		send_command_to_tube((char*)"sr:12 ", 1, a,b);
+		send_command_to_tube((char*)"sr:12 ", 1, a,b);
 		if(a==-9999){
 			close_serialfd();
 			*success = false;
