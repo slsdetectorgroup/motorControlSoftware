@@ -36,7 +36,7 @@ char* readFile(string const fName);
 int main(int argc, char* argv[])
 {
 
-#ifndef XRAYBOX
+#ifdef XRAYBOX
 	cout << " This is XRay Box Client" << endl;
 #elif LASERBOX
 	cout << " This is Laser Box Client" << endl;

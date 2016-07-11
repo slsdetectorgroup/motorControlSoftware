@@ -27,7 +27,11 @@ huberPos(-9999),huberValue(0),xLower(-9999),xUpper(-9999),yLower(-9999),yUpper(-
 {
 	setupUi(this);
 
-#ifndef XRAYBOX
+#ifdef LASERBOX
+	cout<<"in here"<<endl;
+#endif
+
+#ifdef XRAYBOX
 	cout << " This is XRay Box Gui" << endl;
 #elif LASERBOX
 	cout << " This is Laser Box Gui" << endl;

@@ -30,7 +30,7 @@ QMAKE_CLEAN 		+= 		docs/*/*
 
 
 TYPE_FLAG			?=   LASERBOX
-DEFINES 			+= 	 $(TYPE_FLAG)
+DEFINES 			+= 	LASERBOX # $(TYPE_FLAG)
 
 
 DEPENDPATH  +=  ../MotorControlClient\

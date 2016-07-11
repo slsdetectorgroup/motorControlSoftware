@@ -1,7 +1,0 @@
-<RCC version="1.0">
-    <qresource prefix="/icons">
-        <file>images/minusImage.png</file>
-        <file>images/plusImage.png</file>
-	<file>images/warning.png</file>
-    </qresource>
-</RCC>
