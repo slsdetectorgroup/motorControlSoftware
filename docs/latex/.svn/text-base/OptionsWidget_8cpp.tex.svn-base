@@ -1,0 +1,13 @@
+\section{XRay\-Box\-Gui/Options\-Widget.cpp File Reference}
+\label{OptionsWidget_8cpp}\index{XRayBoxGui/OptionsWidget.cpp@{XRayBoxGui/OptionsWidget.cpp}}
+creates the menu and widgets for the options menu 
+
+{\tt \#include \char`\"{}Options\-Widget.h\char`\"{}}\par
+{\tt \#include $<$iostream$>$}\par
+
+
+\subsection{Detailed Description}
+creates the menu and widgets for the options menu 
+
+\begin{Desc}
+\item[Author:]Dhanya \end{Desc}

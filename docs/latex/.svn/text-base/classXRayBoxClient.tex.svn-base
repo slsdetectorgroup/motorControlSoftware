@@ -1,0 +1,82 @@
+\section{XRay\-Box\-Client Class Reference}
+\label{classXRayBoxClient}\index{XRayBoxClient@{XRayBoxClient}}
+connects/disconnects to server and sends the command to server  
+
+
+{\tt \#include $<$XRay\-Box\-Client.h$>$}
+
+\subsection*{Public Member Functions}
+\begin{CompactItemize}
+\item 
+int \bf{Connect} (char $\ast$host\_\-ip\_\-or\_\-name)
+\item 
+char $\ast$ \bf{Send\-Command} (int argc, char arg[$\,$])
+\item 
+void \bf{Disconnect} ()
+\end{CompactItemize}
+\subsection*{Private Attributes}
+\begin{CompactItemize}
+\item 
+\bf{My\-Socket\-TCP} $\ast$ \bf{sock}
+\item 
+int \bf{ret}
+\item 
+char \bf{message} [255]
+\end{CompactItemize}
+
+
+\subsection{Detailed Description}
+connects/disconnects to server and sends the command to server 
+
+
+
+\subsection{Member Function Documentation}
+\index{XRayBoxClient@{XRay\-Box\-Client}!Connect@{Connect}}
+\index{Connect@{Connect}!XRayBoxClient@{XRay\-Box\-Client}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int XRay\-Box\-Client::Connect (char $\ast$ {\em host\_\-ip\_\-or\_\-name})}\label{classXRayBoxClient_7bc8b1afd8aecaf49593f8ea4e6c8d17}
+
+
+Connect to server \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em host\_\-ip\_\-or\_\-name}]hostname or ipname of server to connect to returns 1 if it conencts, else 0 \end{description}
+\end{Desc}
+\index{XRayBoxClient@{XRay\-Box\-Client}!Disconnect@{Disconnect}}
+\index{Disconnect@{Disconnect}!XRayBoxClient@{XRay\-Box\-Client}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void XRay\-Box\-Client::Disconnect ()}\label{classXRayBoxClient_99e1a4b7eb17306c65c82c584d9a4fe7}
+
+
+Disconnects from server \index{XRayBoxClient@{XRay\-Box\-Client}!SendCommand@{SendCommand}}
+\index{SendCommand@{SendCommand}!XRayBoxClient@{XRay\-Box\-Client}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}char $\ast$ XRay\-Box\-Client::Send\-Command (int {\em argc}, char {\em arg}[$\,$])}\label{classXRayBoxClient_528a4d21f4ecb407e2ae8469773f31c9}
+
+
+Sends the command to server \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em argc}]number of arguments in command \item[{\em arg\mbox{[}$\,$\mbox{]}}]arguments of command concatenated returns the message after executing command \end{description}
+\end{Desc}
+
+
+\subsection{Member Data Documentation}
+\index{XRayBoxClient@{XRay\-Box\-Client}!message@{message}}
+\index{message@{message}!XRayBoxClient@{XRay\-Box\-Client}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}char \bf{XRay\-Box\-Client::message}[255]\hspace{0.3cm}{\tt  [private]}}\label{classXRayBoxClient_9771b5874cda594635642457769f9f3d}
+
+
+After executing command,message received \index{XRayBoxClient@{XRay\-Box\-Client}!ret@{ret}}
+\index{ret@{ret}!XRayBoxClient@{XRay\-Box\-Client}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{XRay\-Box\-Client::ret}\hspace{0.3cm}{\tt  [private]}}\label{classXRayBoxClient_6e038f1974117101e8df83bf4fc0bb19}
+
+
+After executing command, 0 for success and -1 for failure \index{XRayBoxClient@{XRay\-Box\-Client}!sock@{sock}}
+\index{sock@{sock}!XRayBoxClient@{XRay\-Box\-Client}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{My\-Socket\-TCP}$\ast$ \bf{XRay\-Box\-Client::sock}\hspace{0.3cm}{\tt  [private]}}\label{classXRayBoxClient_4dc81ea2ccf348b2839434bde0e6f97b}
+
+
+Socket reference 
+
+The documentation for this class was generated from the following files:\begin{CompactItemize}
+\item 
+XRay\-Box\-Client/\bf{XRay\-Box\-Client.h}\item 
+XRay\-Box\-Client/\bf{XRay\-Box\-Client.cpp}\end{CompactItemize}

@@ -1,0 +1,78 @@
+
+QT_INSTALL_PREFIX	=	$(QTDIR)
+QMAKE_UIC 			= 	$(QTDIR)/bin/uic
+QMAKE_MOC 			=  	$(QTDIR)/bin/moc
+QMAKE_RCC 			=  	$(QTDIR)/bin/rcc
+QMAKE_INCDIR_QT 	= 	$(QTDIR)/include/
+QMAKE_LIBS_QT 		= 	-L$(QTDIR)/lib 
+QMAKE_LIBS 			= 	-L$(QTDIR)/lib 
+
+
+QMAKE_CXXFLAGS_WARN_ON = 	-w 
+QMAKE_CFLAGS_WARN_ON   = 	-w
+
+/*TEMPLATE     		=  	app*/
+
+RESOURCES   		+=  icons.qrc
+
+DESTDIR  			= 	bin
+MOC_DIR      		=  	mocs
+OBJECTS_DIR 		=  	objs
+UI_HEADERS_DIR		= 	forms/include
+CONFIG				+=	debug no_include_pwd
+
+target.path 		+= 		$(DESTDIR)
+documentation.path 	= 		/$(DOCPATH)
+documentation.files = 		docs/*
+INSTALLS			+= 		target
+INSTALLS 			+= 		documentation
+QMAKE_CLEAN 		+= 		docs/*/* 
+
+
+DEPENDPATH  +=  ../XRayBoxClient\
+                ../MySocketTCP\
+                forms/include\
+                ../
+                
+                
+INCLUDEPATH +=  ../XRayBoxClient\
+                ../XRayBoxServer\
+                ../MySocketTCP\
+                /usr/include/qt4\	
+				/usr/include/Qt\
+				/usr/include/QtCore\
+				/usr/include/QtGui\
+				forms/include\
+                ../      
+
+             
+
+HEADERS      += XRayBoxGui.h \
+                MotorWidget.h \
+                OptionsWidget.h \
+                XRayBoxClient.h \
+                MySocketTCP.h\
+                commonDefs.h
+
+SOURCES      += gui_main.cpp \
+                XRayBoxGui.cpp\
+                MotorWidget.cpp\
+                OptionsWidget.cpp \
+                XRayBoxClient.cpp \
+                MySocketTCP.cpp
+
+FORMS        += forms/form_xrayboxgui.ui \
+                forms/form_motorwidget.ui\
+                forms/form_optionsgui.ui
+                
+
+# install
+# target.path = trial
+# sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS trial.pro
+# sources.path =.
+# INSTALLS += target sources
+
+# symbian {
+#     TARGET.UID3 = 0xA000A64F
+#     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+# }

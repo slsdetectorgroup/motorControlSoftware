@@ -1,0 +1,36 @@
+#mode           controller      serial no
+#controller     corvus_1        09040217
+controller      corvus_2        09040216
+#controller     corvus_3        09040218
+
+
+#mode   name            axis    controller      speed   lowerlimit      upperlimit
+#motor  Crystal         1       corvus_3        -1      0               360
+#motor  Huber           2       corvus_3        0.23    -50             150
+motor   Fluorescence    3       corvus_2        -1      0               251.8267
+#motor  Slit_x1         1       corvus_2        -1      -1              -1
+#motor  Slit_x2         2       corvus_2        -1      -1              -1
+#motor  PSF             3       corvus_1        -1      0               42.4
+#motor  Detector_x      1       corvus_1        -1      0               255.5
+#motor  Detector_y      2       corvus_1        -1      0               102.7
+
+
+#mode           pos     name    energy(KeV)     HV
+fluorescence    1       Ti      4.5             10KW
+fluorescence    2       Cr      5.4             10KW
+fluorescence    3       Fe      6.4             10KW
+fluorescence    4       Cu      8.0             10KW
+fluorescence    5       Ge      9.9             10KW
+fluorescence    6       Sn      25.3            10KW
+fluorescence    7       Screen  0               10KW
+
+
+fluorescence    1       Fe      4.5             10KW
+fluorescence    2       In      24.2            10KW
+fluorescence    3       Ag      22.2            10KW
+fluorescence    4       Ge      9.9             10KW
+fluorescence    5       Mo      17.5            10KW
+fluorescence    6       Sn      25.3            10KW
+fluorescence    7       Screen  0               10KW
+
+power 2400

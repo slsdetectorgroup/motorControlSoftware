@@ -1,0 +1,19 @@
+\section{XRay\-Box\-Gui/Options\-Widget.h File Reference}
+\label{OptionsWidget_8h}\index{XRayBoxGui/OptionsWidget.h@{XRayBoxGui/OptionsWidget.h}}
+creates the menu and widgets for the options menu 
+
+{\tt \#include $<$Qt\-Gui$>$}\par
+{\tt \#include \char`\"{}ui\_\-form\_\-optionsgui.h\char`\"{}}\par
+{\tt \#include \char`\"{}Motor\-Widget.h\char`\"{}}\par
+\subsection*{Classes}
+\begin{CompactItemize}
+\item 
+class \bf{Options\-Widget}
+\begin{CompactList}\small\item\em creates the menu and widgets for the options menu \item\end{CompactList}\end{CompactItemize}
+
+
+\subsection{Detailed Description}
+creates the menu and widgets for the options menu 
+
+\begin{Desc}
+\item[Author:]Dhanya \end{Desc}

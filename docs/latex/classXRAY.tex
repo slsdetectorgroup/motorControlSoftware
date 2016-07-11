@@ -1,0 +1,298 @@
+\section{XRAY Class Reference}
+\label{classXRAY}\index{XRAY@{XRAY}}
+Defines the xray tube object.  
+
+
+{\tt \#include $<$XRAY.h$>$}
+
+\subsection*{Public Member Functions}
+\begin{CompactItemize}
+\item 
+\bf{XRAY} (\bf{INTERFACE} $\ast$\bf{Interface})
+\item 
+int \bf{is\-On\-Standby} ()
+\item 
+void \bf{set\-HVSwitch} (int HVSwitch)
+\item 
+int \bf{get\-HVSwitch} ()
+\item 
+void \bf{set\-Voltage} (int Voltage)
+\item 
+void \bf{set\-Current} (int Current)
+\item 
+void \bf{set\-Voltage\-And\-Current} (int Voltage, int Current)
+\item 
+int \bf{get\-Voltage} ()
+\item 
+int \bf{get\-Voltage\-Actual} ()
+\item 
+int \bf{get\-Current} ()
+\item 
+int \bf{get\-Current\-Actual} ()
+\item 
+void \bf{get\-Voltage\-And\-Current} (int \&voltage, int \&current)
+\item 
+void \bf{get\-Voltage\-And\-Current\-Actual} (int \&voltage, int \&current)
+\item 
+void \bf{set\-Shutter} (int Shutter, bool on)
+\item 
+int \bf{get\-Shutter1} ()
+\item 
+int \bf{get\-Shutter2} ()
+\item 
+int \bf{get\-Shutter3} ()
+\item 
+int \bf{get\-Shutter4} ()
+\item 
+void \bf{get\-Shutters} (int \&s1, int \&s2, int \&s3, int \&s4)
+\item 
+void \bf{print} ()
+\item 
+void \bf{start\-Warmup} (int warmup\-Voltage)
+\item 
+int \bf{get\-Warmup\-Time\-Remaining} ()
+\item 
+bool \bf{is\-Access\-Possible} ()
+\item 
+int \bf{get\-Error\-Code} ()
+\item 
+char $\ast$ \bf{get\-Error\-Message} ()
+\item 
+void \bf{clear\-Error\-Code} ()
+\end{CompactItemize}
+\subsection*{Private Attributes}
+\begin{CompactItemize}
+\item 
+\bf{INTERFACE} $\ast$ \bf{Interface}
+\item 
+char \bf{message} [200]
+\item 
+int \bf{value}
+\end{CompactItemize}
+
+
+\subsection{Detailed Description}
+Defines the xray tube object. 
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{XRAY@{XRAY}!XRAY@{XRAY}}
+\index{XRAY@{XRAY}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}XRAY::XRAY (\bf{INTERFACE} $\ast$ {\em Interface})}\label{classXRAY_042b30ae9c27f83b457f2734989f9845}
+
+
+Constructor \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em Interface}]is the pointer to the xray tube serial port \end{description}
+\end{Desc}
+
+
+\subsection{Member Function Documentation}
+\index{XRAY@{XRAY}!clearErrorCode@{clearErrorCode}}
+\index{clearErrorCode@{clearErrorCode}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void XRAY::clear\-Error\-Code ()}\label{classXRAY_588576301e32ca48be5b3b0198334894}
+
+
+acknowledges the error and clears the error code \index{XRAY@{XRAY}!getCurrent@{getCurrent}}
+\index{getCurrent@{getCurrent}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int XRAY::get\-Current ()}\label{classXRAY_c4da3bcc51dbced1ed03fde371254065}
+
+
+gets set Current value \begin{Desc}
+\item[Returns:]the set Current value \end{Desc}
+\index{XRAY@{XRAY}!getCurrentActual@{getCurrentActual}}
+\index{getCurrentActual@{getCurrentActual}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int XRAY::get\-Current\-Actual ()}\label{classXRAY_cd9b999b021ab1b14f7e50f8b69484a8}
+
+
+gets actual Current value \begin{Desc}
+\item[Returns:]the actual Current value \end{Desc}
+\index{XRAY@{XRAY}!getErrorCode@{getErrorCode}}
+\index{getErrorCode@{getErrorCode}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int XRAY::get\-Error\-Code ()}\label{classXRAY_a381062ddaed811c1e7e2e153307c93c}
+
+
+reads the error code for sr:12 returns the error code \index{XRAY@{XRAY}!getErrorMessage@{getErrorMessage}}
+\index{getErrorMessage@{getErrorMessage}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}char $\ast$ XRAY::get\-Error\-Message ()}\label{classXRAY_2de8cb7fd9380718814d9d7c9d07630e}
+
+
+reads the error message returns the error message \index{XRAY@{XRAY}!getHVSwitch@{getHVSwitch}}
+\index{getHVSwitch@{getHVSwitch}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int XRAY::get\-HVSwitch ()}\label{classXRAY_4d495eda32c84d18508ac596b6b4e029}
+
+
+gets if the HV is on/off \begin{Desc}
+\item[Returns:]if the HV is on/off \end{Desc}
+\index{XRAY@{XRAY}!getShutter1@{getShutter1}}
+\index{getShutter1@{getShutter1}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int XRAY::get\-Shutter1 ()}\label{classXRAY_67e0f5fb2aa3ed305d21e3e298e28c87}
+
+
+gets if the Shutter1 is open/close returns 1/0 if the Shutter1 is open/close \index{XRAY@{XRAY}!getShutter2@{getShutter2}}
+\index{getShutter2@{getShutter2}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int XRAY::get\-Shutter2 ()}\label{classXRAY_efcb7909f26b1aab7da7df7c108696fa}
+
+
+gets if the Shutter2 is open/close returns 1/0 if the Shutter2 is open/close \index{XRAY@{XRAY}!getShutter3@{getShutter3}}
+\index{getShutter3@{getShutter3}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int XRAY::get\-Shutter3 ()}\label{classXRAY_25fea23c2516eabe37365e0ba17e8aa7}
+
+
+gets if the Shutter3 is open/close returns 1/0 if the Shutter3 is open/close \index{XRAY@{XRAY}!getShutter4@{getShutter4}}
+\index{getShutter4@{getShutter4}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int XRAY::get\-Shutter4 ()}\label{classXRAY_643be4ceb5bbc33da4ff777c85d2aa4e}
+
+
+gets if the Shutter4 is open/close returns 1/0 if the Shutter4 is open/close \index{XRAY@{XRAY}!getShutters@{getShutters}}
+\index{getShutters@{getShutters}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void XRAY::get\-Shutters (int \& {\em s1}, int \& {\em s2}, int \& {\em s3}, int \& {\em s4})}\label{classXRAY_84375a8f264c79972d2fc5a7f74e2008}
+
+
+gets is all the shutters are open/close \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em s1}]if the Shutter1 is open/close \item[{\em s2}]if the Shutter2 is open/close \item[{\em s3}]if the Shutter3 is open/close \item[{\em s4}]if the Shutter4 is open/close \end{description}
+\end{Desc}
+\index{XRAY@{XRAY}!getVoltage@{getVoltage}}
+\index{getVoltage@{getVoltage}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int XRAY::get\-Voltage ()}\label{classXRAY_7995dd2ead2aa0d2f98e3c53d6e868c2}
+
+
+gets set Voltage value \begin{Desc}
+\item[Returns:]the set Voltage value \end{Desc}
+\index{XRAY@{XRAY}!getVoltageActual@{getVoltageActual}}
+\index{getVoltageActual@{getVoltageActual}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int XRAY::get\-Voltage\-Actual ()}\label{classXRAY_e77b62f4ad193d1e2eb19b800121e39a}
+
+
+gets actual Voltage value \begin{Desc}
+\item[Returns:]the actual Voltage value \end{Desc}
+\index{XRAY@{XRAY}!getVoltageAndCurrent@{getVoltageAndCurrent}}
+\index{getVoltageAndCurrent@{getVoltageAndCurrent}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void XRAY::get\-Voltage\-And\-Current (int \& {\em voltage}, int \& {\em current})}\label{classXRAY_c511ae49b8b1a165a5f6462bd2a5e587}
+
+
+gets the set voltage and current value \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em voltage}]gets the voltage value to this parameter \item[{\em current}]gets the current value to this parameter \end{description}
+\end{Desc}
+\index{XRAY@{XRAY}!getVoltageAndCurrentActual@{getVoltageAndCurrentActual}}
+\index{getVoltageAndCurrentActual@{getVoltageAndCurrentActual}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void XRAY::get\-Voltage\-And\-Current\-Actual (int \& {\em voltage}, int \& {\em current})}\label{classXRAY_aeb91da9da8b141cd2c8919dc1f0e39d}
+
+
+gets the actual voltage and current value \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em voltage}]gets the actual voltage value to this parameter \item[{\em current}]gets the actual current value to this parameter \end{description}
+\end{Desc}
+\index{XRAY@{XRAY}!getWarmupTimeRemaining@{getWarmupTimeRemaining}}
+\index{getWarmupTimeRemaining@{getWarmupTimeRemaining}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int XRAY::get\-Warmup\-Time\-Remaining ()}\label{classXRAY_a2c1db8eec2254828a3c499466337708}
+
+
+returns the warm up time remaining returns the warm up time remaining \index{XRAY@{XRAY}!isAccessPossible@{isAccessPossible}}
+\index{isAccessPossible@{isAccessPossible}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}bool XRAY::is\-Access\-Possible ()}\label{classXRAY_cf64fa993471ffe3c7282156bd980960}
+
+
+checks if its safe to open the door returns true if its safe to open door \index{XRAY@{XRAY}!isOnStandby@{isOnStandby}}
+\index{isOnStandby@{isOnStandby}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int XRAY::is\-On\-Standby ()}\label{classXRAY_4617b711c897762f7e7c8d20b6885647}
+
+
+checks if the xray tube is on standby \begin{Desc}
+\item[Returns:]1 if it is on standby,-9999 if its switched off, else 0 \end{Desc}
+\index{XRAY@{XRAY}!print@{print}}
+\index{print@{print}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void XRAY::print ()}\label{classXRAY_c5f53a1db4eb027e141aa2e387868367}
+
+
+for debugging: prints all its parameters \index{XRAY@{XRAY}!setCurrent@{setCurrent}}
+\index{setCurrent@{setCurrent}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void XRAY::set\-Current (int {\em Current})}\label{classXRAY_aeeba93220502aa98d45e9b1702ed397}
+
+
+sets the Current \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em Current}]sets the Current to this value \end{description}
+\end{Desc}
+\index{XRAY@{XRAY}!setHVSwitch@{setHVSwitch}}
+\index{setHVSwitch@{setHVSwitch}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void XRAY::set\-HVSwitch (int {\em HVSwitch})}\label{classXRAY_c47db1c445ac8ec6cf5dd74c3d4c6954}
+
+
+switches HV on/off \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em HVSwitch}]is 1 to set HV on, else 0 \end{description}
+\end{Desc}
+\index{XRAY@{XRAY}!setShutter@{setShutter}}
+\index{setShutter@{setShutter}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void XRAY::set\-Shutter (int {\em Shutter}, bool {\em on})}\label{classXRAY_e5914387bcc62581145e1e079829f368}
+
+
+opens/closes the any shutter \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em Shutter}]the shutter to be switched on/off \item[{\em on}]is true to be switched on, else false \end{description}
+\end{Desc}
+\index{XRAY@{XRAY}!setVoltage@{setVoltage}}
+\index{setVoltage@{setVoltage}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void XRAY::set\-Voltage (int {\em Voltage})}\label{classXRAY_20cf965585f449c2421f396b8c4523b1}
+
+
+sets the Voltage \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em Voltage}]sets the Voltage to this value \end{description}
+\end{Desc}
+\index{XRAY@{XRAY}!setVoltageAndCurrent@{setVoltageAndCurrent}}
+\index{setVoltageAndCurrent@{setVoltageAndCurrent}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void XRAY::set\-Voltage\-And\-Current (int {\em Voltage}, int {\em Current})}\label{classXRAY_ffa9af3e1a0b2a2c055620bca3cfed40}
+
+
+sets the voltage and current \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em Voltage}]sets the Voltage to this value \item[{\em Current}]sets the Current to this value \end{description}
+\end{Desc}
+\index{XRAY@{XRAY}!startWarmup@{startWarmup}}
+\index{startWarmup@{startWarmup}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void XRAY::start\-Warmup (int {\em warmup\-Voltage})}\label{classXRAY_bc636186850427b325c18989f85acbc3}
+
+
+starts warmup of the xray tube \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em warmup\-Voltage}]xray tube warms up to this value \end{description}
+\end{Desc}
+
+
+\subsection{Member Data Documentation}
+\index{XRAY@{XRAY}!Interface@{Interface}}
+\index{Interface@{Interface}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{INTERFACE}$\ast$ \bf{XRAY::Interface}\hspace{0.3cm}{\tt  [private]}}\label{classXRAY_ff9c03d1a47e1e358b032b0c643a5ccb}
+
+
+Interface of xray tube \index{XRAY@{XRAY}!message@{message}}
+\index{message@{message}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}char \bf{XRAY::message}[200]\hspace{0.3cm}{\tt  [private]}}\label{classXRAY_8ceaf06251a184214f5de729d545dd5b}
+
+
+temporary command to send to Interface \index{XRAY@{XRAY}!value@{value}}
+\index{value@{value}!XRAY@{XRAY}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{XRAY::value}\hspace{0.3cm}{\tt  [private]}}\label{classXRAY_b90a926fe975d60482292cda68512527}
+
+
+temporary ptr to rxd value 
+
+The documentation for this class was generated from the following files:\begin{CompactItemize}
+\item 
+XRay\-Box\-Server/\bf{XRAY.h}\item 
+XRay\-Box\-Server/\bf{XRAY.cpp}\end{CompactItemize}

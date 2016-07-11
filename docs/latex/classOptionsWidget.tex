@@ -1,0 +1,177 @@
+\section{Options\-Widget Class Reference}
+\label{classOptionsWidget}\index{OptionsWidget@{OptionsWidget}}
+creates the menu and widgets for the options menu  
+
+
+{\tt \#include $<$Options\-Widget.h$>$}
+
+\subsection*{Signals}
+\begin{CompactItemize}
+\item 
+void \bf{Options\-Closed} ()
+\item 
+void \bf{Lower\-Limit\-Changed} ()
+\item 
+void \bf{Upper\-Limit\-Changed} ()
+\end{CompactItemize}
+\subsection*{Public Member Functions}
+\begin{CompactItemize}
+\item 
+\bf{Options\-Widget} (QWidget $\ast$parent, vector$<$ string $>$ \bf{list})
+\item 
+void \bf{Layout\-Window} ()
+\item 
+void \bf{Initialization} ()
+\end{CompactItemize}
+\subsection*{Protected Member Functions}
+\begin{CompactItemize}
+\item 
+void \bf{close\-Event} (QClose\-Event $\ast$event)
+\item 
+void \bf{key\-Press\-Event} (QKey\-Event $\ast$event)
+\end{CompactItemize}
+\subsection*{Private Slots}
+\begin{CompactItemize}
+\item 
+void \bf{Change\-Motor\-Widget} (int index)
+\item 
+void \bf{Move\-Absolute} ()
+\item 
+void \bf{Move\-To\-Home} ()
+\item 
+void \bf{Set\-Option} ()
+\end{CompactItemize}
+\subsection*{Private Attributes}
+\begin{CompactItemize}
+\item 
+\bf{Motor\-Widget} $\ast$ \bf{option\-Widgets} [\bf{Num\-Option\-Widgets}]
+\item 
+int \bf{current}
+\item 
+vector$<$ string $>$ \bf{list}
+\end{CompactItemize}
+\subsection*{Static Private Attributes}
+\begin{CompactItemize}
+\item 
+static const int \bf{Num\-Option\-Widgets} = 8
+\end{CompactItemize}
+
+
+\subsection{Detailed Description}
+creates the menu and widgets for the options menu 
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{OptionsWidget@{Options\-Widget}!OptionsWidget@{OptionsWidget}}
+\index{OptionsWidget@{OptionsWidget}!OptionsWidget@{Options\-Widget}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Options\-Widget::Options\-Widget (QWidget $\ast$ {\em parent}, vector$<$ string $>$ {\em list})}\label{classOptionsWidget_101857e4bd70917eafa0c278ea41d994}
+
+
+Constructor creates the options menu and the option\-Widget \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em parent}]the parent widget is set to this value \item[{\em list}]list of motors in the config file \end{description}
+\end{Desc}
+
+
+\subsection{Member Function Documentation}
+\index{OptionsWidget@{Options\-Widget}!ChangeMotorWidget@{ChangeMotorWidget}}
+\index{ChangeMotorWidget@{ChangeMotorWidget}!OptionsWidget@{Options\-Widget}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Options\-Widget::Change\-Motor\-Widget (int {\em index})\hspace{0.3cm}{\tt  [private, slot]}}\label{classOptionsWidget_3153196fa115cab5a6c775507ce5db08}
+
+
+called when a different motor is selected from the drop down menu \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em index}]the value of the item on the drop down menu \end{description}
+\end{Desc}
+\index{OptionsWidget@{Options\-Widget}!closeEvent@{closeEvent}}
+\index{closeEvent@{closeEvent}!OptionsWidget@{Options\-Widget}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Options\-Widget::close\-Event (QClose\-Event $\ast$ {\em event})\hspace{0.3cm}{\tt  [protected]}}\label{classOptionsWidget_de45bf4005e8b54dde6bb13f36133b62}
+
+
+emits \doxyref{Options\-Closed()}{p.}{classOptionsWidget_d31f7a067a142048e9e07d6c3aa87cbb} signal when this window is closed \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em event}]when the window is closed, this method is executed \end{description}
+\end{Desc}
+\index{OptionsWidget@{Options\-Widget}!Initialization@{Initialization}}
+\index{Initialization@{Initialization}!OptionsWidget@{Options\-Widget}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Options\-Widget::Initialization ()}\label{classOptionsWidget_a7f11e76802176f6aed8396da54600ca}
+
+
+sets the validators for the input parameters and makes all the connectiosn to the slots \index{OptionsWidget@{Options\-Widget}!keyPressEvent@{keyPressEvent}}
+\index{keyPressEvent@{keyPressEvent}!OptionsWidget@{Options\-Widget}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Options\-Widget::key\-Press\-Event (QKey\-Event $\ast$ {\em event})\hspace{0.3cm}{\tt  [protected]}}\label{classOptionsWidget_0469b1205db54dc20438bee45ea76ac1}
+
+
+moves the motor absolutely when enter or return key is pressed \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em event}]when enter or return key is pressed \end{description}
+\end{Desc}
+\index{OptionsWidget@{Options\-Widget}!LayoutWindow@{LayoutWindow}}
+\index{LayoutWindow@{LayoutWindow}!OptionsWidget@{Options\-Widget}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Options\-Widget::Layout\-Window ()}\label{classOptionsWidget_2a2120d2ee2cb3c95288d60ae0b90b04}
+
+
+updates the drop down menu with the list of motors \index{OptionsWidget@{Options\-Widget}!LowerLimitChanged@{LowerLimitChanged}}
+\index{LowerLimitChanged@{LowerLimitChanged}!OptionsWidget@{Options\-Widget}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Options\-Widget::Lower\-Limit\-Changed ()\hspace{0.3cm}{\tt  [signal]}}\label{classOptionsWidget_b327caed200ddfc09ab2421cc55e0563}
+
+
+emited when the lower limit is changed \index{OptionsWidget@{Options\-Widget}!MoveAbsolute@{MoveAbsolute}}
+\index{MoveAbsolute@{MoveAbsolute}!OptionsWidget@{Options\-Widget}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Options\-Widget::Move\-Absolute ()\hspace{0.3cm}{\tt  [private, slot]}}\label{classOptionsWidget_6f518188e0ceee808e29ea6e69f4defe}
+
+
+if the input for absolute movement is modified, moves it and updates position \index{OptionsWidget@{Options\-Widget}!MoveToHome@{MoveToHome}}
+\index{MoveToHome@{MoveToHome}!OptionsWidget@{Options\-Widget}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Options\-Widget::Move\-To\-Home ()\hspace{0.3cm}{\tt  [private, slot]}}\label{classOptionsWidget_30a0e4c660604948be46ee5ecf13800b}
+
+
+calibrates the motor to the lower limit switch and sets the position to zero \index{OptionsWidget@{Options\-Widget}!OptionsClosed@{OptionsClosed}}
+\index{OptionsClosed@{OptionsClosed}!OptionsWidget@{Options\-Widget}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Options\-Widget::Options\-Closed ()\hspace{0.3cm}{\tt  [signal]}}\label{classOptionsWidget_d31f7a067a142048e9e07d6c3aa87cbb}
+
+
+emitted when the options window is closed \index{OptionsWidget@{Options\-Widget}!SetOption@{SetOption}}
+\index{SetOption@{SetOption}!OptionsWidget@{Options\-Widget}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Options\-Widget::Set\-Option ()\hspace{0.3cm}{\tt  [private, slot]}}\label{classOptionsWidget_683595f67a145c1c7a0ed1cd6b54820b}
+
+
+if either set position,speed, limits are selected, this is called.Whenever a limit is changed, an appropriate signal is emitted \index{OptionsWidget@{Options\-Widget}!UpperLimitChanged@{UpperLimitChanged}}
+\index{UpperLimitChanged@{UpperLimitChanged}!OptionsWidget@{Options\-Widget}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Options\-Widget::Upper\-Limit\-Changed ()\hspace{0.3cm}{\tt  [signal]}}\label{classOptionsWidget_76e21198dc634f0b734cb6c160219d48}
+
+
+emitted when the upper limit is changed 
+
+\subsection{Member Data Documentation}
+\index{OptionsWidget@{Options\-Widget}!current@{current}}
+\index{current@{current}!OptionsWidget@{Options\-Widget}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{Options\-Widget::current}\hspace{0.3cm}{\tt  [private]}}\label{classOptionsWidget_c871c5e07fbb8ff60ac29d40a6ed85f3}
+
+
+the value of the current item in drop down menu \index{OptionsWidget@{Options\-Widget}!list@{list}}
+\index{list@{list}!OptionsWidget@{Options\-Widget}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}vector$<$string$>$ \bf{Options\-Widget::list}\hspace{0.3cm}{\tt  [private]}}\label{classOptionsWidget_433a46f9c57a63be9213724c5f3fcd77}
+
+
+list of the motors in the config file \index{OptionsWidget@{Options\-Widget}!NumOptionWidgets@{NumOptionWidgets}}
+\index{NumOptionWidgets@{NumOptionWidgets}!OptionsWidget@{Options\-Widget}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}const int \bf{Options\-Widget::Num\-Option\-Widgets} = 8\hspace{0.3cm}{\tt  [static, private]}}\label{classOptionsWidget_5e8abeb2c84a79c64bb6b9d06cd00e30}
+
+
+maximum number of motor widget objects to show in the menu \index{OptionsWidget@{Options\-Widget}!optionWidgets@{optionWidgets}}
+\index{optionWidgets@{optionWidgets}!OptionsWidget@{Options\-Widget}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{Motor\-Widget}$\ast$ \bf{Options\-Widget::option\-Widgets}[\bf{Num\-Option\-Widgets}]\hspace{0.3cm}{\tt  [private]}}\label{classOptionsWidget_39bb84ea6dd82b649891ec2b896f410d}
+
+
+list of motor\-Widget object pointers 
+
+The documentation for this class was generated from the following files:\begin{CompactItemize}
+\item 
+XRay\-Box\-Gui/\bf{Options\-Widget.h}\item 
+XRay\-Box\-Gui/\bf{Options\-Widget.cpp}\end{CompactItemize}

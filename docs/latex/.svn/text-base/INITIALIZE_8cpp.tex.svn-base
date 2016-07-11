@@ -1,0 +1,19 @@
+\section{XRay\-Box\-Server/INITIALIZE.cpp File Reference}
+\label{INITIALIZE_8cpp}\index{XRayBoxServer/INITIALIZE.cpp@{XRayBoxServer/INITIALIZE.cpp}}
+reads config files, moves the motors, and saves positions 
+
+{\tt \#include \char`\"{}INITIALIZE.h\char`\"{}}\par
+{\tt \#include $<$iostream$>$}\par
+{\tt \#include $<$sstream$>$}\par
+{\tt \#include $<$fstream$>$}\par
+{\tt \#include $<$iomanip$>$}\par
+{\tt \#include $<$math.h$>$}\par
+{\tt \#include $<$time.h$>$}\par
+{\tt \#include \char`\"{}../common\-Defs.h\char`\"{}}\par
+
+
+\subsection{Detailed Description}
+reads config files, moves the motors, and saves positions 
+
+\begin{Desc}
+\item[Author:]Dhanya \end{Desc}

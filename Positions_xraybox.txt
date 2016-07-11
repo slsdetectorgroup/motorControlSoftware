@@ -1,0 +1,3 @@
+#Motor Name    Positions
+
+Fluorescence   167.80000000000001

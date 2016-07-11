@@ -1,0 +1,51 @@
+\section{XRay\-Box\-Client/main.cpp File Reference}
+\label{main_8cpp}\index{XRayBoxClient/main.cpp@{XRayBoxClient/main.cpp}}
+Calls my\-Client to connect to server if remote, else executes command. 
+
+{\tt \#include \char`\"{}common\-Defs.h\char`\"{}}\par
+{\tt \#include $<$iostream$>$}\par
+{\tt \#include $<$string$>$}\par
+{\tt \#include $<$sstream$>$}\par
+{\tt \#include $<$fstream$>$}\par
+{\tt \#include $<$unistd.h$>$}\par
+\subsection*{Functions}
+\begin{CompactItemize}
+\item 
+char $\ast$ \bf{use\-System\-Command} (char $\ast$system\-Command)
+\item 
+char $\ast$ \bf{read\-File} (string const f\-Name)
+\item 
+int \bf{main} (int argc, char $\ast$argv[$\,$])
+\end{CompactItemize}
+
+
+\subsection{Detailed Description}
+Calls my\-Client to connect to server if remote, else executes command. 
+
+\begin{Desc}
+\item[Author:]Dhanya \end{Desc}
+
+
+\subsection{Function Documentation}
+\index{main.cpp@{main.cpp}!main@{main}}
+\index{main@{main}!main.cpp@{main.cpp}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int main (int {\em argc}, char $\ast$ {\em argv}[$\,$])}\label{main_8cpp_0ddf1224851353fc92bfbff6f499fa97}
+
+
+the main function \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em argc}]number of command line arguments \item[{\em argv}]array of command line arguments \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]0 to OS \end{Desc}
+\index{main.cpp@{main.cpp}!readFile@{readFile}}
+\index{readFile@{readFile}!main.cpp@{main.cpp}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}char $\ast$ read\-File (string const  {\em f\-Name})}\label{main_8cpp_4e173cc6c428a23bdd387afc9089474e}
+
+
+\index{main.cpp@{main.cpp}!useSystemCommand@{useSystemCommand}}
+\index{useSystemCommand@{useSystemCommand}!main.cpp@{main.cpp}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}char $\ast$ use\-System\-Command (char $\ast$ {\em system\-Command})}\label{main_8cpp_5be6f5dd17a7c2b7c9b63dde29d2582c}
+
+
