@@ -1,7 +1,7 @@
-DESTDIR = bin
-PROG= $(DESTDIR)/MotorControlGui
+DESTDIR		?=	../bin
+PROG		= $(DESTDIR)/MotorControlGui
 
-TYPE_FLAG ?=-DXRAYBOX
+TYPE_FLAG 	?=-DXRAYBOX
 #-DXRAYBOX -DLASERBOX -DVACUUMBOX
 
 all: $(PROG) Makefile.gui

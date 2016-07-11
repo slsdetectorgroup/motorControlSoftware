@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'FwheelWidget.h'
 **
-** Created: Mon Jul 11 15:48:02 2016
+** Created: Mon Jul 11 16:04:56 2016
 **      by: The Qt Meta Object Compiler version 63 (Qt 4.8.2)
 **
 ** WARNING! All changes made in this file will be lost!
