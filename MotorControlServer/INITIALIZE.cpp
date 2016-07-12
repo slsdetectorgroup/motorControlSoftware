@@ -2941,10 +2941,10 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 	//if fluorescence exists, all the validation requirements
 	if(fluor_exists!=-1)
 	{
-		//there should be exactly 7 elements in each set, else error.
-		if(!((fIndex==7)||((set2_exists)&&(fIndex==14))))
+		//there should be exactly maxfluor elements in each set, else error.
+		if(!((fIndex==maxfluorvalues)||((set2_exists)&&(fIndex==2*maxfluorvalues))))
 		{
-			cout<<"ERROR: There should be exactly 7 elements in the fluorescence sets.\n";
+			cout<<"ERROR: There should be exactly " << maxfluorvalues << " elements in the fluorescence sets.\n";
 			exit(-1);
 		}
 		// to check if config file fluorescence positions are right order
@@ -2960,6 +2960,7 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
       while(i!=maxfluorvalues)
 	fluorList.resize(maxfluorvalues-1);
 		 */
+#ifdef XRAYBOX
 		//rearranging the order..first to last
 		int first=0,last =maxfluorvalues-1;
 		string temp1,temp2;
@@ -2977,7 +2978,7 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 			first++;
 			last--;
 		}
-
+#endif
 		//initially we take the first list for fluorescence
 		fluorList = fluorList1;
 	}
@@ -3100,7 +3101,7 @@ void INITIALIZE::initFluorNames(string sLine, int &fIndex)
 
 	if((iPos>maxfluorvalues)||(iPos<1))
 	{
-		cout<<"ERROR: Check the position values of the fluorescent elements \nOR a position is less than 1\n";
+		cout<<"ERROR: Check the position values of the fluorescent elements \nOR a position is less than 1: " << iPos << endl;
 		exit(-1);
 	}
 
