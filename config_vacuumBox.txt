@@ -3,7 +3,7 @@ controller	corvus_1	09040218
 
 
 #mode	name		axis	controller	speed   lowerlimit	upperlimit
-motor	Fluorescence	1	corvus_1	-1		0			350		
+motor	Fluorescence	1	corvus_1	-1	0		350		
 
 
 
