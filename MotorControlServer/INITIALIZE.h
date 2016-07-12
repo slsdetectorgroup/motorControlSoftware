@@ -206,9 +206,9 @@ class INITIALIZE
   /**fluorwidth  41.95 or 45
    */
 #ifdef XRAYBOX
-  static const double fluorWidth = 41.95;
+  static const double fluorwidth = 41.95;
 #else
-  static const double fluorWidth = 45;
+  static const double fluorwidth = 45;
 #endif
 
   /**max fluorescence values =7 or 8
