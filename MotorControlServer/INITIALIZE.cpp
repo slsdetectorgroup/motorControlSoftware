@@ -3000,14 +3000,14 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
       cout<<endl;
     }
 
-  cout<<endl<<endl;
+  cout<<endl<<endl;*/
   for(int i=0;i<maxfluorvalues;i++)
     {
       for(int j=0;j<3;j++) 
 	cout<<":"<<fluorList[i][j];
       cout<<endl;
     }
-  cout<<endl<<endl;
+ /* cout<<endl<<endl;
 	 */
 #endif
 
