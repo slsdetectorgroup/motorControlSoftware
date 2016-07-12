@@ -13,7 +13,7 @@ CLIENT_FLAGS=-DREMOTE
 LOCAL_FLAGS=-DLOCAL
 
 
-all: clean socketServer socketClient localClient #gui#doc
+all: clean socketServer socketClient localClient gui#doc
 
 doc: $(SRC_CLNT)
 	doxygen doxy.config

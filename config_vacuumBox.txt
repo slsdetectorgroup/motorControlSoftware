@@ -8,13 +8,13 @@ motor	Fluorescence	1	corvus_1	-1	0		360
 
 
 #mode 		pos	name	energy(KeV)	HV
-fluorescence	1 	Ti	4.5		10KW
-fluorescence	2 	Cr	5.4		10KW
-fluorescence	3 	Fe	6.4		10KW
-fluorescence	4 	Cu	8.0		10KW
-fluorescence	5 	Ge	9.9		10KW
-fluorescence	6 	Mo	17.5		10KW
-fluorescence	7 	Screen	0		10KW
+fluorescence	1 	In	24.2		10KW
+fluorescence	2 	Mo	17.5		10KW
+fluorescence	3 	Ni	7.5		10KW
+fluorescence	4 	Fe	6.4		10KW
+fluorescence	5 	Cr	5.4		10KW
+fluorescence	6 	V	5.0		10KW
+fluorescence	7 	Ti	4.5		10KW
+fluorescence	8	Al	1.5		10KW
 
-
-power 2400
+power 1900

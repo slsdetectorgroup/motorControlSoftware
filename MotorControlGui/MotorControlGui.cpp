@@ -42,8 +42,8 @@ huberPos(-9999),huberValue(0),xLower(-9999),xUpper(-9999),yLower(-9999),yUpper(-
 
 #ifndef LASERBOX
 	//fixing the motor names that can be shown on the gui
-	drawingList.resize(NumMotorWidgets+1);
-	for(int i=0;i<NumMotorWidgets+1;i++)
+	drawingList.resize(MaxNumMotorWidgets+1);
+	for(int i=0;i<MaxNumMotorWidgets+1;i++)
 		drawingList[i].resize(1);
 	drawingList[0].assign("Fluorescence");drawingList[1].assign("Crystal");drawingList[2].assign("Huber");
 	drawingList[3].assign("Slit_x1");drawingList[4].assign("Slit_x2");drawingList[5].assign("PSF");
@@ -673,7 +673,7 @@ void MotorControlGui::paintEvent(QPaintEvent *)
 
 
 	//xy coordinates has to be for hte same order as drawingList
-	double xy[NumMotorWidgets+1][4];
+	double xy[MaxNumMotorWidgets+1][4];
 
 	//fluorescence=0
 	xy[0][0]=-275;  xy[0][1]=-32.5;                 xy[0][2]=xy[0][0]; xy[0][3]=xy[0][1]-15;
@@ -767,7 +767,7 @@ void MotorControlGui::paintEvent(QPaintEvent *)
 	//---
 
 	//xy coordinates has to be for hte same order as drawingList
-	double xy2[NumMotorWidgets+1][4];
+	double xy2[MaxNumMotorWidgets+1][4];
 
 	//fluorescence=0
 	xy2[0][0]=175;   xy2[0][1]=65;    xy2[0][2]=xy2[0][0]; xy2[0][3]=xy2[0][1]-15;
@@ -803,7 +803,7 @@ void MotorControlGui::paintEvent(QPaintEvent *)
 
 
 	//default if not in string, the color is light gray means disconnected
-	for(int i=0; i<NumMotorWidgets+1;i++)
+	for(int i=0; i<MaxNumMotorWidgets+1;i++)
 	{
 		if(listOfMotors.find(drawingList[i])==string::npos)
 		{
@@ -853,7 +853,7 @@ void MotorControlGui::paintEvent(QPaintEvent *)
 	}
 
 	//checks if the following motots exists in the config file
-	for(int i=1; i<NumMotorWidgets;i++)
+	for(int i=1; i<MaxNumMotorWidgets;i++)
 	{
 		int found=0;
 		if(motorWidgets[i]!=NULL)
@@ -1447,7 +1447,7 @@ void MotorControlGui::Initialization()
 	}
 
 	//for relative movt
-	for(int i=1;i<NumMotorWidgets;i++)
+	for(int i=1;i<MaxNumMotorWidgets;i++)
 		if(motorWidgets[i]!=NULL)
 			connect(motorWidgets[i],SIGNAL(RelativeMoved()),this,SLOT(update()));
 

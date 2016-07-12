@@ -340,7 +340,11 @@ class MotorControlGui:public QWidget, private Ui::LaserBoxGuiObject
 
   /**the florescence width between each sample
    */  
+#ifdef XRAYBOX
   static const double fluorWidth = 41.95;
+#else
+  static const double fluorWidth = 45;
+#endif
 #endif
 
   private slots:

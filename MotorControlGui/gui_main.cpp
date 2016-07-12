@@ -11,6 +11,13 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
+#ifdef XRAYBOX
+	cout << " This is XRay Box Gui" << endl;
+#elif LASERBOX
+	cout << " This is Laser Box Gui" << endl;
+#else
+	cout << " This is Vacuum Box Gui" << endl;
+#endif
   QApplication app(argc, argv);
   app.setStyle(new QPlastiqueStyle);//not default when desktop is windows
   MotorControlGui* gui = new MotorControlGui(argc,argv);
