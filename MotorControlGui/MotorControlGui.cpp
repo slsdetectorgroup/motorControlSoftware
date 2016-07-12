@@ -33,10 +33,30 @@ huberPos(-9999),huberValue(0),xLower(-9999),xUpper(-9999),yLower(-9999),yUpper(-
 
 #ifdef XRAYBOX
 	cout << " This is XRay Box Gui" << endl;
+
+	shutter1->setEnabled(true);
+	shutter2->setEnabled(false);
+	shutter3->setEnabled(true);
+	shutter4->setEnabled(false);
+
+	shutter1->setText("Up");
+	shutter2->setText("-");
+	shutter3->setText("Right");
+	shutter4->setText("-");
 #elif LASERBOX
 	cout << " This is Laser Box Gui" << endl;
 #else
 	cout << " This is Vacuum Box Gui" << endl;
+	shutter1->setText("Up");
+	shutter1->setEnabled(false);
+	shutter2->setEnabled(true);
+	shutter3->setEnabled(true);
+	shutter4->setEnabled(true);
+
+	shutter1->setText("-");
+	shutter2->setText("Up");
+	shutter3->setText("Right");
+	shutter4->setText("Down");
 #endif
 
 
