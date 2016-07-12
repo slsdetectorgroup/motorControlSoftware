@@ -3,3 +3,9 @@
 bin
 .settings
 Makefile.gui
+*.o
+moc_*
+objs
+mocs
+qrc_icons.cpp
+ui_form*.h
