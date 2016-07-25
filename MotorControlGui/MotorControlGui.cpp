@@ -13,8 +13,11 @@
 //#include <boost/algorithm/string.hpp>
 using namespace std;
 
-
+#ifdef XRAYBOX
 #define MAXFL 7
+#else
+#define MAXFL 8
+#endif
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
