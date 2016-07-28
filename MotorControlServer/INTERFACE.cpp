@@ -456,9 +456,9 @@ char* INTERFACE::send_command_to_fw(char* c, int rb)
 	strcpy(command,c);
 	strcat(command,"\r");
 
-#ifdef VERBOSE_MOTOR
+//#ifdef VERBOSE_MOTOR
 	cout<<"Sending command: "<<command<<" with rb: "<<rb<<" to port "<<serial<<endl;
-#endif
+//#endif
 
 	if (write (serialfd,command,strlen(command))==-1)
 		cout<<"error sending the command \n";
