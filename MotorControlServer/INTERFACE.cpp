@@ -450,11 +450,12 @@ char* INTERFACE::send_command_to_tube(char* c, int rb, int &value, int &value2)
 
 char* INTERFACE::send_command_to_fw(char* c, int rb)
 {
+	rb=1;
 	char buffer[255]="", command[200]="";
 	char* p = buffer;
 
-	strcpy(command,c);cout<<"command:"<<command<<endl;
-	strcat(command,"\r");
+	strcpy(command,c);cout<<"command:*"<<command<<"*"<<endl;
+	strcat(command,"\r\n");
 
 //#ifdef VERBOSE_MOTOR
 	cout<<"Sending command: "<<command<<" with rb: "<<rb<<" to port "<<serial<<endl;
