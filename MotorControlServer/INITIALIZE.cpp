@@ -2885,11 +2885,11 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 		inFile.close();
 
 		// After processing and the motor count is still 0, print error and exit
-		if (MOTOR::NumMotors==0)
+		/*if (MOTOR::NumMotors==0)
 		{
 			cout<<"ERROR:Config file not in proper format"<<endl<<endl;
 			exit(-1);
-		}
+		}*/
 	}
 	// if file could not open, print error and exit
 	else
