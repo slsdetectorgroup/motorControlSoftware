@@ -469,7 +469,7 @@ char* INTERFACE::send_command_to_fw(char* c, int rb)
 		buffer[0]='\0';
 		while(!strcmp(buffer,""))
 		{
-			usleep(200000);
+			usleep(2000000);//usleep(200000);
 			if ( read (serialfd, buffer, 255)==-1)
 				cout<<"error receiving data back \n";
 		}
