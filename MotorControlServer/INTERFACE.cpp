@@ -180,7 +180,7 @@ INTERFACE::INTERFACE(bool fw, char* serial, bool* success)
 		new_serial_conf.c_oflag = 0;
 
 		/* line options */
-		new_serial_conf.c_lflag = ICANON;
+		new_serial_conf.c_lflag = 0;//ICANON;
 
 		/* flush input */
 		tcflush(serialfd, TCIFLUSH);
