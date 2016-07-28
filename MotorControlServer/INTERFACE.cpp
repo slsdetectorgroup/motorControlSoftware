@@ -452,6 +452,7 @@ char* INTERFACE::send_command_to_fw(char* c, int rb)
 {
 	char buffer[255]="", command[200]="";
 	char* p = buffer;
+	rb = 1;
 
 	strcpy(command,c);cout<<"command:"<<command<<endl;
 	strcat(command,"\r");
@@ -473,9 +474,9 @@ char* INTERFACE::send_command_to_fw(char* c, int rb)
 				cout<<"error receiving data back \n";
 		}
 
-#ifdef VERBOSE_MOTOR
+//#ifdef VERBOSE_MOTOR
 		cout<<"Received data:*"<<buffer<<"*\n";
-#endif
+//#endif
 	}
 		return p;
 }
