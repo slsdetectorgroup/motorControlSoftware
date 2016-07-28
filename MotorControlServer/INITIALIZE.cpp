@@ -251,7 +251,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 
 	// --- if command is fsetval---------------------------------------
 	else if(strcasecmp(args[0],"fsetval")==0)
-	{cout<<"in fsetval"<<endl;
+	{
 		num=0;
 		// if number of parameters are wrong
 		if(argc!=3)
