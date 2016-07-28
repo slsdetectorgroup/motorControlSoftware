@@ -180,7 +180,7 @@ INTERFACE::INTERFACE(bool fw, char* serial, bool* success)
 		new_serial_conf.c_oflag = 0;
 
 		/* line options */
-		new_serial_conf.c_lflag = ICANON;
+		new_serial_conf.c_lflag = 0;//ICANON;
 
 		/* flush input */
 		tcflush(serialfd, TCIFLUSH);
@@ -454,7 +454,7 @@ char* INTERFACE::send_command_to_fw(char* c, int rb)
 	char* p = buffer;
 
 	strcpy(command,c);cout<<"command:"<<command<<endl;
-	//strcat(command,"\r");
+	strcat(command,"\r\n");
 
 //#ifdef VERBOSE_MOTOR
 	cout<<"Sending command: "<<command<<" with rb: "<<rb<<" to port "<<serial<<endl;
