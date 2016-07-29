@@ -454,30 +454,19 @@ char* INTERFACE::send_command_to_fw(char* c, int rb)
 	char buffer[255]="", command[200]="";
 	char* p = buffer;
 
-	strcpy(command,c);cout<<"command:*"<<command<<"*"<<endl;
+	strcpy(command,c);
+#ifdef VERBOSE_MOTOR
+	cout<<"Sending command:*"<<command<<"*"<<;
+#endif
 	strcat(command,"\r");
 
-//#ifdef VERBOSE_MOTOR
-	cout<<"Sending command: "<<command<<" with rb: "<<rb<<" to port "<<serial<<endl;
-//#endif
+#ifdef VERBOSE_MOTOR
+	cout<<" to port "<<serial<<endl;
+#endif
 
 	if (write (serialfd,command,strlen(command))==-1)
 		cout<<"error sending the command \n";
 
-	if (rb)
-	{
-		buffer[0]='\0';
-		while(!strcmp(buffer,""))
-		{
-			usleep(2000000);//usleep(200000);
-			if ( read (serialfd, buffer, 255)==-1)
-				cout<<"error receiving data back \n";
-		}
-
-//#ifdef VERBOSE_MOTOR
-		cout<<"Received data:*"<<buffer<<"*\n";
-//#endif
-	}
 		return p;
 }
 

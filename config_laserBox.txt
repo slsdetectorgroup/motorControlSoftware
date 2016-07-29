@@ -1,11 +1,6 @@
 #mode		controller	serial no
 controller	corvus_1	11040353
 
-#mode	name	   serial no    value1  value2  value3  value4  value5  value6 
-fwheel	fwheel_a   FWU2F2N9 	0.0	0.1	0.2	0.3	0.4	0.6
-fwheel	fwheel_b   FWU36XCN	0	1	2	3	4	5
-fwheel	fwheel_c   A60251VL	0	0.1	0.2	0.3	0.4	0.5
-
 #motor names should be preserved if pitch has to be set at server startup
 #mode	name		axis	controller	speed   lowerlimit	upperlimit
 motor	Detector_x	1	corvus_1	-1	0		306
@@ -21,3 +16,7 @@ refpoint    agipd10	128.89	93.53	16.9
 refpoint    diode	106.5	57.6	10.9
 
 
+#mode	name	   serial no    value1  value2  value3  value4  value5  value6 
+fwheel	fwheel_a   FWU2F2N9 	0.0	0.1	0.2	0.3	0.4	0.6
+fwheel	fwheel_b   FWU36XCN	0	1	2	3	4	5
+fwheel	fwheel_c   A60251VL	0	0.1	0.2	0.3	0.4	0.5
