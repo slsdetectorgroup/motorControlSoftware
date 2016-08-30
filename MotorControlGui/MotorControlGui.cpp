@@ -1952,8 +1952,8 @@ void MotorControlGui::UpdateXrayGroupforShutters()
 		QString temp = checkedBox->text();
 
 		if(!QString::compare(temp,"Shutter 1")) s=1;
-		else if(!QString::compare(temp,"Shutter 2")) s=2;
-		else if(!QString::compare(temp,"Shutter 3")) s=3;
+		else if((!QString::compare(temp,"Shutter 2")) || (!QString::compare(temp,"Up")))s=2;
+		else if((!QString::compare(temp,"Shutter 3")) || (!QString::compare(temp,"Right"))) s=3;
 		else  s=4;
 
 		sprintf(message,"gui shutter %d ",s);
