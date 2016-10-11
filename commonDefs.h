@@ -24,7 +24,7 @@ This file contains all the basic definitions common to the client and to the ser
 #define PORT_NO 1111
 
 #ifdef XRAYBOX
-#define Server_Hostname "pc-x-ray-box.psi.ch"
+#define Server_Hostname "mpc2128.psi.ch"
 #elif LASERBOX
 #define Server_Hostname "mpc2085.psi.ch"
 #else
