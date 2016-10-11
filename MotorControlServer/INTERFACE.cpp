@@ -112,11 +112,8 @@ INTERFACE::INTERFACE(char* serial, bool* success, bool xray)
 		//CSTOPB	2 stop bits (1 otherwise)
 		//CLOCAL	Local line - do not change "owner" of port
 		//CREAD	Enable receiver
-#ifdef XRAYBOX
-		new_serial_conf.c_cflag = B9600 | CS8 | CSTOPB | CLOCAL | CREAD ;
-#else
 		new_serial_conf.c_cflag = B9600 | CS8 | CLOCAL | CREAD ;
-#endif
+
 		/* input options */
 		//IGNPAR	Ignore parity errors
 		new_serial_conf.c_iflag = IGNPAR;
