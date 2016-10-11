@@ -5,9 +5,9 @@ controller	corvus_2	09040216
 
 
 #mode	name		axis	controller	speed   lowerlimit	upperlimit
-motor	Fluorescence	3	corvus_2	-1	0		251.8267
 #motor	Crystal		1	corvus_3	-1	0		360
 #motor	Huber		2	corvus_3	0.23	-50		150
+motor	Fluorescence	3	corvus_2	-1	0		251.8267
 #motor	Slit_x1		1	corvus_2	-1	-1		-1
 #motor	Slit_x2		2	corvus_2	-1	-1		-1
 #motor	PSF		3	corvus_1	-1	0		42.4
@@ -32,6 +32,7 @@ fluorescence    4       Ag   	22.1           10KW
 fluorescence    5       In      24.2           10KW
 fluorescence    6       Sn      25.3           10KW
 fluorescence    7       Screen  0              10KW
+
 
 
 
