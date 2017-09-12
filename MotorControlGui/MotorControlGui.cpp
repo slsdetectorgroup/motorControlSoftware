@@ -394,8 +394,13 @@ void MotorControlGui::LayoutWindow()
 	}
 	else
 	{
+#ifdef XRAYBOX
 		fluorLabel->addItem("Fluor List 1");
 		fluorLabel->addItem("Fluor List 2");
+#else
+		fluorLabel->addItem("Normal Fl List");
+		fluorLabel->addItem("Reverse Fl List");
+#endif
 		if(!currentflist)
 		{
 			MotorWidget::ErrorMessage("ERROR: Fl exists in config file, but list to popoulate has not been noted");

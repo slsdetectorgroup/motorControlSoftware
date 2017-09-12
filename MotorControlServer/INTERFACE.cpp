@@ -122,7 +122,7 @@ INTERFACE::INTERFACE(char* serial, bool* success, bool xray)
 		new_serial_conf.c_oflag = 0;
 
 		/* line options */
-		new_serial_conf.c_lflag = 0; //ICANON;
+		new_serial_conf.c_lflag = ICANON;
 
 		/* flush input */
 		tcflush(serialfd, TCIFLUSH);
