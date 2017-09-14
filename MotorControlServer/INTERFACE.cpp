@@ -21,7 +21,8 @@ INTERFACE::INTERFACE(char* serial, bool* success)
 {
 	/* serial port is copied to serial*/
 	strcpy(this->serial,serial);
-	cout<<"Checking serial:"<<serial<<endl;
+	cout << endl << "Checking serial for motorcontroller:" << serial << endl;
+
 
 	serialfd= open (serial, O_RDWR | O_NOCTTY | O_NDELAY);
 
@@ -42,7 +43,8 @@ INTERFACE::INTERFACE(char* serial, bool* success)
 		/* line options */
 		new_serial_conf.c_lflag = ICANON;
 		/* flush input */
-		tcflush(serialfd, TCIFLUSH);
+		sleep(2);
+		tcflush(serialfd, TCIOFLUSH);
 		tcsetattr(serialfd, TCSANOW, &new_serial_conf);
 
 		/*
@@ -79,7 +81,7 @@ INTERFACE::INTERFACE(char* serial, bool* success)
 			}
 
 		if(*success==false){
-			cout << "**************************Not successfull in reading from buffer" << endl;
+			cout << "**************************Not successful in reading from buffer for motorcontroller" << endl;
 			close_serialfd();
 		}
 	}  
@@ -97,6 +99,7 @@ INTERFACE::INTERFACE(char* serial, bool* success, bool xray)
 	//O_NDELAY flag tells UNIX that this program doesn't care what state the DCD signal line is in - whether the other end of the port is up and running. If you do not specify this flag, your process will be put to sleep until the DCD signal line is the space voltage.
 
 	serialfd= open (serial, O_RDWR | O_NOCTTY | O_NDELAY);
+	cout << endl << "Checking serial for xray tube:" << serial << endl;
 
 	/* exits program if port cant be opened */
 	if (serialfd==-1)
@@ -122,16 +125,18 @@ INTERFACE::INTERFACE(char* serial, bool* success, bool xray)
 		new_serial_conf.c_oflag = 0;
 
 		/* line options */
-		new_serial_conf.c_lflag = ICANON;
+		new_serial_conf.c_lflag = 0; // doesnt work with ICANON
 
 		/* flush input */
-		tcflush(serialfd, TCIFLUSH);
+		sleep(2);
+		tcflush(serialfd, TCIOFLUSH);
 		tcsetattr(serialfd, TCSANOW, &new_serial_conf);
 
 		int a,b;
 		send_command_to_tube((char*)"sr:12 ", 1, a,b);
 		send_command_to_tube((char*)"sr:12 ", 1, a,b);
 		if(a==-9999){
+			cout << "**************************Not successful in reading from buffer for Xray Tube" << endl;
 			close_serialfd();
 			*success = false;
 		}
@@ -152,6 +157,7 @@ INTERFACE::INTERFACE(bool fw, char* serial, bool* success)
 	//O_NDELAY flag tells UNIX that this program doesn't care what state the DCD signal line is in - whether the other end of the port is up and running. If you do not specify this flag, your process will be put to sleep until the DCD signal line is the space voltage.
 
 	serialfd= open (serial, O_RDWR | O_NOCTTY | O_NDELAY);
+	cout << endl << "Checking serial for filter wheel:" << serial << endl;
 
 	/* exits program if port cant be opened */
 	if (serialfd==-1)
@@ -180,13 +186,14 @@ INTERFACE::INTERFACE(bool fw, char* serial, bool* success)
 		new_serial_conf.c_lflag = 0;//ICANON;
 
 		/* flush input */
-		tcflush(serialfd, TCIFLUSH);
+		sleep(2);
+		tcflush(serialfd, TCIOFLUSH);
 		tcsetattr(serialfd, TCSANOW, &new_serial_conf);
 
 		*success = true;
 
 		if(*success==false){
-			cout << "**************************Not successfull in reading from buffer for Filter wheel" << endl;
+			cout << "**************************Not successful in reading from buffer for Filter wheel" << endl;
 			close_serialfd();
 		}
 	}
@@ -270,7 +277,7 @@ char* INTERFACE::send_command(char* c, int rb)
 					cout<<"error (attempt number10) sending the command "<<command<<" to port"<<serial<<" trying again"<<endl;
 			}
 			if(attempt>10)
-				cout<<"succesful in sending the command,"<<command<<" to port"<<serial<<endl;
+				cout<<"successful in sending the command,"<<command<<" to port"<<serial<<" after 10+ times" << endl;
 
 
 
