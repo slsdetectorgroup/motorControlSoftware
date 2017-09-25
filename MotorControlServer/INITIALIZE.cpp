@@ -596,7 +596,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 		bool used;
 		while(!success){
 			usbNum++;
-			if(usbNum >=255) break;
+			if(usbNum >=10) break;
 			serial[11]=usbNum+48;
 			used=false;
 			for(int i=0;i<NUMBER_OF_CONTROLLERS;i++)
@@ -604,19 +604,57 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 					used=true;
 					break;
 				}
-			if(!used){
-				TubeInterface = new INTERFACE(serial , &success, true);
-				if(success){
-					xrayStatus=0;
-					XrayTube = new XRAY(TubeInterface);
-					strcpy(mess, "Serial Port and the XRAY class has been created successfully");
-					return 0;
+			if(!used) {
+				if (TubeInterface==NULL){
+					TubeInterface = new INTERFACE(serial , &success, true);
+					if(success){
+						xrayStatus=0;
+						XrayTube = new XRAY(TubeInterface);
+#ifdef XRAYBOX
+						strcpy(mess, "Serial Port to the xray tube has been created successfully");
+						return 0;
+#else
+						success = false;
+#endif
+					}
+				}
+				else if(!(strcmp(TubeInterface->getSerial(),serial))){
+					used=true;
 				}
 			}
+#ifdef VACUUMBOX
+			if(!used) {
+				if (PressureInterface==NULL){
+					PressureInterface = new INTERFACE(serial, true, &success);
+					if(success){
+						Pressure = new PRESSURE(PressureInterface);
+						strcpy(mess, "Serial Ports to the xray tube and pressure monitor has been created successfully");
+						return 0;
+					}
+				}
+			}
+#endif
 		}
-		xrayStatus=-1;
-		TubeInterface = NULL;
-		strcpy(mess, "ERROR: Unable to create serial port for X-Ray Tube or the tube is switched off.");
+
+		if (xrayStatus) {
+			strcpy(mess, "ERROR: Unable to create serial port for X-Ray Tube or the tube is switched off.");
+			xrayStatus=-1;
+			TubeInterface = NULL;
+#ifdef VACUUMBOX
+			PressureInterface = NULL;
+#endif
+			return -1;
+		}
+
+#ifdef VACUUMBOX
+		if (PressureInterface==NULL) {
+			strcpy(mess, "ERROR: Created serial port for X-Ray Tube but could not create serial port for pressure monitoring.");
+			PressureInterface = NULL;
+			return -1;
+		}
+#endif
+
+		//should not reach here
 		return -1;
 	}
 

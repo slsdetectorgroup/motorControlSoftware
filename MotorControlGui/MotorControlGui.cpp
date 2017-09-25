@@ -1841,7 +1841,7 @@ int  MotorControlGui::UpdateXrayStatus()
 		if((xrayStatus==-9)||(xrayStatus==-1))
 		{
 			strcpy(message,MotorWidget::SendCommand(2,"gui createxrayport "));
-			if(strstr (message,"ERROR")!=NULL)
+			if(strstr (message,"ERROR: Unable")!=NULL)
 			{
 				strcat(message,"\nSwitch it on/Fix it to enable its GUI");
 				MotorWidget::ErrorMessage(message);
@@ -1849,6 +1849,13 @@ int  MotorControlGui::UpdateXrayStatus()
 				xrayGroup->setChecked(false);
 				return 0;
 			}
+#ifdef VACUUMBOX
+			if(strstr (message,"ERROR: Created")!=NULL)
+			{
+				strcat(message,"\nCould not create port for pressure monitoring.");
+				MotorWidget::ErrorMessage(message);
+			}
+#endif
 		}
 
 		//--- for standby/switched off-----
