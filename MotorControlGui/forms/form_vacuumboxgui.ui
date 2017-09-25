@@ -314,7 +314,7 @@
      <enum>QTabWidget::Rounded</enum>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <property name="elideMode">
      <enum>Qt::ElideLeft</enum>
@@ -948,7 +948,7 @@
       <widget class="QLabel" name="lblPressure">
        <property name="minimumSize">
         <size>
-         <width>95</width>
+         <width>100</width>
          <height>0</height>
         </size>
        </property>
@@ -1078,7 +1078,7 @@
         <number>32767</number>
        </property>
        <property name="frame">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
