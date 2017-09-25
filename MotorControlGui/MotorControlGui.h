@@ -9,6 +9,8 @@
 
 #ifdef LASERBOX
 #include "ui_form_laserboxgui.h"
+#elif VACUUMBOX
+#include "ui_form_vacuumboxgui.h"
 #else
 #include "ui_form_motorcontrolgui.h"
 #endif
@@ -27,10 +29,12 @@ using namespace std;
  *@short Uses the main form used and defines the gui objects, 
  signals and slots
 */
-#ifndef LASERBOX
-class MotorControlGui:public QWidget, private Ui::MotorControlGuiObject
-#else
+#ifdef VACUUMBOX
+class MotorControlGui:public QWidget, private Ui::VacuumBoxGuiObject
+#elif LASERBOX
 class MotorControlGui:public QWidget, private Ui::LaserBoxGuiObject
+#else
+class MotorControlGui:public QWidget, private Ui::MotorControlGuiObject
 #endif
 {
   Q_OBJECT

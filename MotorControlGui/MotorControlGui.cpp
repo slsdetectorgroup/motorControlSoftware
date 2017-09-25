@@ -513,7 +513,13 @@ void MotorControlGui::LayoutWindow()
 	//update xray tube status
 	xrayGroup->setChecked(true);
 
-	setWindowTitle(tr("XRay Detector - Motor Movements"));
+#ifndef VACUUMBOX
+	setWindowTitle(tr("XRay Box Gui - Motor Movements"));
+#else
+	setWindowTitle(tr("Vacuum Box Gui - Motor Movements"));
+
+	pressureDisplay->setText("Testing values");
+#endif
 #else
 	int fwsize = (int)this->fwlist.size();//, mWidth=0,mHeight=0;
 
@@ -580,7 +586,7 @@ void MotorControlGui::LayoutWindow()
 
 	//methods
 	Initialization();
-	setWindowTitle(tr("Laser Detector - Motor Movements"));
+	setWindowTitle(tr("Laser Box Gui - Motor Movements"));
 #endif
 }
 

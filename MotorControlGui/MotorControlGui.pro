@@ -78,7 +78,11 @@ HEADERS		+= FwheelWidget.h
 SOURCES		+= FwheelWidget.cpp
 FORMS       += forms/form_fwheelwidget.ui  \
 			   forms/form_laserboxgui.ui
-}else{
+}
+contains(TYPE_FLAG, VACUUMBOX){
+FORMS       += forms/form_vacuumboxgui.ui
+}
+else{
 FORMS       += forms/form_motorcontrolgui.ui
 }
 
