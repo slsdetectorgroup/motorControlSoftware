@@ -2768,6 +2768,10 @@ INITIALIZE::~INITIALIZE()
 #ifndef LASERBOX
 	if(TubeInterface!=NULL)
 		TubeInterface->close_serialfd();
+#ifdef VACUUMBOX
+	if(PressureInterface!=NULL)
+		PressureInterface->close_serialfd();
+#endif
 #endif
 
 #endif
@@ -2787,6 +2791,10 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 #ifndef LASERBOX
 	XrayTube = NULL;
 	TubeInterface=NULL;
+#ifdef VACUUMBOX
+	Pressure = NULL;
+	PressureInterface = NULL;
+#endif
 #endif
 
 	configFileName = fName;
@@ -3346,9 +3354,8 @@ void INITIALIZE::init(int nArg, char *args[])
 					INTERFACE::NumInterfaces++;
 #ifndef LASERBOX
 				if((!success)&&(TubeInterface==NULL)){
-					bool tubeSuccess=false;
-					TubeInterface = new INTERFACE(serial , &tubeSuccess, true);
-					if(tubeSuccess){
+					TubeInterface = new INTERFACE(serial , &success, true);
+					if(success){
 						xrayStatus=0;
 						XrayTube = new XRAY(TubeInterface);
 					}
@@ -3357,6 +3364,18 @@ void INITIALIZE::init(int nArg, char *args[])
 						TubeInterface = NULL;
 					}
 				}
+#ifdef VACUUMBOX
+				if((!success)&&(PressureInterface==NULL)){
+					PressureInterface = new INTERFACE(serial, true, &success);
+					if(success){
+						Pressure = new PRESSURE(PressureInterface);
+					}
+					else{
+						Pressure = NULL;
+						PressureInterface = NULL;
+					}
+				}
+#endif
 #endif
 			}
 

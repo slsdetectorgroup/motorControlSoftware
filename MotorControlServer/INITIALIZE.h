@@ -15,6 +15,9 @@
 #else
 #include "SLIT.h"
 #include "XRAY.h"
+#ifdef VACUUMBOX
+#include "PRESSURE.h"
+#endif
 #endif
 
 #include <vector>
@@ -144,9 +147,19 @@ class INITIALIZE
    */
   INTERFACE* TubeInterface;
 
+  /**pointer to pressure serial object for vacuumbox
+   */
+  INTERFACE* PressureInterface;
+
   /**xray class object
    */
   XRAY* XrayTube;
+
+#ifdef VACUUMBOX
+  /** pressure object
+   */
+  PRESSURE* Pressure;
+#endif
 
  /**a slit pointer
    */

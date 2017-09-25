@@ -145,6 +145,70 @@ INTERFACE::INTERFACE(char* serial, bool* success, bool xray)
 	}
 
 }
+
+#ifdef VACUUMBOX
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+INTERFACE::INTERFACE(char* serial,bool pressure, bool* success)
+{
+	*success = false;
+
+	/* serial port is copied to serial*/
+	strcpy(this->serial,serial);
+
+	serialfd= open (serial, O_RDWR | O_NOCTTY | O_NDELAY);
+	cout << endl << "Checking serial for pressure:" << serial << endl;
+
+	/* exits program if port cant be opened */
+	if (serialfd==-1)
+	{
+		cout<<"ERROR: Unable to open port "<<serial<<" for pressure, check permissions to use it\n";
+		//exit(-1);
+	}
+	else
+	{
+		/* control options */
+		//B9600	9600 baud
+		//CS8	8 data bits
+		//CSTOPB	2 stop bits (1 otherwise)
+		//CLOCAL	Local line - do not change "owner" of port
+		//CREAD	Enable receiver
+		new_serial_conf.c_cflag = B9600 | CS8 | CLOCAL | CREAD ;
+
+		/* input options */
+		//IGNPAR	Ignore parity errors
+		new_serial_conf.c_iflag = IGNPAR;
+
+		/* output options */
+		new_serial_conf.c_oflag = 0;
+
+		/* line options */
+		new_serial_conf.c_lflag = 0; // doesnt work with ICANON
+
+		/* flush input */
+		sleep(2);
+		tcflush(serialfd, TCIOFLUSH);
+		tcsetattr(serialfd, TCSANOW, &new_serial_conf);
+
+		/*
+		int a,b;
+		send_command_to_pressure((char*)"sr:12 ");
+		if(a==-9999){
+			cout << "**************************Not successful in reading from buffer for pressure" << endl;
+			close_serialfd();
+			*success = false;
+		}
+		else
+			*success = true;
+
+		*/
+	}
+
+}
+
+
+#endif
 #else
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -449,6 +513,33 @@ char* INTERFACE::send_command_to_tube(char* c, int rb, int &value, int &value2)
 }
 
 
+#ifdef VACUUMBOX
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+char* INTERFACE::send_command_to_pressure(char* c)
+{
+	char buffer[255]="", command[200]="";
+	char* p = buffer;
+
+	strcpy(command,c);
+#ifdef VERBOSE_MOTOR
+	cout<<"Sending command:*"<<command<<"*"<<;
+#endif
+	strcat(command,"\r");
+
+#ifdef VERBOSE_MOTOR
+	cout<<" to port "<<serial<<endl;
+#endif
+
+	if (write (serialfd,command,strlen(command))==-1)
+		cout<<"error sending the command \n";
+
+		return p;
+}
+
+
+#endif
+
 #else
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -473,7 +564,6 @@ char* INTERFACE::send_command_to_fw(char* c, int rb)
 
 		return p;
 }
-
 
 #endif
 //-------------------------------------------------------------------------------------------------------------------------------------------------
