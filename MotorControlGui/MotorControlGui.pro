@@ -80,7 +80,10 @@ FORMS       += forms/form_fwheelwidget.ui  \
 			   forms/form_laserboxgui.ui
 }
 contains(TYPE_FLAG, VACUUMBOX){
-FORMS       += forms/form_vacuumboxgui.ui
+HEADERS		+= PGaugeWidget.h
+SOURCES		+= PGaugeWidget.cpp
+FORMS       += forms/form_pgaugewidget.ui  \
+			   forms/form_vacuumboxgui.ui
 }
 else{
 FORMS       += forms/form_motorcontrolgui.ui

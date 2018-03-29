@@ -604,6 +604,11 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 					used=true;
 					break;
 				}
+			// no need to check filter wheels as this command is not for laser box
+#ifdef VACUUMBOX
+			if(!(strcmp(PressureInterface->getSerial(),serial)))
+			    used=true;
+#endif
 			if(!used) {
 				if (TubeInterface==NULL){
 					TubeInterface = new INTERFACE(serial , &success, true);
@@ -613,8 +618,6 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 #ifdef XRAYBOX
 						strcpy(mess, "Serial Port to the xray tube has been created successfully");
 						return 0;
-#else
-						success = false;
 #endif
 					}
 				}
@@ -622,42 +625,85 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 					used=true;
 				}
 			}
-#ifdef VACUUMBOX
-			if(!used) {
-				if (PressureInterface==NULL){
-					PressureInterface = new INTERFACE(serial, true, &success);
-					if(success){
-						Pressure = new PRESSURE(PressureInterface);
-						strcpy(mess, "Serial Ports to the xray tube and pressure monitor has been created successfully");
-						return 0;
-					}
-				}
-			}
-#endif
 		}
 
 		if (xrayStatus) {
 			strcpy(mess, "ERROR: Unable to create serial port for X-Ray Tube or the tube is switched off.");
 			xrayStatus=-1;
 			TubeInterface = NULL;
-#ifdef VACUUMBOX
-			PressureInterface = NULL;
-#endif
 			return -1;
 		}
-
-#ifdef VACUUMBOX
-		if (PressureInterface==NULL) {
-			strcpy(mess, "ERROR: Created serial port for X-Ray Tube but could not create serial port for pressure monitoring.");
-			PressureInterface = NULL;
-			return -1;
-		}
-#endif
 
 		//should not reach here
 		return -1;
 	}
 
+
+#ifdef VACUUMBOX
+    // --- if command is pressure------------------creates pgauge if doesnt exist, gets pressure-------------------------
+    else if(strcasecmp(args[0],"pressure")==0)
+    {
+
+        // if number of parameters are wrong
+        if(argc!=1)
+        {
+            strcpy(mess, "ERROR: Required number of parameters: 1");
+            return -1;
+        }
+        if(PressureInterface == NULL) {
+
+            bool success = false;
+            //check through all the usb devices connected
+            char serial[200]="/dev/ttyUSBX";
+            bool used;
+            for(int usbNum=0;usbNum<10;usbNum++) {
+                serial[11]=usbNum+48;
+                used=false;
+                for(int i=0;i<NUMBER_OF_CONTROLLERS;i++) {
+                    if(!(strcmp(Interface[i]->getSerial(),serial))){
+                        used=true;
+                        break;
+                    }
+                }
+                // no need to check filter wheels as this command is not for laser box
+                if((TubeInterface != NULL) && (!(strcmp(TubeInterface->getSerial(),serial))))
+                    used=true;
+                if(!used) {
+                    PressureInterface = new INTERFACE(serial, true, &success);
+                    if(success){
+                        Pgauge = new PGAUGE(PressureInterface);
+                        printf("Serial Port to the Pressure Gauge Controller has been created successfully\n");
+                    }
+                }
+            }
+        }
+
+        if (PressureInterface == NULL) {
+            strcpy(mess, "ERROR: Unable to create Pressure Gauge Controller or the tube is switched off.");
+            Pgauge = NULL;
+            PressureInterface = NULL;
+            return -1;
+        }
+
+        string status1="";double value1=-1;string status2="";double value2=-1;
+        int ret = 0;
+        //retries
+        for (int i = 0; i < 3; i ++) {
+            ret = Pgauge->getPressure(status1,value1,status2,value2);
+            if (ret)
+                break;
+        }
+
+        if (!ret) {
+            strcpy(mess, "ERROR: Could not get pressure\n");
+            return -1;
+        }
+
+        sprintf(mess,"Gauge 1 [Status: %s, Pressure: %e], Gauge 2 [Status: %s, Pressure: %e]\n",
+                status1.c_str(), value1, status2.c_str(), value2);
+        return 0;
+    }
+#endif
 
 	// --- if command is geterr-----------------------------------------------
 	else if(strcasecmp(args[0],"geterr")==0)
@@ -2830,7 +2876,7 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 	XrayTube = NULL;
 	TubeInterface=NULL;
 #ifdef VACUUMBOX
-	Pressure = NULL;
+	Pgauge = NULL;
 	PressureInterface = NULL;
 #endif
 #endif
@@ -3073,15 +3119,20 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 	cout<<"Number of filter wheels:"<<FWHEEL::NumFwheels<<endl;
 	cout<<"Number of refernce points:"<<NUMBER_OF_REFPOINTS<<endl;
 #endif
+	cout<<endl<<"Motors:"<<endl;
+	cout<<"======="<<endl;
 	for(int i=0;i<MOTOR::NumMotors;i++)
 		Motor[i]->print();
 	cout<<endl;
+    cout<<endl<<"Controllers:"<<endl;
+    cout<<"============"<<endl;
 	for(int i=0;i<NUMBER_OF_CONTROLLERS;i++)
 	{
 		cout<<"Name : "<<Controller[i][0]<<endl;
 		cout<<"Serial Number : "<<Controller[i][1]<<endl;
 		cout<<"Interface : "<<ContInterface[i][1]<<endl<<endl;
 	}
+	cout<<endl;
 #ifndef LASERBOX
 	  //Slit->print();
 	//to put a default speed to all the controllers
@@ -3091,10 +3142,12 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 	for(int k=0;k<NUMBER_OF_CONTROLLERS;k++)
 		Interface[k]->send_command(changeVel,0);
 #else
-	cout<<endl;
+	cout<<endl<<"Filter Wheels:"<<endl;
+	cout<<"=============="<<endl;
 	for(int i=0;i<FWHEEL::NumFwheels;i++)
 		Fwheel[i]->print();
-	cout<<endl;
+    cout<<endl<<"Reference Points:"<<endl;
+    cout<<"================="<<endl;
 	for(int i=0;i<NUMBER_OF_REFPOINTS;i++)
 	{
 		cout<<"Name \t\t: "<<ReferencePoints[i][0]<<endl;
@@ -3102,7 +3155,20 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 		cout<<"Det y position\t: "<<ReferencePoints[i][2]<<endl;
 		cout<<"Det z position\t: "<<ReferencePoints[i][3]<<endl<<endl;
 	}
-	cout<<endl;
+#endif
+#ifndef LASERBOX
+	if (!xrayStatus) {
+	    cout<<endl<<"X-Ray Tube:"<<endl;
+	    cout<<"==========="<<endl;
+	    XrayTube->print();
+	}
+#ifdef VACUUMBOX
+	if (PressureInterface != NULL) {
+        cout<<endl<<"Pressure Gauge Controller:"<<endl;
+        cout<<"=========================="<<endl;
+	    Pgauge->print();
+	}
+#endif
 #endif
 
 
@@ -3387,29 +3453,32 @@ void INITIALIZE::init(int nArg, char *args[])
 
 				// for eg. Interface[0] will have serial as "/dev/ttyUSBX"
 				serial[11]=usbNum+48;
-				Interface[INTERFACE::NumInterfaces]= new INTERFACE(serial,&success);
+				cout<<endl<<endl<<"******* " << serial << "******* " <<endl;
+
+				Interface[INTERFACE::NumMotorcontroller_Interfaces]= new INTERFACE(serial,&success);
 				if(success)
-					INTERFACE::NumInterfaces++;
+					INTERFACE::NumMotorcontroller_Interfaces++;
 #ifndef LASERBOX
-				if((!success)&&(TubeInterface==NULL)){
-					TubeInterface = new INTERFACE(serial , &success, true);
-					if(success){
-						xrayStatus=0;
-						XrayTube = new XRAY(TubeInterface);
-					}
-					else{
-						xrayStatus=-1;
-						TubeInterface = NULL;
-					}
-				}
+               if((!success)&&(TubeInterface==NULL)){
+                    TubeInterface = new INTERFACE(serial , &success, true);
+                    if(success){
+                        xrayStatus=0;
+                        XrayTube = new XRAY(TubeInterface);
+                    }
+                    else{
+                        xrayStatus=-1;
+                        TubeInterface = NULL;
+                    }
+                }
+
 #ifdef VACUUMBOX
 				if((!success)&&(PressureInterface==NULL)){
 					PressureInterface = new INTERFACE(serial, true, &success);
 					if(success){
-						Pressure = new PRESSURE(PressureInterface);
+						Pgauge = new PGAUGE(PressureInterface);
 					}
 					else{
-						Pressure = NULL;
+					    Pgauge = NULL;
 						PressureInterface = NULL;
 					}
 				}
@@ -3659,7 +3728,7 @@ void INITIALIZE::getContInterface()
 #endif
 
 	// send getserialno commands to each Interface port, repeat this for each Interface port
-	for(int k=0;k<INTERFACE::NumInterfaces;k++)
+	for(int k=0;k<INTERFACE::NumMotorcontroller_Interfaces;k++)
 	{
 		if(contFound==NUMBER_OF_CONTROLLERS) break;
 		strcpy(buffer,Interface[k]->send_command((char*)"getserialno ",1));

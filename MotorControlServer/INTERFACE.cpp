@@ -9,19 +9,21 @@
 #include <cstring>
 #include <cstdlib> //exit
 #include <unistd.h> //usleep in raspberrypi
+#include <stdio.h>
 using namespace std;
 
 
-	int INTERFACE::NumInterfaces(0);
+	int INTERFACE::NumMotorcontroller_Interfaces(0);
 #ifdef LASERBOX
 	int INTERFACE::NumFW_Interfaces(0);
 #endif
+
 
 INTERFACE::INTERFACE(char* serial, bool* success)
 {
 	/* serial port is copied to serial*/
 	strcpy(this->serial,serial);
-	cout << endl << "Checking serial for motorcontroller:" << serial << endl;
+	cout << endl << "Motorcontroller, checking:" << serial << endl;
 
 
 	serialfd= open (serial, O_RDWR | O_NOCTTY | O_NDELAY);
@@ -81,9 +83,10 @@ INTERFACE::INTERFACE(char* serial, bool* success)
 			}
 
 		if(*success==false){
-			cout << "**************************Not successful in reading from buffer for motorcontroller" << endl;
+			cout << "Fail" << endl;
 			close_serialfd();
-		}
+		}else
+		    cout << "Success" << endl;
 	}  
 }
 
@@ -99,7 +102,7 @@ INTERFACE::INTERFACE(char* serial, bool* success, bool xray)
 	//O_NDELAY flag tells UNIX that this program doesn't care what state the DCD signal line is in - whether the other end of the port is up and running. If you do not specify this flag, your process will be put to sleep until the DCD signal line is the space voltage.
 
 	serialfd= open (serial, O_RDWR | O_NOCTTY | O_NDELAY);
-	cout << endl << "Checking serial for xray tube:" << serial << endl;
+	cout << endl << "Xray tube, checking:" << serial << endl;
 
 	/* exits program if port cant be opened */
 	if (serialfd==-1)
@@ -136,12 +139,14 @@ INTERFACE::INTERFACE(char* serial, bool* success, bool xray)
 		send_command_to_tube((char*)"sr:12 ", 1, a,b);
 		send_command_to_tube((char*)"sr:12 ", 1, a,b);
 		if(a==-9999){
-			cout << "**************************Not successful in reading from buffer for Xray Tube" << endl;
-			close_serialfd();
+			cout << "Fail" << endl;
 			*success = false;
+			close_serialfd();
 		}
-		else
+		else {
 			*success = true;
+			cout << "Success" << endl;
+		}
 	}
 
 }
@@ -158,7 +163,7 @@ INTERFACE::INTERFACE(char* serial,bool pressure, bool* success)
 	strcpy(this->serial,serial);
 
 	serialfd= open (serial, O_RDWR | O_NOCTTY | O_NDELAY);
-	cout << endl << "Checking serial for pressure:" << serial << endl;
+	cout << endl << "Pressure, checking:" << serial << endl;
 
 	/* exits program if port cant be opened */
 	if (serialfd==-1)
@@ -191,18 +196,13 @@ INTERFACE::INTERFACE(char* serial,bool pressure, bool* success)
 		tcflush(serialfd, TCIOFLUSH);
 		tcsetattr(serialfd, TCSANOW, &new_serial_conf);
 
-		/*
-		int a,b;
-		send_command_to_pressure((char*)"sr:12 ");
-		if(a==-9999){
-			cout << "**************************Not successful in reading from buffer for pressure" << endl;
-			close_serialfd();
-			*success = false;
-		}
-		else
-			*success = true;
 
-		*/
+		*success = checkPressureGaugePort();
+        if(*success==false){
+            cout << "Fail" << endl;
+            close_serialfd();
+        }else
+            cout << "Success" << endl;
 	}
 
 }
@@ -221,7 +221,7 @@ INTERFACE::INTERFACE(bool fw, char* serial, bool* success)
 	//O_NDELAY flag tells UNIX that this program doesn't care what state the DCD signal line is in - whether the other end of the port is up and running. If you do not specify this flag, your process will be put to sleep until the DCD signal line is the space voltage.
 
 	serialfd= open (serial, O_RDWR | O_NOCTTY | O_NDELAY);
-	cout << endl << "Checking serial for filter wheel:" << serial << endl;
+	cout << endl << "Filter wheel, checking:" << serial << endl;
 
 	/* exits program if port cant be opened */
 	if (serialfd==-1)
@@ -257,9 +257,10 @@ INTERFACE::INTERFACE(bool fw, char* serial, bool* success)
 		*success = true;
 
 		if(*success==false){
-			cout << "**************************Not successful in reading from buffer for Filter wheel" << endl;
+			cout << "Fail" << endl;
 			close_serialfd();
-		}
+		}else
+            cout << "Success" << endl;
 	}
 
 }
@@ -286,7 +287,9 @@ void INTERFACE::print()
 	cout<<"\nPort:"<<serial<<", Serialfd:"<<serialfd<<endl;
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 char* INTERFACE::send_command(char* c, int rb)  
 {
@@ -435,9 +438,9 @@ char* INTERFACE::send_command_to_tube(char* c, int rb, int &value, int &value2)
 
 	strcpy(command,c);
 
-	//#ifdef VERBOSE_MOTOR
-	cout<<"Sending command:"<<command<<endl;
-	//#endif
+#ifdef VERBOSE_MOTOR
+	cout<<"Tube Sending command:"<<command<<endl;
+#endif
 
 	if (write (serialfd,command,strlen(command))==-1)
 		cout<<"error sending the command \n";
@@ -513,28 +516,108 @@ char* INTERFACE::send_command_to_tube(char* c, int rb, int &value, int &value2)
 }
 
 
+
+
 #ifdef VACUUMBOX
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-char* INTERFACE::send_command_to_pressure(char* c)
+
+bool INTERFACE::checkPressureGaugePort() {
+
+    char crapstring[10]="c\r\n";
+    const int size = 255;
+    char modelcommand[10]="ayt\r\n";
+    char modelstring[10]="TPG36";
+    char buffer[size];
+
+    // was messed up as we were sending many messages thinking it is a motor or an xraytube
+    // reset it to normal by sending crap and reading the negative acknowledge
+    send_command_to_pressure(crapstring, strlen(crapstring), false, false);
+    read_from_pressure(crapstring, strlen(crapstring));
+
+    memset(buffer, 0, size);
+    strncpy(buffer, modelcommand, strlen(modelcommand));
+    if(!send_command_to_pressure(buffer, size))
+        return false;
+    if (strlen(buffer) < strlen(modelstring)) // could be fail due to max_retries
+          return false;
+    if (strncmp(buffer, modelstring, strlen(modelstring))) {
+        cout << serial << " is not Pressure Gauge Controller" << endl << endl;
+        return false;
+    }
+
+    return true;
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+int INTERFACE::read_from_pressure(char* c, int size) {
+    const int max_retries = 10;
+    const int usleep_time = 200000; // 100ms
+    int ret = -1;
+
+    for (int retry = 0; retry < max_retries; ++retry) {
+
+        usleep(usleep_time);
+        memset(c, 0, size);
+
+        ret = read (serialfd, c, size);
+        if (ret < 1)
+            cout << "Error reading back. Attempt #" << retry << " of " <<
+            max_retries << ". Received " << ret << " bytes." << endl;
+        else
+            break;
+    }
+    return ret;
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+bool INTERFACE::send_command_to_pressure(char* c, const int size, bool rb, bool enq)
 {
-	char buffer[255]="", command[200]="";
-	char* p = buffer;
+    char ackstring[10]="\x6\r\n"; //\x6\xd\xa
+    char enqstring[10]="\x5";
 
-	strcpy(command,c);
-#ifdef VERBOSE_MOTOR
-	cout<<"Sending command:*"<<command<<"*"<<;
-#endif
-	strcat(command,"\r");
+    // send command
+    cout << "Pressure, sending command (size:" << strlen(c) << ") "
+            "[" << c << "]" << endl;
+    if (write(serialfd, c, strlen(c)) == -1) {
+        cout << "Error sending command" << endl;
+        return false;
+    }
 
-#ifdef VERBOSE_MOTOR
-	cout<<" to port "<<serial<<endl;
-#endif
+    // read
+    if (rb) {
+        // read acknowledge
+        if (read_from_pressure(c, size) < strlen(ackstring)) // could be fail due to max_retries
+            return false;
+        if (strncmp(c, ackstring, strlen(ackstring))) {
+            cout << "Error reading acknowledge. Read";
+            for (int i = 0; i < strlen(c); ++i) printf("0x%x ",c[i]);
+            cout << endl;
+            return false;
+        }cout << "Pressure, received ack"<<endl;
 
-	if (write (serialfd,command,strlen(command))==-1)
-		cout<<"error sending the command \n";
+        // send enquiry
+        if (enq) {
+            cout << "Pressure, sending command (size:" << strlen(enqstring) << ") "
+                    "[" << enqstring << "]" << endl;
+            if (write(serialfd, enqstring, strlen(enqstring)) == -1) {
+                cout << "Error sending enquiry command" << endl;
+                return false;
+            }
+        }
 
-		return p;
+        // read output
+        if (read_from_pressure(c, size) < 1)
+            return false;
+    }
+
+    return true;
 }
 
 

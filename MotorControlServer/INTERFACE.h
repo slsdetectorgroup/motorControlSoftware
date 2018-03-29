@@ -32,7 +32,7 @@ class INTERFACE
  */
   INTERFACE(char* serial,bool* success, bool xray);
 #ifdef VACUUMBOX
-  /**Constructor for serial for pressure for vacuum box
+  /**Constructor for serial for pressure gauge for vacuum box
  	Initializes/opens the port according to the parameter.<br>
  	@param serial specifies the port for the interface object.
  	@param pressure a useless variable to differentiate between the 2 constructors
@@ -41,7 +41,7 @@ class INTERFACE
    INTERFACE(char* serial,bool pressure, bool* success);
 #endif
 #else
-  /**Constructor for serial for XRay Tube
+  /**Constructor for serial for filter wheel
  	Initializes/opens the port according to the parameter.<br>
  	In this case the serial passed would always be '/dev/ttyS0'
  	@param fw is a useless variable to differentiate between the 2 constructors
@@ -83,11 +83,29 @@ class INTERFACE
   char* send_command_to_tube(char* c, int rb, int &value, int &value2);
 
 #ifdef VACUUMBOX
+
   /**
-   * Sends the command to the pressure box via the interface
-   * @param c the command to be sent
+   * Sends ayt to the pressure gauge controller to get TPG36 for model
+   * @returns true if serial port is connected to the pressure gauge controller, else false
    */
-  char* send_command_to_pressure(char* c);
+  bool checkPressureGaugePort();
+
+  /**
+   * Read from pressure gauge controller. 5 attempts
+   * @param c buffer to place data read
+   * @param size size of buffer allocated
+   * @returns number of bytes read
+   */
+  int read_from_pressure(char* c, const int size);
+
+  /**
+   * Sends the command to the pressure gauge controller, and read back if required
+   * @param c the command to be sent, also value read placed in this buffer
+   * @param size size of buffer allocated for c
+   * @param rb true if readback required
+   * @param enq true if enquiry needs to be sent after getting acknowledge (not needed only for com)
+   */
+  bool send_command_to_pressure(char* c, const int size, bool rb = true, bool enq = true);
 #endif
 #else
   /**Sends the command to the filter wheel via interface
@@ -105,7 +123,7 @@ class INTERFACE
 
      /**total number of interfaces for the motors
       */
-     static int NumInterfaces;
+     static int NumMotorcontroller_Interfaces;
  private:
 
  /**serial port of the object. For eg. '/dev/ttyUSB0'

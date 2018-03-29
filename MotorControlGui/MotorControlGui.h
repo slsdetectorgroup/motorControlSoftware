@@ -18,6 +18,8 @@
 
 #ifdef LASERBOX
 #include "FwheelWidget.h"
+#elif VACUUMBOX
+#include "PGaugeWidget.h"
 #endif
 
 #include "OptionsWidget.h"
@@ -161,6 +163,10 @@ class MotorControlGui:public QWidget, private Ui::MotorControlGuiObject
   /**list is the list of motors in the config file
    */  
   vector<string> list;
+#ifdef VACUUMBOX
+  /** Pressure Gauge Widget Controller */
+  PGaugeWidget *pGaugeWidget;
+#endif
 
 #ifdef LASERBOX
   /**list is the list of filter wheel motors in the config file

@@ -430,7 +430,12 @@ void MotorControlGui::LayoutWindow()
 		frame2->setLayout(mainLayout);
 	}
 
-
+#ifdef VACUUMBOX
+            pGaugeWidget = new PGaugeWidget(frame1);
+            QVBoxLayout* vboxLayout = new QVBoxLayout(frame1);
+            vboxLayout->addWidget(pGaugeWidget,Qt::AlignCenter);
+            frame1->setLayout(vboxLayout);
+#else
 	//other motor widgets and never include motorWidgets[0] as it is fluorescence by default
 	int frame = 1;
 	mainLayout = new QGridLayout(frame1);
@@ -472,7 +477,7 @@ void MotorControlGui::LayoutWindow()
 		else if(frame == 3) frame3->setLayout(mainLayout);
 		else if(frame == 4) frame4->setLayout(mainLayout);
 	}
-
+#endif
 	//initializing qt widgets
 	displayTime = new QTimer(this);
 	displayActual = new QTimer(this);
@@ -517,8 +522,8 @@ void MotorControlGui::LayoutWindow()
 	setWindowTitle(tr("XRay Box Gui - Motor Movements"));
 #else
 	setWindowTitle(tr("Vacuum Box Gui - Motor Movements"));
-
-	pressureDisplay->setText("Testing values");
+	if(!slits)
+	    tabWidget->hide();
 #endif
 #else
 	int fwsize = (int)this->fwlist.size();//, mWidth=0,mHeight=0;

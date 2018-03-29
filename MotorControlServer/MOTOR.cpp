@@ -111,7 +111,7 @@ INTERFACE* MOTOR::getInterface()
 void MOTOR::print()
 {
   /* prints all the characteristics of the motor object */
-  cout<<"\n\nName of Motor\t:\t"<<Name;
+  cout<<"Name of Motor\t:\t"<<Name;
   cout<<"\nAxis\t\t:\t"<<Axis;
   cout<<"\nController\t:\t"<<Controller;
   cout<<"\nPosition\t:\t"<<Position;

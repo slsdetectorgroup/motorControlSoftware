@@ -19,10 +19,10 @@ doc: $(SRC_CLNT)
 	doxygen doxy.config
 
 
-socketServer: MotorControlServer/MotorControlServer.cpp MotorControlServer/INITIALIZE.cpp MotorControlServer/INTERFACE.cpp MotorControlServer/MOTOR.cpp MotorControlServer/FWHEEL.cpp MotorControlServer/XRAY.cpp MotorControlServer/SLIT.cpp MySocketTCP/MySocketTCP.cpp MotorControlServer/PRESSURE.cpp
+socketServer: MotorControlServer/MotorControlServer.cpp MotorControlServer/INITIALIZE.cpp MotorControlServer/INTERFACE.cpp MotorControlServer/MOTOR.cpp MotorControlServer/FWHEEL.cpp MotorControlServer/XRAY.cpp MotorControlServer/SLIT.cpp MySocketTCP/MySocketTCP.cpp MotorControlServer/PGAUGE.cpp
 	echo '*** compiling server ***'
 	mkdir -p $(DESTDIR) 
-	g++ -o bin/socketServer MotorControlServer/MotorControlServer.cpp MotorControlServer/INITIALIZE.cpp MotorControlServer/INTERFACE.cpp MotorControlServer/MOTOR.cpp MotorControlServer/FWHEEL.cpp MotorControlServer/XRAY.cpp MotorControlServer/SLIT.cpp MySocketTCP/MySocketTCP.cpp  MotorControlServer/PRESSURE.cpp $(SERVER_FLAGS) $(INCLUDES) $(TYPEFL) -lm -lstdc++
+	g++ -o bin/socketServer MotorControlServer/MotorControlServer.cpp MotorControlServer/INITIALIZE.cpp MotorControlServer/INTERFACE.cpp MotorControlServer/MOTOR.cpp MotorControlServer/FWHEEL.cpp MotorControlServer/XRAY.cpp MotorControlServer/SLIT.cpp MySocketTCP/MySocketTCP.cpp  MotorControlServer/PGAUGE.cpp $(SERVER_FLAGS) $(INCLUDES) $(TYPEFL) -lm -lstdc++
 
 
 socketClient: MotorControlClient/main.cpp MotorControlClient/MotorControlClient.cpp MySocketTCP/MySocketTCP.cpp
@@ -31,10 +31,10 @@ socketClient: MotorControlClient/main.cpp MotorControlClient/MotorControlClient.
 	g++ -o bin/socketClient MotorControlClient/main.cpp MotorControlClient/MotorControlClient.cpp MySocketTCP/MySocketTCP.cpp $(CLIENT_FLAGS) $(INCLUDES) $(TYPEFL) -lm -lstdc++
 
 
-localClient: MotorControlClient/main.cpp MotorControlClient/MotorControlClient.cpp MotorControlServer/INITIALIZE.cpp MotorControlServer/INTERFACE.cpp MotorControlServer/MOTOR.cpp MotorControlServer/FWHEEL.cpp MotorControlServer/XRAY.cpp MotorControlServer/SLIT.cpp MySocketTCP/MySocketTCP.cpp MotorControlServer/PRESSURE.cpp
+localClient: MotorControlClient/main.cpp MotorControlClient/MotorControlClient.cpp MotorControlServer/INITIALIZE.cpp MotorControlServer/INTERFACE.cpp MotorControlServer/MOTOR.cpp MotorControlServer/FWHEEL.cpp MotorControlServer/XRAY.cpp MotorControlServer/SLIT.cpp MySocketTCP/MySocketTCP.cpp MotorControlServer/PGAUGE.cpp
 	echo '*** compiling local client ***'
 	mkdir -p $(DESTDIR) 
-	g++ -o 	bin/localClient MotorControlClient/main.cpp MotorControlClient/MotorControlClient.cpp MotorControlServer/INITIALIZE.cpp MotorControlServer/INTERFACE.cpp MotorControlServer/MOTOR.cpp MotorControlServer/FWHEEL.cpp MotorControlServer/XRAY.cpp MotorControlServer/SLIT.cpp MySocketTCP/MySocketTCP.cpp MotorControlServer/PRESSURE.cpp $(LOCAL_FLAGS) $(INCLUDES) $(TYPEFL) -lm -lstdc++
+	g++ -o 	bin/localClient MotorControlClient/main.cpp MotorControlClient/MotorControlClient.cpp MotorControlServer/INITIALIZE.cpp MotorControlServer/INTERFACE.cpp MotorControlServer/MOTOR.cpp MotorControlServer/FWHEEL.cpp MotorControlServer/XRAY.cpp MotorControlServer/SLIT.cpp MySocketTCP/MySocketTCP.cpp MotorControlServer/PGAUGE.cpp $(LOCAL_FLAGS) $(INCLUDES) $(TYPEFL) -lm -lstdc++
 
 gui:
 	cd  $(GUIDIR) && $(MAKE) TYPE_FLAG=$(TYPE_FLAG) DESTDIR=$(DESTDIR)

@@ -208,7 +208,7 @@ void XRAY::getShutters(int &s1,int &s2,int &s3,int &s4)
 void XRAY::print()
 {
   /* prints all the characteristics of the xray object */
-  cout<<"\n\nHigh Voltage\t:\t";if(getHVSwitch()) cout<<"ON"; else cout<<"OFF";
+  cout<<"High Voltage\t:\t";if(getHVSwitch()) cout<<"ON"; else cout<<"OFF";
   cout<<"\nVoltage\t\t:\t"<<getVoltage();
   cout<<"\nCurrent\t\t:\t"<<getCurrent();
   cout<<"\nShutter 1\t:\t";if(getShutter1()) cout<<"ON"; else cout<<"OFF";
