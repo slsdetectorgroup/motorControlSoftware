@@ -8,7 +8,8 @@
 #include <iostream>
 #include <sstream>
 #include <cstring>
-#include<stdio.h>
+#include <stdio.h>
+#include <signal.h>
 using namespace std;
 
 
@@ -22,6 +23,11 @@ int main(int argc, char *argv[])
 #else
 	cout << " This is Vacuum Box Server" << endl;
 #endif
+
+    // if socket crash, ignores SISPIPE, prevents global signal handler
+    // subsequent read/write to socket gives error - must handle locally
+    signal(SIGPIPE, SIG_IGN);
+
 
 	int  retval=OK,ret=0,n;
 	char mess[255],args[255],userName[255],pcName[255],pid[255],currTime[30];

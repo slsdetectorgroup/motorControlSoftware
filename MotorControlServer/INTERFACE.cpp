@@ -21,10 +21,11 @@ using namespace std;
 
 INTERFACE::INTERFACE(char* serial, bool* success)
 {
-	/* serial port is copied to serial*/
+    *success=false;
+
+    /* serial port is copied to serial*/
 	strcpy(this->serial,serial);
 	cout << endl << "Motorcontroller, checking:" << serial << endl;
-
 
 	serialfd= open (serial, O_RDWR | O_NOCTTY | O_NDELAY);
 
@@ -81,13 +82,14 @@ INTERFACE::INTERFACE(char* serial, bool* success)
 				*success = true;
 				break;
 			}
+	}
 
-		if(*success==false){
-			cout << "Fail" << endl;
-			close_serialfd();
-		}else
-		    cout << "Success" << endl;
-	}  
+    if(*success==false){
+        cout << "Fail" << endl;
+        close_serialfd();
+    }else
+        cout << "Success" << endl;
+
 }
 
 
@@ -95,7 +97,9 @@ INTERFACE::INTERFACE(char* serial, bool* success)
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 INTERFACE::INTERFACE(char* serial, bool* success, bool xray)
 {
-	/* serial port is copied to serial*/
+    *success = false;
+
+    /* serial port is copied to serial*/
 	strcpy(this->serial,serial);
 
 	//O_NOCTTY flag tells UNIX that this program doesn't want to be the "controlling terminal" for that port.
@@ -138,16 +142,15 @@ INTERFACE::INTERFACE(char* serial, bool* success, bool xray)
 		int a,b;
 		send_command_to_tube((char*)"sr:12 ", 1, a,b);
 		send_command_to_tube((char*)"sr:12 ", 1, a,b);
-		if(a==-9999){
-			cout << "Fail" << endl;
-			*success = false;
-			close_serialfd();
-		}
-		else {
+		if(a!=-9999)
 			*success = true;
-			cout << "Success" << endl;
-		}
 	}
+
+    if(*success == false){
+        cout << "Fail" << endl;
+        close_serialfd();
+    } else
+        cout << "Success" << endl;
 
 }
 
@@ -198,13 +201,13 @@ INTERFACE::INTERFACE(char* serial,bool pressure, bool* success)
 
 
 		*success = checkPressureGaugePort();
-        if(*success==false){
-            cout << "Fail" << endl;
-            close_serialfd();
-        }else
-            cout << "Success" << endl;
 	}
 
+    if(*success == false){
+        cout << "Fail" << endl;
+        close_serialfd();
+    } else
+        cout << "Success" << endl;
 }
 
 
@@ -214,7 +217,9 @@ INTERFACE::INTERFACE(char* serial,bool pressure, bool* success)
 
 INTERFACE::INTERFACE(bool fw, char* serial, bool* success)
 {
-	/* serial port is copied to serial*/
+    *success = false;
+
+    /* serial port is copied to serial*/
 	strcpy(this->serial,serial);
 
 	//O_NOCTTY flag tells UNIX that this program doesn't want to be the "controlling terminal" for that port.
@@ -255,13 +260,13 @@ INTERFACE::INTERFACE(bool fw, char* serial, bool* success)
 		tcsetattr(serialfd, TCSANOW, &new_serial_conf);
 
 		*success = true;
-
-		if(*success==false){
-			cout << "Fail" << endl;
-			close_serialfd();
-		}else
-            cout << "Success" << endl;
 	}
+
+    if(*success==false){
+        cout << "Fail" << endl;
+        close_serialfd();
+    }else
+        cout << "Success" << endl;
 
 }
 #endif

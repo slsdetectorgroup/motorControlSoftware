@@ -7,6 +7,7 @@ QMAKE_INCDIR_QT 	= 	$(QTDIR)/include/
 QMAKE_LIBS_QT 		= 	-L$(QTDIR)/lib 
 QMAKE_LIBS 			= 	-L$(QTDIR)/lib 
 
+CXXFLAGS			+=  -g
 
 QMAKE_CXXFLAGS_WARN_ON = 	-w 
 QMAKE_CFLAGS_WARN_ON   = 	-w

@@ -764,7 +764,7 @@
     <rect>
      <x>1</x>
      <y>50</y>
-     <width>258</width>
+     <width>259</width>
      <height>32</height>
     </rect>
    </property>
@@ -786,7 +786,7 @@
      <widget class="QSpinBox" name="spinUpdate">
       <property name="maximumSize">
        <size>
-        <width>90</width>
+        <width>65</width>
         <height>16777215</height>
        </size>
       </property>
@@ -794,15 +794,40 @@
        <string> s</string>
       </property>
       <property name="maximum">
-       <number>999</number>
+       <number>9999</number>
       </property>
       <property name="value">
-       <number>5</number>
+       <number>9999</number>
       </property>
      </widget>
     </item>
     <item>
      <widget class="QPushButton" name="pushRefresh">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>30</width>
+        <height>28</height>
+       </size>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushStop">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
         <horstretch>0</horstretch>

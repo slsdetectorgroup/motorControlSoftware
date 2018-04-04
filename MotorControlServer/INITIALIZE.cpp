@@ -619,6 +619,9 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 						strcpy(mess, "Serial Port to the xray tube has been created successfully");
 						return 0;
 #endif
+					}else {
+                        xrayStatus=-1;
+                        TubeInterface = NULL;
 					}
 				}
 				else if(!(strcmp(TubeInterface->getSerial(),serial))){
@@ -673,13 +676,17 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
                     if(success){
                         Pgauge = new PGAUGE(PressureInterface);
                         printf("Serial Port to the Pressure Gauge Controller has been created successfully\n");
+                        break;
+                    }else {
+                        Pgauge = NULL;
+                        PressureInterface = NULL;
                     }
                 }
             }
         }
 
         if (PressureInterface == NULL) {
-            strcpy(mess, "ERROR: Unable to create Pressure Gauge Controller or the tube is switched off.");
+            strcpy(mess, "ERROR: Unable to create Pressure Gauge Controller or the pump is switched off.");
             Pgauge = NULL;
             PressureInterface = NULL;
             return -1;

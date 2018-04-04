@@ -30,9 +30,22 @@ class PGaugeWidget:public QWidget, private Ui::PGaugeWidgetObject
 
   private slots:
 
-  /**gets the position from the server and displays it
+  /**
+   * Stop updating pressure
    */
-  void UpdateValueFromServer();
+  void StopRefresh();
+
+  /**
+   * Refresh pressure
+   */
+  void TimeoutRefresh();
+
+
+  /**gets the position from the server and displays it
+   * @returns 1 for success, 0 for fail
+   */
+  int UpdateValueFromServer();
+
 
 
     private:
@@ -56,6 +69,15 @@ class PGaugeWidget:public QWidget, private Ui::PGaugeWidgetObject
 
   /** refresh icon */
   QIcon* iRefresh;
+
+  /** stop icon */
+  QIcon* iStop;
+
+  /**
+   * Ensure both not calling same function
+   */
+  bool updating;
+
 
 };
 

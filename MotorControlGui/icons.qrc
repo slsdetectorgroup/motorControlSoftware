@@ -4,5 +4,6 @@
         <file>images/plusImage.png</file>
 		<file>images/warning.png</file>
 		<file>images/refresh.png</file>
+		<file>images/stop.png</file>
     </qresource>
 </RCC>

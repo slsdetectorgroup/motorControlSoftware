@@ -37,6 +37,15 @@ MySocketTCP::MySocketTCP(unsigned short int const port_number):portno(DEFAULT_PO
     serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
     serverAddress.sin_port = htons(port_number);
     
+    // reuse port
+    int val=1;
+    if (setsockopt(socketDescriptor,SOL_SOCKET,SO_REUSEADDR,&val,sizeof(int)) == -1) {
+        cerr << "setsockopt" << endl;
+        socketDescriptor=-1;
+        return;
+    }
+
+
     if(bind(socketDescriptor,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
       cerr << "Can not bind socket "<<endl;
     socketDescriptor=-1;
