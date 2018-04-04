@@ -17,23 +17,31 @@ PGaugeWidget::PGaugeWidget(QWidget *parent):QWidget(parent)
 {
 	setupUi(this);
 
-    gauge1box->setTitle("Gauge 1");
-    gauge2box->setTitle("Gauge 2");
-
     normal = pStatusDisplay->palette();
-    red = QPalette();
-    red.setColor(QPalette::Active,QPalette::WindowText,Qt::red);
+    red = new QPalette();
+    red->setColor(QPalette::Text, Qt::red);
+
+    iRefresh = new QIcon(":/icons/images/refresh.png");
+    pushRefresh->setIcon(*iRefresh);
+    connect(pushRefresh,      SIGNAL(clicked()),         this, SLOT(UpdateValueFromServer()));
+
+
+    spinUpdate->setValue(TIMEOUT/1000);
+    timer = new QTimer(this);
+    connect(timer,      SIGNAL(timeout()),              this, SLOT(UpdateValueFromServer()));
+    timer->start(TIMEOUT);
 
     UpdateValueFromServer();
-
-    timer = new QTimer(this);
-    connect(timer,   SIGNAL(timeout()),      this, SLOT(UpdateValueFromServer()));
 }
+
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void PGaugeWidget::UpdateValueFromServer()
 {
+    timer->stop();
+    cout << "Updating Pressure from Server" << endl;
+
     const int size = 255;
     char command[size];
     memset(command, 0, size);
@@ -46,10 +54,10 @@ void PGaugeWidget::UpdateValueFromServer()
     // error
     if (strstr(str, "ERROR:") != NULL) {
         // red
-        pStatusDisplay->setPalette(red);
-        pValueDisplay->setPalette(red);
-        pStatusDisplay2->setPalette(red);
-        pValueDisplay2->setPalette(red);
+        pStatusDisplay->setPalette(*red);
+        pValueDisplay->setPalette(*red);
+        pStatusDisplay2->setPalette(*red);
+        pValueDisplay2->setPalette(*red);
 
         // read error
         if (strstr(str, "ERROR: Could not get pressure") != NULL) {
@@ -68,30 +76,49 @@ void PGaugeWidget::UpdateValueFromServer()
         pValueDisplay->setPalette(normal);
         pStatusDisplay2->setPalette(normal);
         pValueDisplay2->setPalette(normal);
+
+
+        // success
+        char status1[20], status2[20];
+        memset(status1, 0, 20);
+        memset(status2, 0, 20);
+        float value1 = -1, value2 = -1;
+
+        const char delim[3] = ":,";
+        char *token;
+        token = strtok(str, delim);
+        token = strtok(NULL, delim);
+        strcpy(status1, token+1);
+        token = strtok(NULL, delim);
+        token = strtok(NULL, delim);
+        sscanf(token, " %e]", &value1);
+        token = strtok(NULL, delim);
+        token = strtok(NULL, delim);
+        strcpy(status2, token+1);
+        token = strtok(NULL, delim);
+        token = strtok(NULL, delim);
+        sscanf(token, " %e]", &value2);
+
+        printf("Gauge 1 [%s, %e], Gauge 2 [%s, %e]\n",status1, value1, status2, value2);
+
+
+        pStatusDisplay->setText(QString(status1));
+        pValueDisplay->setText(QString::number(value1, 'E', 5) + QString(" mbar"));
+        pStatusDisplay2->setText(QString(status2));
+        pValueDisplay2->setText(QString::number(value2, 'E', 5) + QString(" mbar"));
+
+        if (strstr(status1,"Measurement data okay") == NULL) {
+            pStatusDisplay->setPalette(*red);
+            pValueDisplay->setPalette(*red);
+        }
+        if (strstr(status2,"Measurement data okay") == NULL) {
+            pStatusDisplay2->setPalette(*red);
+            pValueDisplay2->setPalette(*red);
+        }
+
     }
 
-
-    // success
-    char status1[20], status2[20];
-    memset(status1, 0, 20);
-    memset(status2, 0, 20);
-    double value1 = -1, value2 = -1;
-    sscanf(str,"Gauge 1 [Status: %s, Pressure: %e], Gauge 2 [Status: %s, Pressure: %e]\n",
-            status1, &value1, status2, &value2);
-
-    pStatusDisplay->setText(QString(status1));
-    pValueDisplay->setText(QString::number(value1, 'E', 5));
-    pStatusDisplay2->setText(QString(status2));
-    pValueDisplay2->setText(QString::number(value2, 'E', 5));
-
-    if (strstr(status1,"Measurement data okay") == NULL) {
-        pStatusDisplay->setPalette(red);
-        pValueDisplay->setPalette(red);
-    }
-    if (strstr(status2,"Measurement data okay") == NULL) {
-        pStatusDisplay2->setPalette(red);
-        pValueDisplay2->setPalette(red);
-    }
+    timer->start(spinUpdate->value() * 1000);
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

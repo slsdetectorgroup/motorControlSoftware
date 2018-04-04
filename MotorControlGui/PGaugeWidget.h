@@ -34,15 +34,28 @@ class PGaugeWidget:public QWidget, private Ui::PGaugeWidgetObject
    */
   void UpdateValueFromServer();
 
+
     private:
+
+  /**
+   * Connect signals to slots
+   */
+  void Initialization();
+
   /* red palette */
-  QPalette red;
+  QPalette* red;
 
   /** normal palette */
   QPalette normal;
 
   /** timer */
   QTimer* timer;
+
+  /** time interval to udpate */
+  static const int TIMEOUT = 5000;
+
+  /** refresh icon */
+  QIcon* iRefresh;
 
 };
 
