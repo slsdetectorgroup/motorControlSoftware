@@ -370,7 +370,7 @@ void MotorControlGui::LayoutWindow()
 {
 	int size = (int)this->list.size();
 
-	for(int i=1;i<MaxNumMotorWidgets;i++)
+	for(int i=0;i<MaxNumMotorWidgets;i++)
 		motorWidgets[i]=NULL;
 
 #ifndef LASERBOX
@@ -2734,10 +2734,10 @@ int  MotorControlGui::Execute()
 				break;
 
 			//comparing with each widget
-#ifndef LASERBOX
-			for(int k=1;k<MaxNumMotorWidgets;k++) // ignoring fluorescence
-#else
+#ifdef LASERBOX
 			for(int k=0;k<MaxNumMotorWidgets;k++)
+#else
+			for(int k=1;k<MaxNumMotorWidgets;k++)	// ignoring fluorescence
 #endif
 			{
 				if(motorWidgets[k]==NULL) continue;
@@ -2894,9 +2894,13 @@ void MotorControlGui::UpdateGUI()
 	}
 #endif
 
-	for(int i=1;i<MaxNumMotorWidgets;i++)
-		if(motorWidgets[i]!=NULL)
-			motorWidgets[i]->GetPositionFromServer();
+#ifdef LASERBOX
+			for(int k=0;k<MaxNumMotorWidgets;k++)
+#else
+			for(int k=1;k<MaxNumMotorWidgets;k++)	// ignoring fluorescence
+#endif
+		if(motorWidgets[k]!=NULL)
+			motorWidgets[k]->GetPositionFromServer();
 
 #ifndef LASERBOX
 	if(slits)
