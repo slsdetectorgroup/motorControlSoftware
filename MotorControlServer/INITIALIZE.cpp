@@ -2496,11 +2496,10 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 				}
 
 				Motor[i]->moveAbs(atof(args[2]),0,0,0);
-
-
-#ifndef LASERBOX
 				//set position member of motor to the updated position
 				Motor[i]->setPosition(atof(args[2]));
+
+#ifndef LASERBOX
 				//set slit positions and limits in slit class
 				if(slitnum==1)
 					Slit->setX1pos(atof(args[2]));
