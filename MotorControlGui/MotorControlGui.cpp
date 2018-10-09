@@ -2734,7 +2734,11 @@ int  MotorControlGui::Execute()
 				break;
 
 			//comparing with each widget
-			for(int k=1;k<MaxNumMotorWidgets;k++)
+#ifndef LASERBOX
+			for(int k=1;k<MaxNumMotorWidgets;k++) // ignoring fluorescence
+#else
+			for(int k=0;k<MaxNumMotorWidgets;k++)
+#endif
 			{
 				if(motorWidgets[k]==NULL) continue;
 				if(!strcasecmp(motorWidgets[k]->GetName(),motors[i][j].c_str()))
