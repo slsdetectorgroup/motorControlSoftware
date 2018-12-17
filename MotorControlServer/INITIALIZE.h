@@ -229,7 +229,7 @@ class INITIALIZE
   /**max fluorescence values =7 or 8
    */
 #ifdef XRAYBOX
-  static const int maxfluorvalues = 7;
+  static const int maxfluorvalues = 8;
 #else
   static const int maxfluorvalues = 8;
 #endif
