@@ -226,13 +226,10 @@ class INITIALIZE
   static const double fluoroffset = 0;
 #endif
 
-  /**max fluorescence values =7 or 8
+  /**max fluorescence values
    */
-#ifdef XRAYBOX
   static const int maxfluorvalues = 8;
-#else
-  static const int maxfluorvalues = 8;
-#endif
+
 
   /**list of fluorescence names
    */
