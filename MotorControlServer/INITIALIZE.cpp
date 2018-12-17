@@ -424,17 +424,36 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			return -1;
 		}
 
-		if (fluorList[1][0]==fluorList1[1][0])
+		// loop through list 1 if it is the same
+		bool same = true;
+		for (int i = 0; i < maxfluorvalues; ++i) {
+			if (fluorList[i][0] != fluorList1[i][0]) {
+				same = false;
+				break;
+			}
+		}
+		// list 1
+		if (same) {
 			sprintf(mess,"%d",1);
-		else if (fluorList[1][0]==fluorList2[1][0])
-			sprintf(mess,"%d",2);
-		else
-		{
-			strcpy(mess, "ERROR: Fluroescence list have inconsistent values");
-			return -1;
+			return 0;
 		}
 
-		return 0;
+		// loop through list 2 if it is the same
+		same = true;
+		for (int i = 0; i < maxfluorvalues; ++i) {
+			if (fluorList[i][0] != fluorList2[i][0]) {
+				same = false;
+				break;
+			}
+		}
+		if (same) {
+			sprintf(mess,"%d",2);
+			return 0;
+		}
+
+		// not in list 2 either
+		strcpy(mess, "ERROR: Fluroescence list have inconsistent values");
+		return -1;
 	}
 
 	// --- if command is loadflist'----------------
