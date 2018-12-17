@@ -504,14 +504,11 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			if(strcasecmp("Fluorescence",Motor[i]->getName())==0)
 			{
 				newPosition = Motor[i]->getPosition();
-
-				for(int j=0;j<maxfluorvalues;j++)
+				int ipos = round((newPosition - fluoroffset) / fluorwidth);
+				if (ipos >= 0 && ipos < maxfluorvalues)
 				{
-					if(fabs(newPosition-j*fluorwidth) < 0.0000001 )
-					{
-						sprintf(mess,"Fl is %s and value:%f",fluorList[j][0].c_str(),newPosition);
-						return 0;
-					}
+					sprintf(mess,"Fl is %s and value:%f",fluorList[ipos][0].c_str(), newPosition);
+					return 0;
 				}
 
 				sprintf(mess,"ERROR: Fluroescence position %f is out of limits",newPosition);
@@ -543,8 +540,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 				for(int j=0;j<maxfluorvalues;j++)
 					if(strcasecmp(args[1],fluorList[j][0].c_str())==0)
 					{
-
-						newPosition = j*fluorwidth;
+						newPosition = fluoroffset + (j * fluorwidth);
 
 						if(!Motor[i]->canMotorMove(newPosition))
 						{
@@ -3245,7 +3241,7 @@ void INITIALIZE::initFluorNames(string sLine, int &fIndex)
 	//if fIndex is >=14, error
 	else if(fIndex >= (maxfluorvalues*2))
 	{
-		cout<<"ERROR: Only a max of 7 fluorescent values are allowed for either sets\n";
+		cout<<"ERROR: Only a max of " << maxfluorvalues << " fluorescent values are allowed for either sets\n";
 		exit(-1);
 	}
 	//else in the second set

@@ -1532,28 +1532,37 @@ void MotorControlGui::Initialization()
 
 void  MotorControlGui::UpdateEnergyFromServer()
 {
-	char message[200] = "gui pos fluorescence";
-	double pos;
-	char cDisplay[200];
-
-	strcpy(message,MotorWidget::SendCommand(3,message));
+	char message[200] = "gui getfl ";
+	strcpy(message,MotorWidget::SendCommand(2,message));
+	bool error = false;
 	if(strstr (message,"ERROR")!=NULL)
-		MotorWidget::ErrorMessage(message);
-	else
 	{
-		pos = atof(message);
-
-		int found =0;
-		for(int i=0;i<(int)fluorescence.size();i++)
-			//fabs takes the absolute value..and then the difference is taken so that the exact precision can b ignored
-			if(fabs(pos-i*fluorWidth) < 0.0000001 )
-			{
-				sprintf(cDisplay,"%s KeV",fluorescence[i][1].c_str());
-				energyDisplay->setText(QString(cDisplay));
-				fluorName->setCurrentIndex(i);
-				found=1;
-				break;
+		// not an error if out of limits (because fl was moved using moveabs)
+		if(strstr (message," is out of limits")==NULL) {
+			error = true;
+			MotorWidget::ErrorMessage(message);
+		}
+	}
+	// no error
+	if (!error)
+	{
+		bool found = false;
+		char cFluorName[20] = {0};
+		int scannedValues = sscanf(message, "Fl is %s and value", cFluorName);
+		if (scannedValues) {
+			for(int i=0;i<(int)fluorescence.size();i++) {
+				// found string
+				if(strcasecmp(cFluorName, fluorescence[i][0].c_str())==0) {
+					found = true;
+					char cDisplay[200];
+					sprintf(cDisplay,"%s KeV",fluorescence[i][1].c_str());
+					energyDisplay->setText(QString(cDisplay));
+					fluorName->setCurrentIndex(i);
+					break;
+				}
 			}
+		}
+
 		//if its not in the exact range
 		if(!found)
 		{
@@ -1561,7 +1570,6 @@ void  MotorControlGui::UpdateEnergyFromServer()
 			fluorName->setCurrentIndex((int)fluorescence.size());
 			energyDisplay->setText("");
 		}
-
 	}
 
 	update();
@@ -2436,10 +2444,8 @@ void MotorControlGui::MoveFluorescence(int index)
 		sprintf(cDisplay,"%s KeV",fluorescence[index][1].c_str());
 		energyDisplay->setText(QString(cDisplay));
 
-		sprintf(charPos,"%f",index*fluorWidth);
-		sprintf(message,"gui moveabs fluorescence %s ",charPos);
-
-		strcpy(message,MotorWidget::SendCommand(4,message));
+		sprintf(message,"gui movefl %s ", fluorescence[index][0].c_str());
+		strcpy(message,MotorWidget::SendCommand(3,message));
 
 		if(strstr (message,"ERROR")!=NULL)
 			MotorWidget::ErrorMessage(message);

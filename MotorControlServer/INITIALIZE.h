@@ -216,12 +216,14 @@ class INITIALIZE
    */
   string warmupTimeFileName;
 
-  /**fluorwidth  41.95 or 45
+  /**fluorwidth  34 or 45
    */
 #ifdef XRAYBOX
-  static const double fluorwidth = 41.95;
+  static const double fluorwidth = 34;
+  static const double fluoroffset = 0;
 #else
   static const double fluorwidth = 45;
+  static const double fluoroffset = 0;
 #endif
 
   /**max fluorescence values =7 or 8
