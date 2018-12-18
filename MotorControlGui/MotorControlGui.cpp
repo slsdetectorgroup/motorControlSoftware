@@ -1550,8 +1550,10 @@ void  MotorControlGui::UpdateEnergyFromServer()
 #ifdef XRAYBOX
 			// laser
 			if (!strcasecmp(cFluorName, FLUOR_LASERNAME)) {
+				cout << "Fluorescence at laser position" << endl;
 				// disconnect so it doesnt try to move fl to laser again
 				disconnect(checkFluor,SIGNAL(toggled(bool)),this,SLOT(MoveFluortoLaser(bool)));
+				checkFluor->setChecked(true);
 				// disable other fl widgets
 				fluorLabel->setEnabled(false);
 				fluorName->setEnabled(false);
@@ -1580,9 +1582,11 @@ void  MotorControlGui::UpdateEnergyFromServer()
 		//if its not in the exact range
 		if(!found)
 		{
-			fluorName->addItem("None");
+			// this is later removed when one moves it away from none
+			if(fluorName->count()<=(int)fluorescence.size())
+				fluorName->addItem("None");
 			fluorName->setCurrentIndex((int)fluorescence.size());
-			energyDisplay->setText("");
+			energyDisplay->setText("0 KeV");
 		}
 	}
 
@@ -2451,13 +2455,14 @@ void MotorControlGui::MoveFluorescence(int index)
 	//if its not asked to move to 'none'
 	if(QString::compare(fluorName->currentText(),"None"))
 	{
+		// remove this value when one moves away from none
 		if(fluorName->count()>(int)fluorescence.size())
 			fluorName->removeItem((int)fluorescence.size());
 
 		char cDisplay[200],message[200],charPos[200];
 		sprintf(cDisplay,"%s KeV",fluorescence[index][1].c_str());
 		energyDisplay->setText(QString(cDisplay));
-
+		cout << "Moving Fluorescence to " << fluorescence[index][0] << endl;
 		sprintf(message,"gui movefl %s ", fluorescence[index][0].c_str());
 		strcpy(message,MotorWidget::SendCommand(3,message));
 
@@ -2479,6 +2484,7 @@ void MotorControlGui::MoveFluortoLaser(bool checkFluor)
 		energyDisplay->setEnabled(false);
 
 		// move to laser position
+		cout << "Moving to Laser position" << endl;
 		char message[200] = {0};
 		sprintf(message,"gui movefl %s ", FLUOR_LASERNAME);
 		strcpy(message,MotorWidget::SendCommand(3,message));
@@ -2489,7 +2495,11 @@ void MotorControlGui::MoveFluortoLaser(bool checkFluor)
 		fluorLabel->setEnabled(true);
 		fluorName->setEnabled(true);
 		energyDisplay->setEnabled(true);
-		UpdateEnergyFromServer();
+		// set fluorescence to none (which is later removed when one moves it away from none)
+		if(fluorName->count()<=(int)fluorescence.size())
+			fluorName->addItem("None");
+		fluorName->setCurrentIndex((int)fluorescence.size());
+		energyDisplay->setText("0 KeV");
 	}
 }
 
