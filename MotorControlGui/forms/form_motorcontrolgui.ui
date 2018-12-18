@@ -77,7 +77,7 @@
       <x>23</x>
       <y>20</y>
       <width>279</width>
-      <height>26</height>
+      <height>34</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout">
@@ -90,6 +90,19 @@
      <property name="rightMargin">
       <number>0</number>
      </property>
+     <item>
+      <widget class="QCheckBox" name="checkFluor">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
      <item>
       <widget class="QComboBox" name="fluorLabel">
        <property name="sizePolicy">
@@ -1655,7 +1668,7 @@
        <rect>
         <x>12</x>
         <y>16</y>
-        <width>86</width>
+        <width>92</width>
         <height>162</height>
        </rect>
       </property>
@@ -2144,7 +2157,7 @@ VOLTAGE</string>
      <rect>
       <x>162</x>
       <y>24</y>
-      <width>22</width>
+      <width>24</width>
       <height>122</height>
      </rect>
     </property>
@@ -2184,7 +2197,7 @@ VOLTAGE</string>
      <rect>
       <x>162</x>
       <y>149</y>
-      <width>22</width>
+      <width>24</width>
       <height>54</height>
      </rect>
     </property>

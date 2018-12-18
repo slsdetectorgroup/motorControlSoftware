@@ -13,7 +13,6 @@
 //#include <boost/algorithm/string.hpp>
 using namespace std;
 
-#define MAXFL 8
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1486,7 +1485,9 @@ void MotorControlGui::Initialization()
 	//connect for fluorescense
 	connect(fluorLabel,SIGNAL(currentIndexChanged(int)),this,SLOT(ChangeFluorescenceList(int)));
 	connect(fluorName,SIGNAL(currentIndexChanged(int)),this,SLOT(MoveFluorescence(int)));
-
+#ifdef XRAYBOX
+	connect(checkFluor,SIGNAL(toggled(bool)),this,SLOT(MoveFluortoLaser(bool)));
+#endif
 
 	//xrayGroup Box
 	connect(xrayGroup,SIGNAL(toggled(bool)), this,SLOT(UpdateXrayStatus()));
@@ -1546,17 +1547,34 @@ void  MotorControlGui::UpdateEnergyFromServer()
 		char cFluorName[20] = {0};
 		int scannedValues = sscanf(message, "Fl is %s and value", cFluorName);
 		if (scannedValues) {
-			for(int i=0;i<(int)fluorescence.size();i++) {
-				// found string
-				if(strcasecmp(cFluorName, fluorescence[i][0].c_str())==0) {
-					found = true;
-					char cDisplay[200];
-					sprintf(cDisplay,"%s KeV",fluorescence[i][1].c_str());
-					energyDisplay->setText(QString(cDisplay));
-					fluorName->setCurrentIndex(i);
-					break;
-				}
+#ifdef XRAYBOX
+			// laser
+			if (!strcasecmp(cFluorName, FLUOR_LASERNAME)) {
+				// disconnect so it doesnt try to move fl to laser again
+				disconnect(checkFluor,SIGNAL(toggled(bool)),this,SLOT(MoveFluortoLaser(bool)));
+				// disable other fl widgets
+				fluorLabel->setEnabled(false);
+				fluorName->setEnabled(false);
+				energyDisplay->setEnabled(false);
+				connect(checkFluor,SIGNAL(toggled(bool)),this,SLOT(MoveFluortoLaser(bool)));
 			}
+			// not laser
+			else {
+#endif
+				for(int i=0;i<(int)fluorescence.size();i++) {
+					// found string
+					if(strcasecmp(cFluorName, fluorescence[i][0].c_str())==0) {
+						found = true;
+						char cDisplay[200];
+						sprintf(cDisplay,"%s KeV",fluorescence[i][1].c_str());
+						energyDisplay->setText(QString(cDisplay));
+						fluorName->setCurrentIndex(i);
+						break;
+					}
+				}
+#ifdef XRAYBOX
+			}
+#endif
 		}
 
 		//if its not in the exact range
@@ -2447,6 +2465,32 @@ void MotorControlGui::MoveFluorescence(int index)
 			MotorWidget::ErrorMessage(message);
 	}
 
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+// only for xray box (signal connected)
+void MotorControlGui::MoveFluortoLaser(bool checkFluor)
+{
+	if (checkFluor) {
+		// disable other fl widgets
+		fluorLabel->setEnabled(false);
+		fluorName->setEnabled(false);
+		energyDisplay->setEnabled(false);
+
+		// move to laser position
+		char message[200] = {0};
+		sprintf(message,"gui movefl %s ", FLUOR_LASERNAME);
+		strcpy(message,MotorWidget::SendCommand(3,message));
+
+		if(strstr (message,"ERROR")!=NULL)
+			MotorWidget::ErrorMessage(message);
+	} else {
+		fluorLabel->setEnabled(true);
+		fluorName->setEnabled(true);
+		energyDisplay->setEnabled(true);
+		UpdateEnergyFromServer();
+	}
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

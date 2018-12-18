@@ -25,6 +25,7 @@
 #include "time.h"
 using namespace std;
 
+#define FLUOR_LASERNAME	"laser"
 
 
 /**

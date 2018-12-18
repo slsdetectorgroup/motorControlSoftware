@@ -523,6 +523,15 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			if(strcasecmp("Fluorescence",Motor[i]->getName())==0)
 			{
 				newPosition = Motor[i]->getPosition();
+#ifdef XRAYBOX
+				double laserPosition = fluoroffset + ((maxfluorvalues / 2) * fluorwidth) - (fluorwidth / 2); // to the middle
+				// laser position
+				if(fabs(laserPosition - newPosition) < 0.0001 )
+				{
+					sprintf(mess,"Fl is %s and value:%f", FLUOR_LASERNAME, newPosition);
+					return 0;
+				}
+#endif
 				int ipos = round((newPosition - fluoroffset) / fluorwidth);
 				if (ipos >= 0 && ipos < maxfluorvalues)
 				{
@@ -544,6 +553,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 	else if(strcasecmp(args[0],"movefl")==0)
 	{
 		int found=0;
+		bool fluorNameFound = false;
 		// if number of parameters are wrong
 		if(argc!=2)
 		{
@@ -556,23 +566,39 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			if(strcasecmp("Fluorescence",Motor[i]->getName())==0)
 			{
 				found=1;
+				// loops through to find fluor name
 				for(int j=0;j<maxfluorvalues;j++)
+				{
 					if(strcasecmp(args[1],fluorList[j][0].c_str())==0)
 					{
+						fluorNameFound = true;
 						newPosition = fluoroffset + (j * fluorwidth);
-
-						if(!Motor[i]->canMotorMove(newPosition))
-						{
-							sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[1],Motor[i]->getLowerLimit(),Motor[i]->getUpperLimit());
-							return -1;
-						}
-
-						Motor[i]->moveAbs(newPosition,0,0,0);
-						//set position member of motor to the updated position
-						Motor[i]->setPosition(newPosition);
-						sprintf(mess,"Moved to %s: Fl value:%f",args[1],newPosition);
-						return 0;
 					}
+				}
+#ifdef XRAYBOX
+				// if not in list (check for laser)
+				if (!strcasecmp(FLUOR_LASERNAME, args[1]))
+				{
+					fluorNameFound = true;
+					newPosition = fluoroffset + ((maxfluorvalues / 2) * fluorwidth) - (fluorwidth / 2); // to the middle
+				}
+#endif
+
+				// if fluor name found (or laser)
+				if (fluorNameFound) {
+
+					if(!Motor[i]->canMotorMove(newPosition))
+					{
+						sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[1],Motor[i]->getLowerLimit(),Motor[i]->getUpperLimit());
+						return -1;
+					}
+
+					Motor[i]->moveAbs(newPosition,0,0,0);
+					//set position member of motor to the updated position
+					Motor[i]->setPosition(newPosition);
+					sprintf(mess,"Moved to %s: Fl value:%f",args[1],newPosition);
+					return 0;
+				}
 			}
 		}
 
@@ -581,6 +607,12 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			sprintf(mess,"ERROR: Fluroescence motor does not exist in config file");
 			return -1;
 		}
+		if (!fluorNameFound)
+		{
+			sprintf(mess,"ERROR: %s does not exist in fluorescence list in config file", args[1]);
+			return -1;
+		}
+
 		sprintf(mess,"ERROR: This fluroescence value does not exist in config file");
 		return -1;
 

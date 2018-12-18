@@ -27,6 +27,9 @@
 #include <string>
 using namespace std;
 
+#define MAXFL 8
+#define FLUOR_LASERNAME	"laser"
+
 /**
  *@short Uses the main form used and defines the gui objects, 
  signals and slots
@@ -408,6 +411,13 @@ class MotorControlGui:public QWidget, private Ui::MotorControlGuiObject
      @param index the value of the item selected in combobox
    */  
   void MoveFluorescence(int index);
+
+  /** If true, disables all the fluorescence lists
+   * and moves fluorescence to laser position
+   * if false, enables all fluorescence lists
+   * @param checkFluor true if laser clicked, else false
+   */
+  void MoveFluortoLaser(bool checkFluor);
 
   /**gets the slit width from the server and displays it
    */  
