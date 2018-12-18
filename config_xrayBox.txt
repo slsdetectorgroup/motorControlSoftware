@@ -22,7 +22,8 @@ fluorescence	3 	Fe	6.4		10KW
 fluorescence	4 	Cu	8.0		10KW
 fluorescence	5 	Ge	9.9		10KW
 fluorescence	6 	Mo	17.5		10KW
-fluorescence	7 	Screen	0		10KW
+fluorescence    7 	Screen	0		10KW
+fluorescence    8   Bla     0       10KW
 
 
 fluorescence    1       Cu      8.0            10KW
@@ -32,25 +33,7 @@ fluorescence    4       Ag   	22.1           10KW
 fluorescence    5       In      24.2           10KW
 fluorescence    6       Sn      25.3           10KW
 fluorescence    7       Screen  0              10KW
+fluorescence    8       Bla     0               10KW
 
-
-
-
-#fluorescence    1       Sn      25.3            10KW
-#fluorescence    2       In      24.2            10KW
-#fluorescence    3       Ag      22.1            10KW
-#fluorescence    4       Empty   0.0             10KW
-#fluorescence    5       Mo      17.5            10KW
-#fluorescence    6       Ge      9.9             10KW
-#fluorescence    7       Screen  0               10KW
-
-
-#fluorescence	1 	Fe	4.5		10KW
-#fluorescence	2 	In	24.2		10KW
-#fluorescence	3 	Ag	22.2		10KW
-#fluorescence	4 	Ge	9.9		10KW
-#fluorescence	5 	Mo	17.5		10KW
-#fluorescence	6 	Sn	25.3		10KW
-#fluorescence	7 	Screen	0		10KW
 
 power 2400
