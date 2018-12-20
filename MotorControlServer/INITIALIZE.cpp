@@ -523,8 +523,8 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			if(strcasecmp("Fluorescence",Motor[i]->getName())==0)
 			{
 				newPosition = Motor[i]->getPosition();
+				cout << "new position: " << newPosition << endl;
 #ifdef XRAYBOX
-				double laserPosition = fluoroffset + ((maxfluorvalues / 2) * fluorwidth) - (fluorwidth / 2); // to the middle
 				// laser position
 				if(fabs(laserPosition - newPosition) < 0.0001 )
 				{
@@ -580,7 +580,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 				if (!strcasecmp(FLUOR_LASERNAME, args[1]))
 				{
 					fluorNameFound = true;
-					newPosition = fluoroffset + ((maxfluorvalues / 2) * fluorwidth) - (fluorwidth / 2); // to the middle
+					newPosition = laserPosition
 				}
 #endif
 
