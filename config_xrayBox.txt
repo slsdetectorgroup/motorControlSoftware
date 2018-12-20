@@ -26,14 +26,14 @@ fluorescence    7 	Screen	0		10KW
 fluorescence    8   Bla     0       10KW
 
 
-fluorescence    1       Cu      8.0            10KW
-fluorescence    2       Empty   0.0            10KW
-fluorescence    3       Mo      17.5           10KW
-fluorescence    4       Ag   	22.1           10KW
-fluorescence    5       In      24.2           10KW
-fluorescence    6       Sn      25.3           10KW
-fluorescence    7       Screen  0              10KW
-fluorescence    8       Bla     0               10KW
+fluorescence    1       1	0	10KW
+fluorescence    2       2	0	10KW
+fluorescence    3       3	0	10KW
+fluorescence    4       4   	0	10KW
+fluorescence    5       5	0	10KW
+fluorescence    6       6	0	10KW
+fluorescence    7       7	0	10KW
+fluorescence    8       8	0	10KW
 
 
 power 2400
