@@ -580,7 +580,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 				if (!strcasecmp(FLUOR_LASERNAME, args[1]))
 				{
 					fluorNameFound = true;
-					newPosition = laserPosition
+					newPosition = laserPosition;
 				}
 #endif
 
