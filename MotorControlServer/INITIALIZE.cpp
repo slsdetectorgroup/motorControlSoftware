@@ -531,16 +531,40 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 					sprintf(mess,"Fl is %s and value:%f", FLUOR_LASERNAME, newPosition);
 					return 0;
 				}
-#endif
-				int ipos = round((newPosition - fluoroffset) / fluorwidth);
-				if (ipos >= 0 && ipos < maxfluorvalues)
-				{
-					sprintf(mess,"Fl is %s and value:%f",fluorList[ipos][0].c_str(), newPosition);
-					return 0;
+/*
+				// out of limits
+				if ((newPosition < fluoroffset || newPosition > (maxfluorvalues - 1) * fluorwidth) ||
+						// divisible by fluorwidth
+						(((newPosition - fluoroffset) % fluorwidth) != 0)) {
+					sprintf(mess,"ERROR: Fluroescence position %f is out of limits",newPosition);
+					return -1;
 				}
 
-				sprintf(mess,"ERROR: Fluroescence position %f is out of limits",newPosition);
-				return -1;
+				int ipos = ((newPosition - fluoroffset) / fluorwidth);
+				sprintf(mess,"Fl is %s and value:%f",fluorList[ipos][0].c_str(), newPosition);
+				return 0;
+#else*/
+#endif
+				// out of limits
+				if (newPosition < fluoroffset || newPosition > (maxfluorvalues - 1) * fluorwidth) {
+					sprintf(mess,"ERROR: Fluroescence position %f is out of limits",newPosition);
+					return -1;
+				}
+
+				int ipos = round((newPosition - fluoroffset) / fluorwidth);
+				cout << "ipos:"<<ipos<<endl;
+				double calcPosition = fluoroffset + (ipos * fluorwidth);
+				cout << "calcPosition:"<<calcPosition<<endl;
+
+				// somewhere in between
+				if (fabs(calcPosition - newPosition) > 0.00001) {
+					sprintf(mess,"ERROR: Fluroescence position %f is out of limits",newPosition);
+					return -1;
+				}
+
+				sprintf(mess,"Fl is %s and value:%f",fluorList[ipos][0].c_str(), newPosition);
+				return 0;
+//#endif
 			}
 		}
 		sprintf(mess,"ERROR: Fluroescence motor does not exist in config file");
