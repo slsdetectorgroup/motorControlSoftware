@@ -3061,9 +3061,10 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 		vector <string> lastTarget = lastTargetHolder[maxfluorvalues - 1];
 		if (lastTarget.size() != FLUOR_PARA_NUM)
 		{
-			MotorWidget::ErrorMessage("ERROR: fluorescene list has inconsistent values. Not sufficient parameters for every fluorescence target.");
+			cout<<"ERROR: fluorescene list has inconsistent values. Not sufficient parameters for every fluorescence target." << endl;
 			exit(-1);
-		}cout << "fluorescecne validation passed"<<endl;
+		}
+		cout << "fluorescecne validation passed"<<endl;
 
 #ifdef XRAYBOX
 		//rearranging the order..first to last
