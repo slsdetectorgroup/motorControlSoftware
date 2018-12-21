@@ -3235,15 +3235,11 @@ void INITIALIZE::initFluorNames(string sLine)
 	// first set (add an empty vector for the first set)
 	if (!setIndex) {
 		fluorListArray.push_back(std::vector < vector < string > > ());
-		// adding target
-		fluorListArray[setIndex].push_back(vector < string > ());
 	}
 	// start next set (add an empty vector for the next set)
 	if (fluorListArray[setIndex].size() == maxfluorvalues) {
 		fluorListArray.push_back(std::vector < vector < string > > ());
 		++setIndex;
-		// adding target
-		fluorListArray[setIndex].push_back(vector < string > ());
 	}
 
 	// adding target for each call to this method
