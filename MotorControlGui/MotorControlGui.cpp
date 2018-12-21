@@ -334,30 +334,32 @@ void MotorControlGui::GetFluorValues()
 	istringstream sstr(listOfFLMotors);
 	fluorescence.clear();
 
-	// adding an empty vector of strings for 1st target
-	fluorescence.push_back(vector < string > ());
-	int itarget = 0;
+	int itarget = -1;
+	int iPara = 0;
 
 	while (sstr.good())
 	{
+		if (!iPara)
+		{
+			// adding an empty vector of strings for first/ next target
+			fluorescence.push_back(vector < string > ());
+			++itarget;cout << "added new vector, target:"<<itarget<<endl;
+		}
+		++iPara;
+
 		string sArgName;
 		sstr >> sArgName;
 		fluorescence[itarget].push_back(sArgName);
+		cout<<iPara<<" " << sArgName <<endl;
 
-		if (sArgName.find("KW") != std::string::npos)
+		if (iPara == FLUOR_PARA_NUM)
 		{
-			// adding another empty vector of strings for next target
-			fluorescence.push_back(vector < string > ());
-			++itarget;
+			iPara = 0;
+			cout << "resetting iPara for next intake"<<endl;
 		}
 	}
-
-	// last target is empty (adding 1 extra always), delete it
-	if (!fluorescence[fluorescence.size() - 1].size())
-	{
-		fluorescence.pop_back();
-	}
-
+	cout <<"num targets: "<< fluorescence.size()<<endl;
+	cout <<"num parameters of last target: "<< fluorescence[fluorescence.size() - 1].size()<<endl;
 	// if last target does not have 3 strings
 	if (fluorescence[fluorescence.size() - 1].size() != FLUOR_PARA_NUM)
 	{

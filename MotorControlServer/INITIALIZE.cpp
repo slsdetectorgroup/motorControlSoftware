@@ -1807,7 +1807,10 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			for(size_t j = 0; j < fluorList[i].size(); ++j)
 			{
 				strcat(mess,fluorList[i][j].c_str());
-				strcat(mess," ");
+				if ((i == (maxfluorvalues - 1)) && (j == (fluorList[i].size() - 1)))
+					;
+				else
+					strcat(mess," ");
 			}
 		}
 		return 0;
