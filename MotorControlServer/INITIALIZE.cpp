@@ -3208,7 +3208,7 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
    @param sLine the fluorescence line read from the config file
  */
 void INITIALIZE::initFluorNames(string sLine)
-{
+{cout << "Line read:"<< sLine<<endl;
 	istringstream sstr(sLine);
 	string sArgName;
 	vector <string> args;
