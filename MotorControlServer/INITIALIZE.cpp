@@ -417,41 +417,24 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			return -1;
 		}
 
-		if(fluor_exists==-1)
+		if(!fluorListArray.size())
 		{
 			strcpy(mess, "ERROR: Fluroescence motor does not exist in config file");
 			cout<<"\nin here\n";
 			return -1;
 		}
 
-		// loop through list 1 if it is the same
-		bool same = true;
-		for (int i = 0; i < maxfluorvalues; ++i) {
-			if (fluorList[i][0] != fluorList1[i][0]) {
-				same = false;
-				break;
+		// loop through each target holder
+		for (int i = 0; i < fluorListArray.size(); ++i)
+		{
+			if (fluorList == fluorListArray[i]) {
+				sprintf(mess,"%d", i);
+				return 0;
 			}
-		}
-		// list 1
-		if (same) {
-			sprintf(mess,"%d",1);
-			return 0;
+
 		}
 
-		// loop through list 2 if it is the same
-		same = true;
-		for (int i = 0; i < maxfluorvalues; ++i) {
-			if (fluorList[i][0] != fluorList2[i][0]) {
-				same = false;
-				break;
-			}
-		}
-		if (same) {
-			sprintf(mess,"%d",2);
-			return 0;
-		}
-
-		// not in list 2 either
+		// not in any list
 		strcpy(mess, "ERROR: Fluroescence list have inconsistent values");
 		return -1;
 	}
@@ -466,45 +449,22 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			return -1;
 		}
 
-		if(fluor_exists==-1)
+		if(!fluorListArray.size())
 		{
 			strcpy(mess, "ERROR: Fluroescence motor does not exist in config file");
 			return -1;
 		}
 
 		int val = atoi(args[1]);
-		if(val==1)
-			fluorList = fluorList1;
-		else if(val==2)
-		{
-			if(fluor_exists==-1)
-			{
-				strcpy(mess, "ERROR: Fl list 2 doesnt exist in the config file");
-				return -1;
-			}
-			else
-				fluorList = fluorList2;
-		}
-		else
-		{
-			strcpy(mess, "ERROR: The fl list to be loaded can only be 1 or 2");
-			return -1;
+
+		if (val > 0 && val <= fluorListArray.size()) {
+			fluorList = fluorListArray[val - 1];
+			sprintf(mess,"The fl list has been updated to %d", val);
+			return 0;
 		}
 
-
-		strcpy(mess,"The fl list has been updated");
-
-		//for debugging
-		/*
-      for(int i=0;i<maxfluorvalues;i++)
-	{
-	  for(int j=0;j<3;j++) 
-	    cout<<":"<<fluorList[i][j];
-	  cout<<endl;
-	}
-      cout<<endl<<endl;
-		 */
-		return 0;
+		sprintf(mess, "ERROR: Fl list %d doesnt exist in the config file", val);
+		return -1;
 	}
 
 
@@ -1836,20 +1796,21 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
 		}
-		if(fluor_exists==-1)
+		if(!fluorListArray.size())
 		{
 			strcpy(mess, "ERROR: Fluorescence motor does not exist in the config file");
 			return -1;
 		}
 
 		strcpy(mess,"");
-		for(int i=0;i<maxfluorvalues;i++)
-			for(int j=0;j<3;j++)
+		for(int i = 0; i < maxfluorvalues; ++i)
+		{
+			for(int j = 0; j < fluorList[i].size(); ++j)
 			{
 				strcat(mess,fluorList[i][j].c_str());
 				strcat(mess," ");
 			}
-
+		}
 		return 0;
 	}
 #endif
@@ -2929,7 +2890,7 @@ INITIALIZE::~INITIALIZE()
  */
 
 #ifndef LASERBOX
-INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName3,string const fName4):NUMBER_OF_CONTROLLERS(0),slit1_exists(0),slit2_exists(0),xrayStatus(-9),fluor_exists(-1),set2_exists(0),maxTubePower(0)
+INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName3,string const fName4):NUMBER_OF_CONTROLLERS(0),slit1_exists(0),slit2_exists(0),xrayStatus(-9),maxTubePower(0)
 #else
 INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName3):NUMBER_OF_CONTROLLERS(0),NUMBER_OF_REFPOINTS(0)
 #endif
@@ -2957,39 +2918,15 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 	string sLine,sArgName;
 	int iArgVal;
 	ifstream inFile;
-#ifndef LASERBOX
-	int fIndex=0;
-#endif
+
 	// to store all the words in a line in the file
 	char *args[10];
 	for(int i=0;i<10;i++)
 		args[i]=new char[1000];
 
 #ifndef LASERBOX
-	//to read the fluorescence names getting the vector ready
-	fluorList.resize(maxfluorvalues);
-	for(int i=0;i<maxfluorvalues;i++)
-	{
-		fluorList[i].resize(3);
-		for(int j=0;j<3;j++)
-			fluorList[i][j].assign("-");
-	}
-	//fluor set 1
-	fluorList1.resize(maxfluorvalues);
-	for(int i=0;i<maxfluorvalues;i++)
-	{
-		fluorList1[i].resize(3);
-		for(int j=0;j<3;j++)
-			fluorList1[i][j].assign("-");
-	}
-	//fluor set 2
-	fluorList2.resize(maxfluorvalues);
-	for(int i=0;i<maxfluorvalues;i++)
-	{
-		fluorList2[i].resize(3);
-		for(int j=0;j<3;j++)
-			fluorList2[i][j].assign("-");
-	}
+	fluorList.clear();
+	fluorListArray.clear();
 #endif
 
 	// opens file
@@ -3015,7 +2952,7 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 #ifndef LASERBOX
 			else if (sLine.find("fluorescence")!=string::npos)
 			{
-				initFluorNames(sLine, fIndex);
+				initFluorNames(sLine);
 			}
 #endif
 			else
@@ -3101,77 +3038,69 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 
 	//----------------------------------
 	//if fluorescence exists, all the validation requirements
-	if(fluor_exists!=-1)
+	if(fluorListArray.size())
 	{
 		//there should be exactly maxfluor elements in each set, else error.
-		if(!((fIndex==maxfluorvalues)||((set2_exists)&&(fIndex==2*maxfluorvalues))))
+		if(fluorListArray[fluorListArray.size() - 1].size() != maxfluorvalues)
 		{
 			cout<<"ERROR: There should be exactly " << maxfluorvalues << " elements in the fluorescence sets.\n";
 			exit(-1);
 		}
-		// to check if config file fluorescence positions are right order
-		for(int i=0;i<maxfluorvalues;i++)
-			if( (fluorList1[i][0]== "-")||((set2_exists)&&(fluorList2[i][0]== "-")) )
-			{
-				cout<<"ERROR: One or more positions for fluorescence in config file has been missed out\n";
-				exit(-1);
-			}
-		//to get rid of rows greater than iNum-NOT REQUIRED HERE CUZ EXACT 7 or 14 elements
-		/*
-      int i=fIndex;
-      while(i!=maxfluorvalues)
-	fluorList.resize(maxfluorvalues-1);
-		 */
+
 #ifdef XRAYBOX
 		//rearranging the order..first to last
-		int first=0,last =maxfluorvalues-1;
-		string temp1,temp2;
-		while(first<last)
+
+		for (int i = 0; i < fluorListArray.size(); ++i)
 		{
-			for(int loop=0;loop<3;loop++)
+			int first = 0;
+			int last = maxfluorvalues - 1;
+			while(first < last)
 			{
-				temp1 = fluorList1[first][loop];
-				temp2 = fluorList2[first][loop];
-				fluorList1[first][loop] = fluorList1[last][loop];
-				fluorList2[first][loop] = fluorList2[last][loop];
-				fluorList1[last][loop] = temp1;
-				fluorList2[last][loop] = temp2;
+				vector<string> temp = fluorListArray[i][first];
+				fluorListArray[i][first] = fluorListArray[i][last];
+				fluorListArray[i][last] = temp;
+				++first;
+				--last;
 			}
-			first++;
-			last--;
 		}
 #endif
 		//initially we take the first list for fluorescence
-		fluorList = fluorList1;
+		fluorList = fluorListArray[0];
+
+		// for debuging
+		cout << "Fluoresence Targets" << endl;
+		cout << "===================" << endl;
+		// for each target holder
+		for (int i = 0; i < fluorListArray.size(); ++i)
+		{
+			cout << "Target Holder " << i <<endl;
+			// for each target
+			for (int j = 0; j < maxfluorvalues; ++j)
+			{
+				cout << "\tTarget " << j << ": ";
+				// for each target characteristic (name, energy, power)
+				for (int k = 0; k < fluorListArray[i][j].size(); ++k)
+				{
+					cout << fluorListArray[i][j][k] << "\t";
+				}
+				cout << endl;
+			}
+			cout << endl;
+		}
+
+		cout << "Current Target Holder " <<endl;
+		for(int i = 0; i < maxfluorvalues; ++i)
+		{
+			cout << "\tTarget " << i << ": ";
+			for(int j = 0; j < fluorList[i].size(); ++j)
+			{
+				cout << fluorList[i][j] << "\t";
+			}
+			cout << endl;
+		}
+		cout << endl;
 	}
 	//--------------------------------
-
-
-	// for debuging
-	/*
-  for(int i=0;i<maxfluorvalues;i++)
-    {
-      for(int j=0;j<3;j++)  
-	cout<<":"<<fluorList1[i][j];
-      cout<<endl;
-    }
-  cout<<endl<<endl;
-  for(int i=0;i<maxfluorvalues;i++)
-    {
-      for(int j=0;j<3;j++) 
-	cout<<":"<<fluorList2[i][j];
-      cout<<endl;
-    }
-
-  cout<<endl<<endl;*/
-  for(int i=0;i<maxfluorvalues;i++)
-    {
-      for(int j=0;j<3;j++) 
-	cout<<":"<<fluorList[i][j];
-      cout<<endl;
-    }
- /* cout<<endl<<endl;
-	 */
 #endif
 
 	// For debugging purposes: to print the motors and controllers read from file
@@ -3266,58 +3195,40 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 /**executes commands from the command line through both server and local
    @param sLine the fluorescence line read from the config file
  */
-void INITIALIZE::initFluorNames(string sLine, int &fIndex)
+void INITIALIZE::initFluorNames(string sLine)
 {
-
-	string sArgName;
-	int iPos,iArg;
-
-	//continue;
 	istringstream sstr(sLine);
+	string sArgName;
+	vector <string> args;
 
-	//mode is not required to be saved anywhere
-	if(sstr.good()) sstr>>sArgName;
-
-	if(sstr.good()) sstr>>sArgName;
-	iPos = atoi(sArgName.c_str());
-
-	if((iPos>maxfluorvalues)||(iPos<1))
-	{
-		cout<<"ERROR: Check the position values of the fluorescent elements \nOR a position is less than 1: " << iPos << endl;
-		exit(-1);
-	}
-
-	//if fIndex is 0-6, its in the first set
-	if(fIndex < maxfluorvalues )
-	{
-		iArg=0;
-		while(sstr.good())
-		{
-			sstr>>sArgName;
-			fluorList1[fIndex][iArg].assign(sArgName);
-			iArg++;
+	for (int i = 0; i < 4; ++i) {
+		if (!sstr.good()) {
+			cout<<"ERROR: Could not scan fluorescence line " << sLine << endl;
+			exit(-1);
 		}
+		sstr >> sArgName;
+		args.push_back(sArgName);
 	}
-	//if fIndex is >=14, error
-	else if(fIndex >= (maxfluorvalues*2))
-	{
-		cout<<"ERROR: Only a max of " << maxfluorvalues << " fluorescent values are allowed for either sets\n";
-		exit(-1);
-	}
-	//else in the second set
-	else
-	{
-		set2_exists=1;
-		iArg=0;
-		while(sstr.good())
-		{
-			sstr>>sArgName;
-			fluorList2[fIndex-maxfluorvalues][iArg].assign(sArgName);
-			iArg++;
-		}
 
+	// check where to insert the target
+	int setIndex = fluorListArray.size();
+	// first set (add an empty vector for the first set)
+	if (!setIndex) {
+		fluorListArray.push_back(std::vector < vector < string > > ());
 	}
-	fIndex++;
+	// start next set (add an empty vector for the next set)
+	if (fluorListArray[setIndex].size() == maxfluorvalues) {
+		fluorListArray.push_back(std::vector < vector < string > > ());
+		++setIndex;
+	}
+	int iPos = fluorListArray[setIndex].size() - 1;
+	cout << "Set:" << setIndex << " Target pos: " << iPos << endl;
+
+	// adding target
+	fluorListArray[setIndex].push_back(vector < string > ());
+	for (int i = 0; i < args.size() - 1; i++) {
+		fluorListArray[setIndex][iPos].push_back(args[i + 1]);
+	}
 }
 #endif
 
@@ -3605,8 +3516,6 @@ void INITIALIZE::init(int nArg, char *args[])
 			slit1_exists=MOTOR::NumMotors;
 		else if(strcasecmp(args[1],"slit_x2")==0)
 			slit2_exists=MOTOR::NumMotors;
-		else if(strcasecmp(args[1],"fluorescence")==0)
-			fluor_exists=MOTOR::NumMotors;
 #endif
 
 		//checks if axis values are either 1, 2 or 3

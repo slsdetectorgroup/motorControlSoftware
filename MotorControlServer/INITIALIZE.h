@@ -69,9 +69,8 @@ class INITIALIZE
 #ifndef LASERBOX
   /**executes commands from the command line through both server and local
 	 @param sLine the fluorescence line read from the config file
-	 @param fIndex the index of fluorescence
   */	
-  void initFluorNames(string sLine, int &fIndex);
+  void initFluorNames(string sLine);
 
 #else
   /**gets the interface of the filter wheel by specifying serial number
@@ -174,14 +173,6 @@ class INITIALIZE
    */
   int slit2_exists;
 
-  /**if fluorescence exists,0 for not,else position of its object ptr in Motor[] array
-   */
-  int fluor_exists;
-
-  /**if fluorescence second set exists,0 for not,else 1
-   */
-  int set2_exists;
-
   /**max power of the xray tube
    */
   int maxTubePower;
@@ -233,17 +224,12 @@ class INITIALIZE
   static const int maxfluorvalues = 8;
 
 
-  /**list of fluorescence names
+  /**list of current target names for fluorescence
    */
   vector < vector<string> > fluorList;
 
- /**list of fluorescence set1  names
-   */
-  vector < vector<string> > fluorList1;
-
- /**list of fluorescence set2 names
-   */
-  vector < vector<string> > fluorList2;
+  /** array of target holders for fluorescence */
+  vector <vector < vector<string> > > fluorListArray;
 
   /**the list of warmup Timings for all the different voltages of the XRay Tube
    */  

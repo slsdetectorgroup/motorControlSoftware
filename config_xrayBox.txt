@@ -1,3 +1,4 @@
+#any line containing a # is ignored
 #mode		controller	serial no
 #controller	corvus_1	09040217
 controller	corvus_2	09040216
@@ -15,25 +16,26 @@ motor	Fluorescence	3	corvus_2	-1	0		251.8267
 #motor	Detector_y	1	corvus_1	-1	0		102.7
 
 
-#mode 		pos	name	energy(KeV)	HV
-fluorescence	1 	Ti	4.5		10KW
-fluorescence	2 	Cr	5.4		10KW
-fluorescence	3 	Fe	6.4		10KW
-fluorescence	4 	Cu	8.0		10KW
-fluorescence	5 	Ge	9.9		10KW
-fluorescence	6 	Mo	17.5		10KW
-fluorescence    7 	Screen	0		10KW
-fluorescence    8   Bla     0       10KW
+#mode 		    name	energy(KeV)	HV (#do not use "KW" in a target name)
+# 1st set for random use
+fluorescence    1       -           10KW
+fluorescence    2       -           10KW
+fluorescence    3       -           10KW
+fluorescence    4       -           10KW
+fluorescence    5       -           10KW
+fluorescence    6       -           10KW
+fluorescence    7       -           10KW
+fluorescence    8       -           10KW
 
-
-fluorescence    1       1	0	10KW
-fluorescence    2       2	0	10KW
-fluorescence    3       3	0	10KW
-fluorescence    4       4   	0	10KW
-fluorescence    5       5	0	10KW
-fluorescence    6       6	0	10KW
-fluorescence    7       7	0	10KW
-fluorescence    8       8	0	10KW
+# second defined set
+fluorescence    Ti      4.5         10KW
+fluorescence	Cr	    5.4         10KW
+fluorescence	Fe	    6.4         10KW
+fluorescence	Cu	    8.0         10KW
+fluorescence	Ge	    9.9         10KW
+fluorescence	Mo	    17.5        10KW
+fluorescence    Screen	0            10KW
+fluorescence    Bla     -           10KW
 
 
 power 2400

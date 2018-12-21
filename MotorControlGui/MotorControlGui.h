@@ -27,8 +27,8 @@
 #include <string>
 using namespace std;
 
-#define MAXFL 8
 #define FLUOR_LASERNAME	"laser"
+#define FLUOR_PARA_NUM	3
 
 /**
  *@short Uses the main form used and defines the gui objects, 
@@ -299,11 +299,7 @@ class MotorControlGui:public QWidget, private Ui::MotorControlGuiObject
    */  
   static const double Limit = 102.5;
 
-  /**if fluorescence exists
-   */  
-  bool fluor;
-
-  /**is 1 if list 1 enabled, else 2
+  /** current florescence target holder index
    */  
   int currentflist;
 

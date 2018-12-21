@@ -19,7 +19,7 @@ using namespace std;
 MotorControlGui::MotorControlGui(int argc, char *argv[],QWidget *parent):QWidget(parent)
 #ifndef LASERBOX
 ,oldActualV(0),oldActualC(0),actualV(0),actualC(0),wt(0),timeConnect(false),
-actualConnect(false),doorConnect(false),startDrawing(false),clearDrawing(false),fluor(0),currentflist(0),slits(0),x1(-1),x2(-1),
+actualConnect(false),doorConnect(false),startDrawing(false),clearDrawing(false),currentflist(0),slits(0),x1(-1),x2(-1),
 huberPos(-9999),huberValue(0),xLower(-9999),xUpper(-9999),yLower(-9999),yUpper(-9999),pLower(-9999),pUpper(-9999)
 #endif
 {
@@ -104,6 +104,7 @@ void MotorControlGui::GettingListOfMotors()
 #ifndef LASERBOX
 	list.resize(1);
 	list[0]="Fluorescence";
+	bool fluorExists = false;
 #endif
 
 	strcpy(listOfMotors,MotorWidget::SendCommand(2,"gui list"));
@@ -168,7 +169,7 @@ void MotorControlGui::GettingListOfMotors()
 
 			//if(boost::iequals(motor, "fluorescence"))
 			if(!LowerCase(motor).compare("fluorescence"))
-				fluor=true;
+				fluorExists = true;
 			else
 			{
 				list.resize((int)list.size()+1);
@@ -242,7 +243,8 @@ void MotorControlGui::GettingListOfMotors()
 
 
 #ifndef LASERBOX
-	if(fluor) GetFluorValues();
+	if(fluorExists)
+		GetFluorValues();
 #endif
 
 	this->list=list;
@@ -308,17 +310,8 @@ void MotorControlGui::GettingListOfMotors()
 
 void MotorControlGui::GetFluorValues()
 {
-	string sArgName;
 	char listOfFLMotors[200],message[200];
 
-	//resize fl 2-d array
-	fluorescence.resize(MAXFL);
-	for(int i=0;i<(int)fluorescence.size();i++)
-	{
-		fluorescence[i].resize(3);
-		for(int j=0;j<3;j++)
-			fluorescence[i][j].assign("-");
-	}
 
 	//finding out which list is being populated
 	strcpy(message,MotorWidget::SendCommand(2,"gui whichflist"));
@@ -339,24 +332,38 @@ void MotorControlGui::GetFluorValues()
 
 	//splitting up the data from server to popoulate fl vectors
 	istringstream sstr(listOfFLMotors);
-	for(int i=0;i<MAXFL;i++)
+	fluorescence.clear();
 
-		for(int j=0;j<3;j++)
+	// adding an empty vector of strings for 1st target
+	fluorescence.push_back(vector < string > ());
+	int itarget = 0;
+
+	while (sstr.good())
+	{
+		string sArgName;
+		sstr >> sArgName;
+		fluorescence[itarget].push_back(sArgName);
+
+		if (sArgName.find("KW") != std::string::npos)
 		{
-			if(sstr.good()) sstr>>sArgName;
-			fluorescence[i][j].assign(sArgName);
+			// adding another empty vector of strings for next target
+			fluorescence.push_back(vector < string > ());
+			++itarget;
 		}
+	}
 
-	// for debuging
-	/*
-  for(int i=0;i<(int)fluorescence.size();i++)
-    {
-      for(int j=0;j<(int)fluorescence[i].size();j++)
-	cout<<":"<<fluorescence[i][j];
-      cout<<endl;
-    }
-	 */
+	// last target is empty (adding 1 extra always), delete it
+	if (!fluorescence[fluorescence.size() - 1].size())
+	{
+		fluorescence.pop_back();
+	}
 
+	// if last target does not have 3 strings
+	if (fluorescence[fluorescence.size() - 1].size() != FLUOR_PARA_NUM)
+	{
+		MotorWidget::ErrorMessage("ERROR: fluorescene list has inconsistent values.");
+		exit(-1);
+	}
 }
 #endif
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -381,7 +388,7 @@ void MotorControlGui::LayoutWindow()
 
 
 	//for fluorescence
-	if(!fluor)
+	if(!fluorescence.size())
 	{
 		fluorLabel->hide();
 		fluorName->hide();
@@ -390,8 +397,12 @@ void MotorControlGui::LayoutWindow()
 	else
 	{
 #ifdef XRAYBOX
-		fluorLabel->addItem("Fluor List 1");
-		fluorLabel->addItem("Fluor List 2");
+		for (int i = 0; i < fluorescence.size(); ++i)
+		{
+			char listName[20] = {0};
+			sprintf(listName, "Fluor List %d", i);
+			fluorLabel->addItem(listName);
+		}
 #else
 		fluorLabel->addItem("Normal Fl List");
 		fluorLabel->addItem("Reverse Fl List");
@@ -402,7 +413,7 @@ void MotorControlGui::LayoutWindow()
 			exit(-1);
 		}
 		fluorLabel->setCurrentIndex(currentflist-1);
-		for(int i=0;i<(int)fluorescence.size();i++)
+		for(int i = 0; i < (int)fluorescence.size(); ++i)
 			fluorName->addItem(QString(fluorescence[i][0].c_str()));
 		UpdateEnergyFromServer();
 	}
@@ -823,7 +834,7 @@ void MotorControlGui::paintEvent(QPaintEvent *)
 
 	//get list of motors into a string
 	string listOfMotors = "";
-	if(fluor)
+	if(fluorescence.size())
 		listOfMotors.assign("Fluorescence");
 	for(int i=1; i<(int)list.size();i++)
 	{
@@ -855,7 +866,7 @@ void MotorControlGui::paintEvent(QPaintEvent *)
 	}
 
 	// fluorescence
-	if(fluor)
+	if(fluorescence.size())
 	{
 		pointString="";
 		fluores->setPen( QPen(*color3) );
@@ -1529,7 +1540,21 @@ void MotorControlGui::Initialization()
 
 void  MotorControlGui::UpdateEnergyFromServer()
 {
-	char message[200] = "gui getfl ";
+	char message[200] = {0};
+	// first ensure it is the same list being used now
+	strcpy(message,MotorWidget::SendCommand(2,"gui whichflist"));
+	if(strstr (message,"ERROR")!=NULL)
+	{
+		MotorWidget::ErrorMessage(message);
+		exit(-1);
+	}
+	// if not the current list, populate it
+	if (currentflist != atoi(message)) {
+		GetFluorValues();
+	}
+
+	// now update the target from server
+	strcpy(message, "gui getfl ");
 	strcpy(message,MotorWidget::SendCommand(2,message));
 	bool error = false;
 	if(strstr (message,"ERROR")!=NULL)
@@ -1582,7 +1607,7 @@ void  MotorControlGui::UpdateEnergyFromServer()
 		//if its not in the exact range
 		if(!found)
 		{
-			// this is later removed when one moves it away from none
+			// if None doesnt exist, add it now (this is later removed when one moves it away from none)
 			if(fluorName->count()<=(int)fluorescence.size())
 				fluorName->addItem("None");
 			fluorName->setCurrentIndex((int)fluorescence.size());
@@ -2930,7 +2955,7 @@ void MotorControlGui::UpdateGUI()
 	cout<<"inside the updategui method()";
 
 #ifndef LASERBOX
-	if(fluor)
+	if(fluorescence.size())
 	{
 		GetFluorValues();
 		if(currentflist!= ((fluorLabel->currentIndex()) +1))
@@ -2967,19 +2992,6 @@ void MotorControlGui::UpdateGUI()
 	if(xrayGroup->isChecked())
 	{
 		UpdateXrayStatus();
-		/*
-      UpdateHVFromServer();
-      UpdateShuttersFromServer();
-      UpdateXrayGroupforHV();
-      UpdateXrayGroupforShutters();
-      setVDisp->setText(QString::number(atoi(MotorWidget::SendCommand(2,"gui getv"))/1000));
-      setCDisp->setText(QString::number(atoi(MotorWidget::SendCommand(2,"gui getc"))/1000));
-      CheckWarmupTime();
-
-      //if hv=off earlier,checks if warmup required
-      if(!highVoltage->isChecked())
-	CheckWarmupRequired();
-		 */
 	}
 	update();
 #else
@@ -2996,7 +3008,7 @@ void MotorControlGui::OptionsMenu()
 { 
 #ifndef LASERBOX
 	vector <string> actualList(this->list);
-	if(!fluor)
+	if(!fluorescence.size())
 	{
 		actualList.erase(actualList.begin());
 	}
