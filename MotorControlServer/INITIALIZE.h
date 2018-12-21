@@ -26,7 +26,7 @@
 using namespace std;
 
 #define FLUOR_LASERNAME	"laser"
-
+#define FLUOR_PARA_NUM 3
 
 /**
   *@short reads config files, creates motor and interface objects, also executes commands from commandline
