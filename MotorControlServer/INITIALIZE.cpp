@@ -3172,9 +3172,6 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 	}
 #endif
 #endif
-	cout<<"blablabla goodbye!"<<endl;
-	exit(-1);
-
 
 	// INTIALIZATION
 	check_busy();
