@@ -3040,12 +3040,30 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 	//if fluorescence exists, all the validation requirements
 	if(fluorListArray.size())
 	{
-		//there should be exactly maxfluor elements in each set, else error.
-		if(fluorListArray[fluorListArray.size() - 1].size() != maxfluorvalues)
+		cout << "target holder size:"<< fluorListArray.size()<<endl;
+		// last target holder is empty (adding 1 extra always), delete it
+		if (!fluorListArray[fluorListArray.size() - 1].size())
 		{
-			cout<<"ERROR: There should be exactly " << maxfluorvalues << " elements in the fluorescence sets.\n";
+			fluorListArray.pop_back();
+		}
+		cout << "new target holder size:"<< fluorListArray.size()<<endl;
+		int numTargetHolders = fluorListArray.size();
+		vector < vector < string> > lastTargetHolder = fluorListArray[numTargetHolders - 1];
+
+		// there should be exactly maxfluor elements in each set, else error.
+		if(lastTargetHolder.size() != maxfluorvalues)
+		{
+			cout<<"ERROR: There should be exactly " << maxfluorvalues << " targets in the fluorescence sets.\n";
 			exit(-1);
 		}
+
+		// there should be atleast 3 strings for every target
+		vector <string> lastTarget = lastTargetHolder[maxfluorvalues - 1];
+		if (lastTarget.size() != FLUOR_PARA_NUM)
+		{
+			MotorWidget::ErrorMessage("ERROR: fluorescene list has inconsistent values. Not sufficient parameters for every fluorescence target.");
+			exit(-1);
+		}cout << "fluorescecne validation passed"<<endl;
 
 #ifdef XRAYBOX
 		//rearranging the order..first to last
@@ -3161,7 +3179,8 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 	}
 #endif
 #endif
-
+	cout<<"blablabla goodbye!"<<endl;
+	exit(-1);
 
 
 	// INTIALIZATION
@@ -3215,17 +3234,23 @@ void INITIALIZE::initFluorNames(string sLine)
 	// first set (add an empty vector for the first set)
 	if (!setIndex) {
 		fluorListArray.push_back(std::vector < vector < string > > ());
+		// adding target
+		fluorListArray[setIndex].push_back(vector < string > ());
 	}
 	// start next set (add an empty vector for the next set)
 	if (fluorListArray[setIndex].size() == maxfluorvalues) {
 		fluorListArray.push_back(std::vector < vector < string > > ());
 		++setIndex;
+		// adding target
+		fluorListArray[setIndex].push_back(vector < string > ());
 	}
+
+	// adding target for each call to this method
+	fluorListArray[setIndex].push_back(vector < string > ());
+
 	int iPos = fluorListArray[setIndex].size() - 1;
 	cout << "Set:" << setIndex << " Target pos: " << iPos << endl;
 
-	// adding target
-	fluorListArray[setIndex].push_back(vector < string > ());
 	for (int i = 0; i < args.size() - 1; i++) {
 		fluorListArray[setIndex][iPos].push_back(args[i + 1]);
 	}
