@@ -3254,7 +3254,7 @@ void INITIALIZE::initFluorNames(string sLine)
 	{
 		cout << "Target Holder " << i <<endl;
 		// for each target
-		for (size_t j = 0; j < maxfluorvalues; ++j)
+		for (size_t j = 0; j < fluorListArray[i].size(); ++j)
 		{
 			cout << "\tTarget " << j << ": ";
 			// for each target characteristic (name, energy, power)
