@@ -410,8 +410,8 @@ char* INTERFACE::send_command(char* c, int rb)
 				usleep(50000);
 			}
 
-			//checking if the controllers are busy with something else, \
-			//present command sent:st, cmd required to be sent shoudl not be st
+			/*checking if the controllers are busy with something else,
+			present command sent:st, cmd required to be sent shoudl not be st*/
 			count++;
 			if((strcmp(c,"pos ")) &&(count==10) && (!strcmp(command,"st ")))
 			{
@@ -439,7 +439,7 @@ char* INTERFACE::send_command_to_tube(char* c, int rb, int &value, int &value2)
 
 	char buffer[255]="", command[200]="", binaryNumber[9]="00000000";
 	char* p = binaryNumber;
-	int temp,temp2;
+	int temp;
 
 	strcpy(command,c);
 

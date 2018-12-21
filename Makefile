@@ -11,7 +11,7 @@ INCLUDES= -I MotorControlServer -I MotorControlClient -I MySocketTCP -I .
 SERVER_FLAGS= -DLOCAL #-DVERY_VERBOSE #-DVERBOSE_MOTOR
 CLIENT_FLAGS=-DREMOTE
 LOCAL_FLAGS=-DLOCAL
-CFLAGS= -lm -lstdc++ -g
+CFLAGS= -lm -lstdc++ -Wall -g
 
 
 all: clean socketServer socketClient localClient gui#doc

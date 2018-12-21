@@ -364,6 +364,19 @@ void MotorControlGui::GetFluorValues()
 		MotorWidget::ErrorMessage("ERROR: fluorescene list has inconsistent values.");
 		exit(-1);
 	}
+
+	// debugging
+	cout << "Current Target Holder " <<endl;
+	for(size_t i = 0; i < fluorescence.size(); ++i)
+	{
+		cout << "\tTarget " << i << ": ";
+		for(size_t j = 0; j < fluorescence[i].size(); ++j)
+		{
+			cout << fluorescence[i][j] << "\t";
+		}
+		cout << endl;
+	}
+	cout << endl;
 }
 #endif
 //-------------------------------------------------------------------------------------------------------------------------------------------------

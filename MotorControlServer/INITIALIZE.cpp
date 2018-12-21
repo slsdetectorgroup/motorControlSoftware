@@ -425,10 +425,10 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 		}
 
 		// loop through each target holder
-		for (int i = 0; i < fluorListArray.size(); ++i)
+		for (size_t i = 0; i < fluorListArray.size(); ++i)
 		{
 			if (fluorList == fluorListArray[i]) {
-				sprintf(mess,"%d", i);
+				sprintf(mess,"%d", (int)i);
 				return 0;
 			}
 
@@ -457,7 +457,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 
 		int val = atoi(args[1]);
 
-		if (val > 0 && val <= fluorListArray.size()) {
+		if (val > 0 && (size_t)val <= fluorListArray.size()) {
 			fluorList = fluorListArray[val - 1];
 			sprintf(mess,"The fl list has been updated to %d", val);
 			return 0;
@@ -1789,7 +1789,6 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 	// --- if command is fllist---------------------------------------
 	else if(strcasecmp(args[0],"fllist")==0)
 	{
-		char *p= new char[1];
 		// if number of parameters are wrong
 		if(argc!=1)
 		{
@@ -1803,9 +1802,9 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 		}
 
 		strcpy(mess,"");
-		for(int i = 0; i < maxfluorvalues; ++i)
+		for(size_t i = 0; i < maxfluorvalues; ++i)
 		{
-			for(int j = 0; j < fluorList[i].size(); ++j)
+			for(size_t j = 0; j < fluorList[i].size(); ++j)
 			{
 				strcat(mess,fluorList[i][j].c_str());
 				strcat(mess," ");
@@ -2890,7 +2889,7 @@ INITIALIZE::~INITIALIZE()
  */
 
 #ifndef LASERBOX
-INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName3,string const fName4):NUMBER_OF_CONTROLLERS(0),slit1_exists(0),slit2_exists(0),xrayStatus(-9),maxTubePower(0)
+INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName3,string const fName4):slit1_exists(0),slit2_exists(0),maxTubePower(0),xrayStatus(-9), NUMBER_OF_CONTROLLERS(0)
 #else
 INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName3):NUMBER_OF_CONTROLLERS(0),NUMBER_OF_REFPOINTS(0)
 #endif
@@ -3001,7 +3000,8 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 	//VALIDATION
 	//------------------------------------------
 	// to ensure there is a required number of controllers for the motors
-	if ((MOTOR::NumMotors>3)&&(NUMBER_OF_CONTROLLERS<2) || (MOTOR::NumMotors>6)&&(NUMBER_OF_CONTROLLERS<3) )//took off the first condition repeated,maybe there's another condition missing
+	if (((MOTOR::NumMotors>3)&&(NUMBER_OF_CONTROLLERS<2)) ||
+			((MOTOR::NumMotors>6)&&(NUMBER_OF_CONTROLLERS<3)) )//took off the first condition repeated,maybe there's another condition missing
 	{
 		cout<<"\nERROR: The number of controllers is not sufficient for the motors. Add controller and fix config file."<<endl;
 		exit(-1);
@@ -3040,13 +3040,6 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 	//if fluorescence exists, all the validation requirements
 	if(fluorListArray.size())
 	{
-		cout << "target holder size:"<< fluorListArray.size()<<endl;
-		// last target holder is empty (adding 1 extra always), delete it
-		if (!fluorListArray[fluorListArray.size() - 1].size())
-		{
-			fluorListArray.pop_back();
-		}
-		cout << "new target holder size:"<< fluorListArray.size()<<endl;
 		int numTargetHolders = fluorListArray.size();
 		vector < vector < string> > lastTargetHolder = fluorListArray[numTargetHolders - 1];
 
@@ -3064,15 +3057,14 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 			cout<<"ERROR: fluorescene list has inconsistent values. Not sufficient parameters for every fluorescence target." << endl;
 			exit(-1);
 		}
-		cout << "fluorescecne validation passed"<<endl;
 
 #ifdef XRAYBOX
 		//rearranging the order..first to last
 
-		for (int i = 0; i < fluorListArray.size(); ++i)
+		for (size_t i = 0; i < fluorListArray.size(); ++i)
 		{
-			int first = 0;
-			int last = maxfluorvalues - 1;
+			size_t first = 0;
+			size_t last = maxfluorvalues - 1;
 			while(first < last)
 			{
 				vector<string> temp = fluorListArray[i][first];
@@ -3090,15 +3082,15 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 		cout << "Fluoresence Targets" << endl;
 		cout << "===================" << endl;
 		// for each target holder
-		for (int i = 0; i < fluorListArray.size(); ++i)
+		for (size_t i = 0; i < fluorListArray.size(); ++i)
 		{
 			cout << "Target Holder " << i <<endl;
 			// for each target
-			for (int j = 0; j < maxfluorvalues; ++j)
+			for (size_t j = 0; j < maxfluorvalues; ++j)
 			{
 				cout << "\tTarget " << j << ": ";
 				// for each target characteristic (name, energy, power)
-				for (int k = 0; k < fluorListArray[i][j].size(); ++k)
+				for (size_t k = 0; k < fluorListArray[i][j].size(); ++k)
 				{
 					cout << fluorListArray[i][j][k] << "\t";
 				}
@@ -3108,10 +3100,10 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 		}
 
 		cout << "Current Target Holder " <<endl;
-		for(int i = 0; i < maxfluorvalues; ++i)
+		for(size_t i = 0; i < maxfluorvalues; ++i)
 		{
 			cout << "\tTarget " << i << ": ";
-			for(int j = 0; j < fluorList[i].size(); ++j)
+			for(size_t j = 0; j < fluorList[i].size(); ++j)
 			{
 				cout << fluorList[i][j] << "\t";
 			}
@@ -3231,24 +3223,26 @@ void INITIALIZE::initFluorNames(string sLine)
 	}
 
 	// check where to insert the target
-	int setIndex = fluorListArray.size();
+	int setIndex = fluorListArray.size() - 1;
 	// first set (add an empty vector for the first set)
 	if (!setIndex) {
 		fluorListArray.push_back(std::vector < vector < string > > ());
+		++setIndex;
 	}
 	// start next set (add an empty vector for the next set)
 	if (fluorListArray[setIndex].size() == maxfluorvalues) {
 		fluorListArray.push_back(std::vector < vector < string > > ());
 		++setIndex;
 	}
+	//cout << "Set:" << setIndex <<endl;
 
 	// adding target for each call to this method
 	fluorListArray[setIndex].push_back(vector < string > ());
 
-	int iPos = fluorListArray[setIndex].size() - 1;
-	cout << "Set:" << setIndex << " Target pos: " << iPos << endl;
+	size_t iPos = fluorListArray[setIndex].size() - 1;
+	//cout << "Target pos: " << iPos << endl;
 
-	for (int i = 0; i < args.size() - 1; i++) {
+	for (size_t i = 0; i < args.size() - 1; i++) {
 		fluorListArray[setIndex][iPos].push_back(args[i + 1]);
 	}
 }
