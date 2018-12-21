@@ -428,7 +428,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 		for (size_t i = 0; i < fluorListArray.size(); ++i)
 		{
 			if (fluorList == fluorListArray[i]) {
-				sprintf(mess,"%d", (int)i);
+				sprintf(mess,"%d", (int)i +1);
 				return 0;
 			}
 
@@ -1807,6 +1807,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			for(size_t j = 0; j < fluorList[i].size(); ++j)
 			{
 				strcat(mess,fluorList[i][j].c_str());
+				// space used in sstr.good()
 				if ((i == (maxfluorvalues - 1)) && (j == (fluorList[i].size() - 1)))
 					;
 				else

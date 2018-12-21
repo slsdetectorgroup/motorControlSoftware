@@ -343,19 +343,17 @@ void MotorControlGui::GetFluorValues()
 		{
 			// adding an empty vector of strings for first/ next target
 			fluorescence.push_back(vector < string > ());
-			++itarget;cout << "added new vector, target:"<<itarget<<endl;
+			++itarget;
 		}
 		++iPara;
 
 		string sArgName;
 		sstr >> sArgName;
 		fluorescence[itarget].push_back(sArgName);
-		cout<<iPara<<" " << sArgName <<endl;
 
 		if (iPara == FLUOR_PARA_NUM)
 		{
 			iPara = 0;
-			cout << "resetting iPara for next intake"<<endl;
 		}
 	}
 	cout <<"num targets: "<< fluorescence.size()<<endl;
