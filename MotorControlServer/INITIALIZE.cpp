@@ -407,6 +407,20 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 		return 0;
 	}
 
+	// --- if command is numflist----------------
+	else if(strcasecmp(args[0],"numflist")==0)
+	{
+		// if number of parameters are wrong
+		if(argc!=1)
+		{
+			strcpy(mess, "ERROR: Required number of parameters: 1");
+			return -1;
+		}
+
+		sprintf(mess, "%d", (int)fluorListArray.size());
+		return 0;
+	}
+
 	// --- if command is whichflist----------------
 	else if(strcasecmp(args[0],"whichflist")==0)
 	{

@@ -410,12 +410,25 @@ void MotorControlGui::LayoutWindow()
 	else
 	{
 #ifdef XRAYBOX
-		for (int i = 0; i < fluorescence.size(); ++i)
 		{
-			char listName[20] = {0};
-			sprintf(listName, "Fluor List %d", i);
-			fluorLabel->addItem(listName);
+			char message[200] = {0};
+			// first ensure it is the same list being used now
+			strcpy(message,MotorWidget::SendCommand(2,"gui numflist"));
+			if(strstr (message,"ERROR")!=NULL)
+			{
+				MotorWidget::ErrorMessage(message);
+				exit(-1);
+			}
+
+			int numList = atoi(message);
+			for (int i = 0; i < numList; ++i)
+			{
+				char listName[20] = {0};
+				sprintf(listName, "Fl List %d", i);
+				fluorLabel->addItem(listName);
+			}
 		}
+
 #else
 		fluorLabel->addItem("Normal Fl List");
 		fluorLabel->addItem("Reverse Fl List");
