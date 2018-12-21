@@ -15,7 +15,7 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-
+cout<<"test"<<endl;
 #ifdef XRAYBOX
 	cout << " This is XRay Box Server" << endl;
 #elif LASERBOX
