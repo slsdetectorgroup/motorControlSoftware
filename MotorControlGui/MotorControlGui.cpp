@@ -356,15 +356,15 @@ void MotorControlGui::GetFluorValues()
 			iPara = 0;
 		}
 	}
-	cout <<"num targets: "<< fluorescence.size()<<endl;
-	cout <<"num parameters of last target: "<< fluorescence[fluorescence.size() - 1].size()<<endl;
+	//cout <<"num targets: "<< fluorescence.size()<<endl;
+	//cout <<"num parameters of last target: "<< fluorescence[fluorescence.size() - 1].size()<<endl;
 	// if last target does not have 3 strings
 	if (fluorescence[fluorescence.size() - 1].size() != FLUOR_PARA_NUM)
 	{
 		MotorWidget::ErrorMessage("ERROR: fluorescene list has inconsistent values.");
 		exit(-1);
 	}
-
+/*
 	// debugging
 	cout << "Current Target Holder " <<endl;
 	for(size_t i = 0; i < fluorescence.size(); ++i)
@@ -377,6 +377,7 @@ void MotorControlGui::GetFluorValues()
 		cout << endl;
 	}
 	cout << endl;
+	*/
 }
 #endif
 //-------------------------------------------------------------------------------------------------------------------------------------------------
