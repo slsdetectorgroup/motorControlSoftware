@@ -3225,7 +3225,7 @@ void INITIALIZE::initFluorNames(string sLine)
 	// check where to insert the target
 	int setIndex = fluorListArray.size() - 1;
 	// first set (add an empty vector for the first set)
-	if (!setIndex) {
+	if (setIndex < 0) {
 		fluorListArray.push_back(std::vector < vector < string > > ());
 		++setIndex;
 	}
