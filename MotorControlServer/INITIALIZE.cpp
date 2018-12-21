@@ -3213,7 +3213,7 @@ void INITIALIZE::initFluorNames(string sLine)
 	string sArgName;
 	vector <string> args;
 
-	for (int i = 0; i < 4; ++i) {
+	for (int i = 0; i < FLUOR_PARA_NUM + 1; ++i) {
 		if (!sstr.good()) {
 			cout<<"ERROR: Could not scan fluorescence line " << sLine << endl;
 			exit(-1);
@@ -3234,17 +3234,40 @@ void INITIALIZE::initFluorNames(string sLine)
 		fluorListArray.push_back(std::vector < vector < string > > ());
 		++setIndex;
 	}
-	//cout << "Set:" << setIndex <<endl;
+	cout << "Set:" << setIndex <<endl;
 
 	// adding target for each call to this method
 	fluorListArray[setIndex].push_back(vector < string > ());
 
 	size_t iPos = fluorListArray[setIndex].size() - 1;
-	//cout << "Target pos: " << iPos << endl;
+	cout << "Target pos: " << iPos << endl;
 
 	for (size_t i = 0; i < args.size() - 1; i++) {
 		fluorListArray[setIndex][iPos].push_back(args[i + 1]);
 	}
+
+	// for debuging
+	cout << "Fluoresence Targets" << endl;
+	cout << "===================" << endl;
+	// for each target holder
+	for (size_t i = 0; i < fluorListArray.size(); ++i)
+	{
+		cout << "Target Holder " << i <<endl;
+		// for each target
+		for (size_t j = 0; j < maxfluorvalues; ++j)
+		{
+			cout << "\tTarget " << j << ": ";
+			// for each target characteristic (name, energy, power)
+			for (size_t k = 0; k < fluorListArray[i][j].size(); ++k)
+			{
+				cout << fluorListArray[i][j][k] << "\t";
+			}
+			cout << endl;
+		}
+		cout << endl;
+	}
+
+	cout << "done reading this line"<<endl;
 }
 #endif
 
