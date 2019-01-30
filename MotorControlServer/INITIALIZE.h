@@ -213,7 +213,7 @@ class INITIALIZE
 #ifdef XRAYBOX
   static const double fluorwidth = 34;
   static const double fluoroffset = 12;
-  static const double laserPosition = 127;
+  static const double laserPosition = 124;
 #else
   static const double fluorwidth = 45;
   static const double fluoroffset = 0;
