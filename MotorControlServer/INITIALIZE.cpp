@@ -2907,7 +2907,7 @@ INITIALIZE::~INITIALIZE()
  */
 
 #ifndef LASERBOX
-INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName3,string const fName4):slit1_exists(0),slit2_exists(0),maxTubePower(0),xrayStatus(-9), NUMBER_OF_CONTROLLERS(0)
+INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName3,string const fName4):slit1_exists(-1),slit2_exists(-1),maxTubePower(0),xrayStatus(-9), NUMBER_OF_CONTROLLERS(0)
 #else
 INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName3):NUMBER_OF_CONTROLLERS(0),NUMBER_OF_REFPOINTS(0)
 #endif
@@ -3041,12 +3041,12 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 #ifndef LASERBOX
 	//-----------------------------------
 	// creates slit object if both slit_x1 and slit_x2
-	if((!slit1_exists && slit2_exists) || (slit1_exists && !slit2_exists))
+	if((slit1_exists < 0 && slit2_exists >= 0) || (slit1_exists >= 0 && slit2_exists < 0))
 	{
 		cout<<"\nERROR: Only one of the slit motors are connected or present in config file.\n\n";
 		exit(-1);
 	}
-	else if (slit1_exists && slit2_exists)
+	else if (slit1_exists >= 0 && slit2_exists >= 0)
 	{
 		Slit = new SLIT(Motor[slit1_exists]->getPosition(),Motor[slit2_exists]->getPosition());
 	}
