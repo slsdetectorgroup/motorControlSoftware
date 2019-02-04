@@ -13,7 +13,7 @@ using namespace std;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-SLIT::SLIT(double x1pos, double x2pos):x1pos(x1pos),x2pos(x2pos),Limit(102.5)
+SLIT::SLIT(double x1pos, double x2pos):x1pos(x1pos),x2pos(x2pos),Limit(105)//102.5)
 {
   x1Limit=Limit-x2pos;
   x2Limit=Limit-x1pos;

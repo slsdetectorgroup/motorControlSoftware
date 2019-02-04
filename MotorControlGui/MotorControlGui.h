@@ -297,7 +297,7 @@ class MotorControlGui:public QWidget, private Ui::MotorControlGuiObject
 #ifndef LASERBOX
   /**limit of the slit motors
    */  
-  static const double Limit = 102.5;
+  static const double Limit = 105;//102.5;
 
   /** current florescence target holder index
    */  
