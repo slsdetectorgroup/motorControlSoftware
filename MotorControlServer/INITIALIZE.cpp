@@ -636,7 +636,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 				}
 			// no need to check filter wheels as this command is not for laser box
 #ifdef VACUUMBOX
-			if(!(strcmp(PressureInterface->getSerial(),serial)))
+			if(PressureInterface != NULL && (!(strcmp(PressureInterface->getSerial(),serial))))
 			    used=true;
 #endif
 			if(!used) {
