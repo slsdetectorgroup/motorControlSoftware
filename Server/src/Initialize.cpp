@@ -74,15 +74,15 @@ int Initialize::executeCommand(int argc, char* args[], char mess[])
 		{
 			bool bx=false,by=false,bz=false;
 			//if its -1, then you dont care bout that axis
-			if((atof(ReferencePoints[i][1].c_str())<0)||(x==atof(ReferencePoints[i][1].c_str())))
+			if((atof(referencePoints[i][1].c_str())<0)||(x==atof(referencePoints[i][1].c_str())))
 					bx=true;
-			if((atof(ReferencePoints[i][2].c_str())<0)||(y==atof(ReferencePoints[i][2].c_str())))
+			if((atof(referencePoints[i][2].c_str())<0)||(y==atof(referencePoints[i][2].c_str())))
 					by=true;
-			if((atof(ReferencePoints[i][3].c_str())<0)||(z==atof(ReferencePoints[i][3].c_str())))
+			if((atof(referencePoints[i][3].c_str())<0)||(z==atof(referencePoints[i][3].c_str())))
 					bz=true;
 			if(bx&&by&&bz)
 			{
-				strcpy(mess,ReferencePoints[i][0].c_str());
+				strcpy(mess,referencePoints[i][0].c_str());
 				return 0;
 			}
 		}
@@ -135,11 +135,11 @@ int Initialize::executeCommand(int argc, char* args[], char mess[])
 		strcpy(mess,"");
 		//find the refpoint
 		for(int i=0;i<NUMBER_OF_REFPOINTS;i++)
-			if(!strcasecmp(args[1],ReferencePoints[i][0].c_str()))
+			if(!strcasecmp(args[1],referencePoints[i][0].c_str()))
 			{
 				for(int j=1;j<=3;j++)
 				{
-					strcat(mess,ReferencePoints[i][j].c_str());
+					strcat(mess,referencePoints[i][j].c_str());
 					strcat(mess," ");
 				}
 				return 0;
@@ -181,7 +181,7 @@ int Initialize::executeCommand(int argc, char* args[], char mess[])
 		for(int i=0;i<NUMBER_OF_REFPOINTS;i++)
 		{
 			strcat(mess," ");
-			strcat(mess,ReferencePoints[i][0].c_str());
+			strcat(mess,referencePoints[i][0].c_str());
 		}
 		return 0;
 
@@ -201,16 +201,16 @@ int Initialize::executeCommand(int argc, char* args[], char mess[])
 		//find the ref point
 		for(int i=0;i<NUMBER_OF_REFPOINTS;i++)
 		{
-			if(!strcasecmp(args[1],ReferencePoints[i][0].c_str()))
+			if(!strcasecmp(args[1],referencePoints[i][0].c_str()))
 			{
 				double x,y,z;
 				char *commands[15];
 				for(int j=0;j<15;j++)
 				    commands[j]=new char[1000];
 				//get the positions from the vector(from file)
-				x= atof(ReferencePoints[i][1].c_str());
-				y= atof(ReferencePoints[i][2].c_str());
-				z= atof(ReferencePoints[i][3].c_str());
+				x= atof(referencePoints[i][1].c_str());
+				y= atof(referencePoints[i][2].c_str());
+				z= atof(referencePoints[i][3].c_str());
 				//detx
 				if(x>=0)
 				{	//form command
@@ -3148,9 +3148,9 @@ Initialize::Initialize(string const fName,string const fName2,string const fName
     cout<<"============"<<endl;
 	for(int i=0;i<NUMBER_OF_CONTROLLERS;i++)
 	{
-		cout<<"Name : "<<Controller[i][0]<<endl;
-		cout<<"Serial Number : "<<Controller[i][1]<<endl;
-		cout<<"Interface : "<<ContInterface[i][1]<<endl<<endl;
+		cout<<"Name : "<<controller[i][0]<<endl;
+		cout<<"Serial Number : "<<controller[i][1]<<endl;
+		cout<<"Interface : "<<contInterface[i][1]<<endl<<endl;
 	}
 	cout<<endl;
 #ifndef LASERBOX
@@ -3170,10 +3170,10 @@ Initialize::Initialize(string const fName,string const fName2,string const fName
     cout<<"================="<<endl;
 	for(int i=0;i<NUMBER_OF_REFPOINTS;i++)
 	{
-		cout<<"Name \t\t: "<<ReferencePoints[i][0]<<endl;
-		cout<<"Det x position\t: "<<ReferencePoints[i][1]<<endl;
-		cout<<"Det y position\t: "<<ReferencePoints[i][2]<<endl;
-		cout<<"Det z position\t: "<<ReferencePoints[i][3]<<endl<<endl;
+		cout<<"Name \t\t: "<<referencePoints[i][0]<<endl;
+		cout<<"Det x position\t: "<<referencePoints[i][1]<<endl;
+		cout<<"Det y position\t: "<<referencePoints[i][2]<<endl;
+		cout<<"Det z position\t: "<<referencePoints[i][3]<<endl<<endl;
 	}
 #endif
 #ifndef LASERBOX
@@ -3396,16 +3396,16 @@ void Initialize::init(int nArg, char *args[])
 		}
 		// resize 2-d arrays for each controller read from file
 		NUMBER_OF_CONTROLLERS++;
-		Controller.resize(NUMBER_OF_CONTROLLERS);
-		ContInterface.resize(NUMBER_OF_CONTROLLERS);
+		controller.resize(NUMBER_OF_CONTROLLERS);
+		contInterface.resize(NUMBER_OF_CONTROLLERS);
 
-		Controller[NUMBER_OF_CONTROLLERS-1].resize(2);
-		ContInterface[NUMBER_OF_CONTROLLERS-1].resize(2);
+		controller[NUMBER_OF_CONTROLLERS-1].resize(2);
+		contInterface[NUMBER_OF_CONTROLLERS-1].resize(2);
 		// copy controller names to 1st col in controller[][] and contInterface[][]
-		Controller[NUMBER_OF_CONTROLLERS-1][0]=args[1];
-		ContInterface[NUMBER_OF_CONTROLLERS-1][0]=args[1];
+		controller[NUMBER_OF_CONTROLLERS-1][0]=args[1];
+		contInterface[NUMBER_OF_CONTROLLERS-1][0]=args[1];
 		// copy the serial numbers to 2nd col in controller[][]
-		Controller[NUMBER_OF_CONTROLLERS-1][1]=args[2];
+		controller[NUMBER_OF_CONTROLLERS-1][1]=args[2];
 
 	}
 
@@ -3416,7 +3416,7 @@ void Initialize::init(int nArg, char *args[])
 		// to check theres no repetition for controllername in config file
 		for(int i=0;i<NUMBER_OF_CONTROLLERS;i++)
 			for(int j=0;j<NUMBER_OF_CONTROLLERS;j++)
-				if((i!=j)&&((Controller[i][0]==Controller[j][0]) || (Controller[i][1]==Controller[j][1])))
+				if((i!=j)&&((controller[i][0]==controller[j][0]) || (controller[i][1]==controller[j][1])))
 				{
 					cout<<"\nERROR: In the config file,two controllers should not be defined to have same name or same serial number."<<endl;
 					exit(-1);
@@ -3513,10 +3513,10 @@ void Initialize::init(int nArg, char *args[])
 
 		for(int j=0;j<NUMBER_OF_CONTROLLERS;j++)
 		{
-			if(args[3]==ContInterface[j][0])
+			if(args[3]==contInterface[j][0])
 			{
-				char* p=new char[ContInterface[j][1].length()+1];
-				strcpy(p,ContInterface[j][1].c_str());
+				char* p=new char[contInterface[j][1].length()+1];
+				strcpy(p,contInterface[j][1].c_str());
 				// get the last digit of the string, for eg. get 2 from '/dev/ttyUSB2'
 				temp= atoi(p+11);
 
@@ -3637,16 +3637,16 @@ void Initialize::init(int nArg, char *args[])
 
 		// resize 2-d arrays for each ref points read from file
 		NUMBER_OF_REFPOINTS++;
-		ReferencePoints.resize(NUMBER_OF_REFPOINTS);
-		ReferencePoints[NUMBER_OF_REFPOINTS-1].resize(4);
+		referencePoints.resize(NUMBER_OF_REFPOINTS);
+		referencePoints[NUMBER_OF_REFPOINTS-1].resize(4);
 		// copy ref name
-		ReferencePoints[NUMBER_OF_REFPOINTS-1][0].assign(args[1]);
+		referencePoints[NUMBER_OF_REFPOINTS-1][0].assign(args[1]);
 		// copy pos of detx
-		ReferencePoints[NUMBER_OF_REFPOINTS-1][1].assign(args[2]);
+		referencePoints[NUMBER_OF_REFPOINTS-1][1].assign(args[2]);
 		// copy pos of dety
-		ReferencePoints[NUMBER_OF_REFPOINTS-1][2].assign(args[3]);
+		referencePoints[NUMBER_OF_REFPOINTS-1][2].assign(args[3]);
 		// copy pos of detz
-		ReferencePoints[NUMBER_OF_REFPOINTS-1][3].assign(args[4]);
+		referencePoints[NUMBER_OF_REFPOINTS-1][3].assign(args[4]);
 	}
 #endif
 
@@ -3742,15 +3742,15 @@ void Initialize::getContInterface()
 		// fill the respective 2nd col of contInterface[][] with serial port
 		for(i=0;i<NUMBER_OF_CONTROLLERS;i++)
 		{
-			temp = atoi(Controller[i][1].c_str());
+			temp = atoi(controller[i][1].c_str());
 
 			// contNo= serial number returned by the particular port, temp= serial number in array
 			if(contNo==temp)
 			{
 				// assigns 2nd col of contInterface[][] for the particular controller with the current serial port
-				ContInterface[i][1].assign(interface[k]->getSerial());
+				contInterface[i][1].assign(interface[k]->getSerial());
 				contFound++;
-				cout<<":"<<interface[k]->getSerial()<<":"<<ContInterface[i][1];
+				cout<<":"<<interface[k]->getSerial()<<":"<<contInterface[i][1];
 				break;
 			}
 		}
@@ -4012,7 +4012,7 @@ void Initialize::setOrigPositions(string const fName)
 
 		//for each motor, if the controller is the same as loop, copy its position to the rite position[axis -1]
 		for(int j=0;j<Motor::NumMotors;j++)
-			if(!strcmp(Controller[i][0].c_str(),motor[j]->getController()))
+			if(!strcmp(controller[i][0].c_str(),motor[j]->getController()))
 				sprintf(positions[motor[j]->getAxis()-1],"%f",0-motor[j]->getPosition());
 
 
@@ -4027,7 +4027,7 @@ void Initialize::setOrigPositions(string const fName)
 
 		//find the interface and send this command to controller
 		for(int k=0;k<NUMBER_OF_CONTROLLERS;k++)
-			if(!strcmp(interface[k]->getSerial(),ContInterface[i][1].c_str()))
+			if(!strcmp(interface[k]->getSerial(),contInterface[i][1].c_str()))
 			{
 				interface[k]->send_command(command,0);
 				break;

@@ -81,7 +81,7 @@ class Initialize
   void init(int nArg, char *args[]);
 
   /**called from init() after reading in all the controllers,
-	 gets the controller interface and sets the Controller[][] and ContInterface[][] values
+	 gets the controller interface and sets the controller[][] and contInterface[][] values
 	 by sending 'getserialno' to each interface
    */
   void getContInterface();
@@ -243,17 +243,17 @@ class Initialize
 
   /** reference points. cols: name, detx position, dety position, detz position
    */
-  vector <vector<string> >ReferencePoints;
+  vector <vector<string> >referencePoints;
 #endif
 
 
   /** 2-d array: 1st col is controller names, 2nd col is controller serial numbers
    */
-  vector <vector<string> >Controller;
+  vector <vector<string> >controller;
 
   /** 2-d array: 1st col is controller names, 2nd col is the port the controller is connected to
    */
-  vector <vector<string> >ContInterface;
+  vector <vector<string> >contInterface;
 
 };
 
