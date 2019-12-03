@@ -1,22 +1,16 @@
- /********************************************//**
- * @file MOTOR.h
- * @short Defines the motor objects
- * @author Dhanya
- ***********************************************/
-#ifndef MOTOR_H
-#define MOTOR_H
+#pragma once
 
 
-#include "INTERFACE.h"
+#include "Interface.h"
 
 #ifndef LASERBOX
-#include "SLIT.h"
+#include "Slit.h"
 #endif
 
 /**
   *@short Defines the motor object parameters and their methods.
   */
-class MOTOR
+class Motor
 {
  public:
 
@@ -28,9 +22,9 @@ class MOTOR
 	 @param LowerLimit The lower limit of the motor
 	 @param UpperLimit The upper limit of the motor
 	 @param Position The position of the motor
-	 @param Interface Pointer to an interface object.<br>(The port that the  motor's connected to is accessed through this)
+	 @param interface Pointer to an interface object.<br>(The port that the  motor's connected to is accessed through this)
   */
-  MOTOR(char* Name, int Axis, char* Controller, double Speed, double LowerLimit, double UpperLimit, double Position, INTERFACE* Interface);
+  Motor(char* Name, int Axis, char* Controller, double Speed, double LowerLimit, double UpperLimit, double Position, Interface* interface);
 
  /**sets the name of motor.
 	@param Name sets name of motor to this value
@@ -103,14 +97,14 @@ class MOTOR
   double getPosition();
 
  /**sets the Interface of motor.
-	@param Interface sets Interface of motor to point to this value
+	@param interface sets Interface of motor to point to this value
  */		
-  void setInterface(INTERFACE* Interface);
+  void setInterface(Interface* interface);
 
  /**gets the Interface of the motor.
    @returns the Interface of motor
  */
-  INTERFACE* getInterface();
+  Interface* getInterface();
 
  /*for debugging - Prints out the parameters of a motor object: Name, Axis, Controller connected to, Speed, LowerLimit, UpperLimit, Interface.
  */		
@@ -200,8 +194,8 @@ class MOTOR
 
 /**Interface pointer of motor
  */
-  INTERFACE* Interface;
+  Interface* interface;
 
 
 }; 
-#endif
+

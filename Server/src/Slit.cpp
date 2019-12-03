@@ -1,10 +1,10 @@
  /********************************************//**
- * @file SLIT.cpp
+ * @file Slit.cpp
  * @short Defines the slit objects
  * @author Dhanya
  ***********************************************/
 
-#include "SLIT.h"
+#include "Slit.h"
 #ifndef LASERBOX
 
 #include <iostream>
@@ -13,7 +13,7 @@ using namespace std;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-SLIT::SLIT(double x1pos, double x2pos):x1pos(x1pos),x2pos(x2pos),Limit(105000)//102.5)
+Slit::Slit(double x1pos, double x2pos):x1pos(x1pos),x2pos(x2pos),Limit(105000)//102.5)
 {
   x1Limit=Limit-x2pos;
   x2Limit=Limit-x1pos;
@@ -25,7 +25,7 @@ SLIT::SLIT(double x1pos, double x2pos):x1pos(x1pos),x2pos(x2pos),Limit(105000)//
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-double SLIT::getLimit()
+double Slit::getLimit()
 {
   return Limit;
 }
@@ -34,7 +34,7 @@ double SLIT::getLimit()
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-double SLIT::getX1Limit()
+double Slit::getX1Limit()
 {
   return x1Limit;
 }
@@ -43,7 +43,7 @@ double SLIT::getX1Limit()
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-double SLIT::getX2Limit()
+double Slit::getX2Limit()
 {
   return x2Limit;
 }
@@ -52,7 +52,7 @@ double SLIT::getX2Limit()
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void SLIT::setX1pos(double newPosition)
+void Slit::setX1pos(double newPosition)
 {
   x1pos=newPosition;
   x2Limit=Limit-x1pos;
@@ -65,7 +65,7 @@ void SLIT::setX1pos(double newPosition)
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void SLIT::setX2pos(double newPosition)
+void Slit::setX2pos(double newPosition)
 {
   x2pos=newPosition;
   x1Limit=Limit-x2pos;
@@ -78,7 +78,7 @@ void SLIT::setX2pos(double newPosition)
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void SLIT::setBothpos(double newPosition1, double newPosition2)
+void Slit::setBothpos(double newPosition1, double newPosition2)
 {
   x1pos=newPosition1;
   x2pos=newPosition2;
@@ -92,7 +92,7 @@ void SLIT::setBothpos(double newPosition1, double newPosition2)
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-int SLIT::canX1Move(double newPosition)
+int Slit::canX1Move(double newPosition)
 {
   if(newPosition > x1Limit)  
 	return 1;
@@ -106,7 +106,7 @@ int SLIT::canX1Move(double newPosition)
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-int SLIT::canX2Move(double newPosition)
+int Slit::canX2Move(double newPosition)
 {
   if(newPosition >  x2Limit)
 	return 1;
@@ -120,7 +120,7 @@ int SLIT::canX2Move(double newPosition)
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-int SLIT::canBothSlitsMove(double newPosition1, double newPosition2)
+int Slit::canBothSlitsMove(double newPosition1, double newPosition2)
 {
   double newX1Limit = Limit - newPosition2;
   double newX2Limit = Limit - newPosition1;
@@ -141,7 +141,7 @@ int SLIT::canBothSlitsMove(double newPosition1, double newPosition2)
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-double SLIT::getSlitWidth()
+double Slit::getSlitWidth()
 {
     return x1Limit - x1pos;
 }
@@ -150,7 +150,7 @@ double SLIT::getSlitWidth()
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-double SLIT::getX1Center()
+double Slit::getX1Center()
 {
   return (x1Limit+x1pos)/2;
 }
@@ -159,7 +159,7 @@ double SLIT::getX1Center()
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void SLIT::print()
+void Slit::print()
 {
   cout<<"\n\nSLITS:";
   cout<<"\nSlit x1 position:"<<x1pos;

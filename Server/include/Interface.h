@@ -1,17 +1,11 @@
- /********************************************//**
- * @file INTERFACE.h
- * @short Defines the interface objects
- * @author Dhanya
- ***********************************************/
+#pragma once
 
-#ifndef INTERFACE_H
-#define INTERFACE_H
 #include <termios.h>  /* POSIX terminal control definitions */
 
  /**
   *@short Defines the USB objects for each connection to the controller.
  */
-class INTERFACE
+class Interface
 {
  public:
   
@@ -21,7 +15,7 @@ class INTERFACE
 	@param serial specifies the port for the interface object.
 	@param success becomes true if this serial port was successfully initialized
  */
-  INTERFACE(char* serial, bool* success);
+  Interface(char* serial, bool* success);
 
 #ifndef LASERBOX
  /**Constructor for serial for XRay Tube
@@ -30,7 +24,7 @@ class INTERFACE
 	@param success becomes true if this serial port was successfully initialized
 	@param xray a useless variable to differentiate between the 2 constructors
  */
-  INTERFACE(char* serial,bool* success, bool xray);
+  Interface(char* serial,bool* success, bool xray);
 #ifdef VACUUMBOX
   /**Constructor for serial for pressure gauge for vacuum box
  	Initializes/opens the port according to the parameter.<br>
@@ -38,7 +32,7 @@ class INTERFACE
  	@param pressure a useless variable to differentiate between the 2 constructors
  	@param success becomes true if this serial port was successfully initialized
   */
-   INTERFACE(char* serial,bool pressure, bool* success);
+   Interface(char* serial,bool pressure, bool* success);
 #endif
 #else
   /**Constructor for serial for filter wheel
@@ -48,7 +42,7 @@ class INTERFACE
  	@param serial specifies the port for the interface object.
  	@param success becomes true if this serial port was successfully initialized
   */
-   INTERFACE(bool fw,char* serial,bool* success);
+   Interface(bool fw,char* serial,bool* success);
 #endif
 
  /**gets the port of the object.
@@ -139,4 +133,3 @@ class INTERFACE
   struct termios new_serial_conf;
 
 };
-#endif

@@ -1,11 +1,11 @@
 /********************************************//** 
- * @file INITIALIZE.cpp
+ * @file Initialize.cpp
  * @short reads config files, moves the motors, and saves positions
  * @author Dhanya
  ***********************************************/
 
 
-#include "INITIALIZE.h"
+#include "Initialize.h"
 
 
 #include <iostream>
@@ -23,7 +23,7 @@ using namespace std;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
+int Initialize::executeCommand(int argc, char* args[], char mess[])
 {
 	string temp;
 	int num=1;
@@ -105,13 +105,13 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 
 		strcpy(mess,"");
 		//find the fwheel and move it
-		for(int i=0;i<FWHEEL::NumFwheels;i++)
-			if(!strcasecmp(args[1],Fwheel[i]->getName()))
+		for(int i=0;i<Fwheel::NumFwheels;i++)
+			if(!strcasecmp(args[1],fwheel[i]->getName()))
 			{
 				char cVal[20]="";
-				for(int j=0;j<FWHEEL::NumSlotsInWheel;j++)
+				for(int j=0;j<Fwheel::NumSlotsInWheel;j++)
 				{
-					sprintf(cVal,"%f",Fwheel[i]->ValueList[j]);
+					sprintf(cVal,"%f",fwheel[i]->ValueList[j]);
 					strcat(mess,cVal);
 					strcat(mess," ");
 				}
@@ -158,10 +158,10 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			return -1;
 		}
 		//all the filter wheels
-		for(int i=0;i<FWHEEL::NumFwheels;i++)
+		for(int i=0;i<Fwheel::NumFwheels;i++)
 		{
 			strcat(mess," ");
-			strcat(mess,Fwheel[i]->getName());
+			strcat(mess,fwheel[i]->getName());
 		}
 		return 0;
 
@@ -269,24 +269,24 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 		}
 
 		//find the fwheel and move it
-		for(int i=0;i<FWHEEL::NumFwheels;i++)
-			if(!strcasecmp(args[1],Fwheel[i]->getName()))
+		for(int i=0;i<Fwheel::NumFwheels;i++)
+			if(!strcasecmp(args[1],fwheel[i]->getName()))
 			{
-				if(!Fwheel[i]->setValue(atof(args[2])))
+				if(!fwheel[i]->setValue(atof(args[2])))
 				{
 					sprintf(mess,"ERROR: %s absorption value for %s is not defined. \nOptions(",args[2],args[1]);
 					char cVal[20]="";
-					for(int j=0;j<FWHEEL::NumSlotsInWheel;j++)
+					for(int j=0;j<Fwheel::NumSlotsInWheel;j++)
 					{
-						sprintf(cVal,"%f",Fwheel[i]->ValueList[j]);
+						sprintf(cVal,"%f",fwheel[i]->ValueList[j]);
 						strcat(mess,cVal);
 						strcat(mess,",");
 					}
 					strcat(mess,")");
 /*					sprintf(mess,"ERROR: %s absorption value for %s is not defined. \nOptions(%f,%f,%f,%f,%f,%f)",
 							args[2],args[1],
-							Fwheel[i]->ValueList[0],Fwheel[i]->ValueList[1],Fwheel[i]->ValueList[2],
-							Fwheel[i]->ValueList[3],Fwheel[i]->ValueList[4],Fwheel[i]->ValueList[5]);*/
+							fwheel[i]->ValueList[0],fwheel[i]->ValueList[1],fwheel[i]->ValueList[2],
+							fwheel[i]->ValueList[3],fwheel[i]->ValueList[4],fwheel[i]->ValueList[5]);*/
 					return -1;
 				}
 				sprintf(mess,"%s set to %s value",args[1],args[2]);
@@ -308,10 +308,10 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 		}
 
 		//find fwheel and value
-		for(int i=0;i<FWHEEL::NumFwheels;i++)
-			if(!strcasecmp(args[1],Fwheel[i]->getName()))
+		for(int i=0;i<Fwheel::NumFwheels;i++)
+			if(!strcasecmp(args[1],fwheel[i]->getName()))
 			{
-				sprintf(mess,"%f",Fwheel[i]->getValue());
+				sprintf(mess,"%f",fwheel[i]->getValue());
 				return 0;
 			}
 	}
@@ -492,11 +492,11 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			return -1;
 		}
 
-		for(int i=0;i<MOTOR::NumMotors;i++)
+		for(int i=0;i<Motor::NumMotors;i++)
 		{
-			if(strcasecmp("Fluorescence",Motor[i]->getName())==0)
+			if(strcasecmp("Fluorescence",motor[i]->getName())==0)
 			{
-				newPosition = Motor[i]->getPosition();
+				newPosition = motor[i]->getPosition();
 				cout << "new position: " << newPosition << endl;
 #ifdef XRAYBOX
 				// laser position
@@ -544,9 +544,9 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			return -1;
 		}
 
-		for(int i=0;i<MOTOR::NumMotors;i++)
+		for(int i=0;i<Motor::NumMotors;i++)
 		{
-			if(strcasecmp("Fluorescence",Motor[i]->getName())==0)
+			if(strcasecmp("Fluorescence",motor[i]->getName())==0)
 			{
 				found=1;
 				// loops through to find fluor name
@@ -570,15 +570,15 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 				// if fluor name found (or laser)
 				if (fluorNameFound) {
 
-					if(!Motor[i]->canMotorMove(newPosition))
+					if(!motor[i]->canMotorMove(newPosition))
 					{
-						sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[1],Motor[i]->getLowerLimit(),Motor[i]->getUpperLimit());
+						sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[1],motor[i]->getLowerLimit(),motor[i]->getUpperLimit());
 						return -1;
 					}
 
-					Motor[i]->moveAbs(newPosition,0,0,0);
+					motor[i]->moveAbs(newPosition,0,0,0);
 					//set position member of motor to the updated position
-					Motor[i]->setPosition(newPosition);
+					motor[i]->setPosition(newPosition);
 					sprintf(mess,"Moved to %s: Fl value:%f",args[1],newPosition);
 					return 0;
 				}
@@ -615,7 +615,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 		}
 		if(xrayStatus==0)
 		{
-			strcpy(mess, "ERROR: The Serial Port and XRAY class has ALREADY been created before");
+			strcpy(mess, "ERROR: The Serial Port and Xray class has ALREADY been created before");
 			return -1;
 		}
 		bool success = false;
@@ -630,31 +630,31 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			serial[11]=usbNum+48;
 			used=false;
 			for(int i=0;i<NUMBER_OF_CONTROLLERS;i++)
-				if(!(strcmp(Interface[i]->getSerial(),serial))){
+				if(!(strcmp(interface[i]->getSerial(),serial))){
 					used=true;
 					break;
 				}
 			// no need to check filter wheels as this command is not for laser box
 #ifdef VACUUMBOX
-			if(PressureInterface != NULL && (!(strcmp(PressureInterface->getSerial(),serial))))
+			if(pressureInterface != NULL && (!(strcmp(pressureInterface->getSerial(),serial))))
 			    used=true;
 #endif
 			if(!used) {
-				if (TubeInterface==NULL){
-					TubeInterface = new INTERFACE(serial , &success, true);
+				if (tubeInterface==NULL){
+					tubeInterface = new Interface(serial , &success, true);
 					if(success){
 						xrayStatus=0;
-						XrayTube = new XRAY(TubeInterface);
+						XrayTube = new Xray(tubeInterface);
 #ifdef XRAYBOX
 						strcpy(mess, "Serial Port to the xray tube has been created successfully");
 						return 0;
 #endif
 					}else {
                         xrayStatus=-1;
-                        TubeInterface = NULL;
+                        tubeInterface = NULL;
 					}
 				}
-				else if(!(strcmp(TubeInterface->getSerial(),serial))){
+				else if(!(strcmp(tubeInterface->getSerial(),serial))){
 					used=true;
 				}
 			}
@@ -663,7 +663,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 		if (xrayStatus) {
 			strcpy(mess, "ERROR: Unable to create serial port for X-Ray Tube or the tube is switched off.");
 			xrayStatus=-1;
-			TubeInterface = NULL;
+			tubeInterface = NULL;
 			return -1;
 		}
 
@@ -683,7 +683,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
             strcpy(mess, "ERROR: Required number of parameters: 1");
             return -1;
         }
-        if(PressureInterface == NULL) {
+        if(pressureInterface == NULL) {
 
             bool success = false;
             //check through all the usb devices connected
@@ -693,32 +693,32 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
                 serial[11]=usbNum+48;
                 used=false;
                 for(int i=0;i<NUMBER_OF_CONTROLLERS;i++) {
-                    if(!(strcmp(Interface[i]->getSerial(),serial))){
+                    if(!(strcmp(interface[i]->getSerial(),serial))){
                         used=true;
                         break;
                     }
                 }
                 // no need to check filter wheels as this command is not for laser box
-                if((TubeInterface != NULL) && (!(strcmp(TubeInterface->getSerial(),serial))))
+                if((tubeInterface != NULL) && (!(strcmp(tubeInterface->getSerial(),serial))))
                     used=true;
                 if(!used) {
-                    PressureInterface = new INTERFACE(serial, true, &success);
+                    pressureInterface = new Interface(serial, true, &success);
                     if(success){
-                        Pgauge = new PGAUGE(PressureInterface);
+                        pgauge = new Pgauge(pressureInterface);
                         printf("Serial Port to the Pressure Gauge Controller has been created successfully\n");
                         break;
                     }else {
-                        Pgauge = NULL;
-                        PressureInterface = NULL;
+                        pgauge = NULL;
+                        pressureInterface = NULL;
                     }
                 }
             }
         }
 
-        if (PressureInterface == NULL) {
+        if (pressureInterface == NULL) {
             strcpy(mess, "ERROR: Unable to create Pressure Gauge Controller or the pump is switched off.");
-            Pgauge = NULL;
-            PressureInterface = NULL;
+            pgauge = NULL;
+            pressureInterface = NULL;
             return -1;
         }
 
@@ -726,7 +726,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
         int ret = 0;
         //retries
         for (int i = 0; i < 3; i ++) {
-            ret = Pgauge->getPressure(status1,value1,status2,value2);
+            ret = pgauge->getPressure(status1,value1,status2,value2);
             if (ret)
                 break;
         }
@@ -1493,18 +1493,18 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			return -1;
 		}
 
-		for(int i=0;i<MOTOR::NumMotors;i++)
-			if(!strcasecmp(args[1],Motor[i]->getName()))
+		for(int i=0;i<Motor::NumMotors;i++)
+			if(!strcasecmp(args[1],motor[i]->getName()))
 			{
-				sprintf(positions[Motor[i]->getAxis()-1],"%f",0 - atof(args[2]));
+				sprintf(positions[motor[i]->getAxis()-1],"%f",0 - atof(args[2]));
 
-				for(int j=0;j<MOTOR::NumMotors;j++)
-					if((!strcmp(Motor[i]->getController(),Motor[j]->getController())) && (Motor[i]->getAxis()!=Motor[j]->getAxis()))
-						sprintf(positions[Motor[j]->getAxis()-1],"%f",0 - Motor[j]->getPosition());
+				for(int j=0;j<Motor::NumMotors;j++)
+					if((!strcmp(motor[i]->getController(),motor[j]->getController())) && (motor[i]->getAxis()!=motor[j]->getAxis()))
+						sprintf(positions[motor[j]->getAxis()-1],"%f",0 - motor[j]->getPosition());
 
 				sprintf(command,"%s %s %s setpos ",positions[0],positions[1],positions[2]);
-				Motor[i]->getInterface()->send_command(command,0);
-				Motor[i]->setPosition(atof(args[2]));
+				motor[i]->getInterface()->send_command(command,0);
+				motor[i]->setPosition(atof(args[2]));
 				sprintf(mess,"The cuurent position for motor %s has been set to %s",args[1],args[2]);
 				return 0;
 			}
@@ -1530,15 +1530,15 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			return -1;
 		}
 
-		for(int i=0;i<MOTOR::NumMotors;i++)
-			if(!strcasecmp(args[1],Motor[i]->getName()))
+		for(int i=0;i<Motor::NumMotors;i++)
+			if(!strcasecmp(args[1],motor[i]->getName()))
 			{
-				if(atof(args[2])>Motor[i]->getUpperLimit())
+				if(atof(args[2])>motor[i]->getUpperLimit())
 				{
-					sprintf(mess, "ERROR: %s for lower limit should not be greater than the motor's upper limit of %f",args[2],Motor[i]->getUpperLimit());
+					sprintf(mess, "ERROR: %s for lower limit should not be greater than the motor's upper limit of %f",args[2],motor[i]->getUpperLimit());
 					return -1;
 				}
-				Motor[i]->setLowerLimit(atof(args[2]));
+				motor[i]->setLowerLimit(atof(args[2]));
 				sprintf(mess,"The Lower Limit for motor %s has been changed to %s",args[1],args[2]);
 				return 0;
 			}
@@ -1565,15 +1565,15 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			return -1;
 		}
 
-		for(int i=0;i<MOTOR::NumMotors;i++)
-			if(!strcasecmp(args[1],Motor[i]->getName()))
+		for(int i=0;i<Motor::NumMotors;i++)
+			if(!strcasecmp(args[1],motor[i]->getName()))
 			{
-				if(atof(args[2])<Motor[i]->getLowerLimit())
+				if(atof(args[2])<motor[i]->getLowerLimit())
 				{
-					sprintf(mess, "ERROR: %s for upper limit should not be less than the motor's lower limit of %f",args[2],Motor[i]->getLowerLimit());
+					sprintf(mess, "ERROR: %s for upper limit should not be less than the motor's lower limit of %f",args[2],motor[i]->getLowerLimit());
 					return -1;
 				}
-				Motor[i]->setUpperLimit(atof(args[2]));
+				motor[i]->setUpperLimit(atof(args[2]));
 				sprintf(mess,"The Upper Limit for motor %s has been changed to %s",args[1],args[2]);
 				return 0;
 			}
@@ -1592,10 +1592,10 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			return -1;
 		}
 
-		for(int i=0;i<MOTOR::NumMotors;i++)
-			if(!strcasecmp(args[1],Motor[i]->getName()))
+		for(int i=0;i<Motor::NumMotors;i++)
+			if(!strcasecmp(args[1],motor[i]->getName()))
 			{
-				sprintf(mess,"The Speed for motor %s is %f",args[1],Motor[i]->getSpeed());
+				sprintf(mess,"The Speed for motor %s is %f",args[1],motor[i]->getSpeed());
 				return 0;
 			}
 	}
@@ -1621,10 +1621,10 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			return -1;
 		}
 
-		for(int i=0;i<MOTOR::NumMotors;i++)
-			if(!strcasecmp(args[1],Motor[i]->getName()))
+		for(int i=0;i<Motor::NumMotors;i++)
+			if(!strcasecmp(args[1],motor[i]->getName()))
 			{
-				Motor[i]->setSpeed(atof(args[2]));
+				motor[i]->setSpeed(atof(args[2]));
 				sprintf(mess,"The Speed for motor %s has been changed to %s",args[1],args[2]);
 				return 0;
 			}
@@ -1644,13 +1644,13 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 		}
 
 		// if number of parameters are wrong
-		if(Slit==NULL)
+		if(slit==NULL)
 		{
 			strcpy(mess, "ERROR: Slits are not entered in the config file");
 			return -1;
 		}
 
-		sprintf(mess,"%f",Slit->getX1Limit());
+		sprintf(mess,"%f",slit->getX1Limit());
 		return 0;
 
 	}
@@ -1669,13 +1669,13 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 		}
 
 		// if number of parameters are wrong
-		if(Slit==NULL)
+		if(slit==NULL)
 		{
 			strcpy(mess, "ERROR: Slits are not entered in the config file");
 			return -1;
 		}
 
-		sprintf(mess,"%f",Slit->getX2Limit());
+		sprintf(mess,"%f",slit->getX2Limit());
 		return 0;
 
 	}
@@ -1693,10 +1693,10 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			strcpy(mess, "ERROR: Required number of parameters: 2");
 			return -1;
 		}
-		for(int i=0;i<MOTOR::NumMotors;i++)
-			if(!strcasecmp(args[1],Motor[i]->getName()))
+		for(int i=0;i<Motor::NumMotors;i++)
+			if(!strcasecmp(args[1],motor[i]->getName()))
 			{
-				sprintf(mess,"%f",Motor[i]->getUpperLimit());
+				sprintf(mess,"%f",motor[i]->getUpperLimit());
 				return 0;
 			}
 	}
@@ -1713,10 +1713,10 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			strcpy(mess, "ERROR: Required number of parameters: 2");
 			return -1;
 		}
-		for(int i=0;i<MOTOR::NumMotors;i++)
-			if(!strcasecmp(args[1],Motor[i]->getName()))
+		for(int i=0;i<Motor::NumMotors;i++)
+			if(!strcasecmp(args[1],motor[i]->getName()))
 			{
-				sprintf(mess,"%f",Motor[i]->getLowerLimit());
+				sprintf(mess,"%f",motor[i]->getLowerLimit());
 				return 0;
 			}
 	}
@@ -1731,12 +1731,12 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			strcpy(mess, "ERROR: Required number of parameters: 2");
 			return -1;
 		}
-		for(int i=0;i<MOTOR::NumMotors;i++)
-			if(!strcasecmp(args[1],Motor[i]->getName()))
+		for(int i=0;i<Motor::NumMotors;i++)
+			if(!strcasecmp(args[1],motor[i]->getName()))
 			{
-				Motor[i]->calibrate();
-				Motor[i]->setPosition(0);
-				sprintf(mess,"Motor %s has been calibrated and moved to position %f",args[1],Motor[i]->getPosition());
+				motor[i]->calibrate();
+				motor[i]->setPosition(0);
+				sprintf(mess,"Motor %s has been calibrated and moved to position %f",args[1],motor[i]->getPosition());
 				return 0;
 			}
 	}
@@ -1783,16 +1783,16 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
 		}
-		sprintf(mess,"%d ",MOTOR::NumMotors);
+		sprintf(mess,"%d ",Motor::NumMotors);
 
 		// find motor name (case insensitive) and execute cmd
-		for(int i=0;i<MOTOR::NumMotors;i++)
+		for(int i=0;i<Motor::NumMotors;i++)
 		{
-			p = Motor[i]->getController();
+			p = motor[i]->getController();
 			//to get the last digit of the controller name
-			strcat(mess,p+strlen(Motor[i]->getController())-1);
+			strcat(mess,p+strlen(motor[i]->getController())-1);
 			strcat(mess," ");
-			strcat(mess,Motor[i]->getName());
+			strcat(mess,motor[i]->getName());
 			strcat(mess," ");
 		}
 		return 0;
@@ -1843,10 +1843,10 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			return -1;
 		}
 		// find motor name (case insensitive) and execute cmd
-		for(int i=0;i<MOTOR::NumMotors;i++)
-			if(strcasecmp(args[1],Motor[i]->getName())==0)
+		for(int i=0;i<Motor::NumMotors;i++)
+			if(strcasecmp(args[1],motor[i]->getName())==0)
 			{
-				sprintf(mess,"%f",Motor[i]->getPosition());
+				sprintf(mess,"%f",motor[i]->getPosition());
 				return 0;
 			}
 
@@ -1865,10 +1865,10 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			return -1;
 		}
 		// find motor name (case insensitive) and execute cmd
-		for(int i=0;i<MOTOR::NumMotors;i++)
-			if(strcasecmp(args[1],Motor[i]->getName())==0)
+		for(int i=0;i<Motor::NumMotors;i++)
+			if(strcasecmp(args[1],motor[i]->getName())==0)
 			{
-				sprintf(mess,"%f",Motor[i]->debugPosition());
+				sprintf(mess,"%f",motor[i]->debugPosition());
 				return 0;
 			}
 	}
@@ -1880,7 +1880,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 	else if(strcasecmp(args[0],"getcenter")==0)
 	{
 		//if slits are not included in config file
-		if(Slit == NULL)
+		if(slit == NULL)
 		{
 			strcpy(mess, "ERROR: The slit motors do not exist in the config file.");
 			return -1;
@@ -1892,7 +1892,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			return -1;
 		}
 
-		sprintf(mess,"%f",Slit->getX1Center());
+		sprintf(mess,"%f",slit->getX1Center());
 		return 0;
 	}
 
@@ -1902,7 +1902,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 	else if(strcasecmp(args[0],"getslitwidth")==0)
 	{
 		//if slits are not included in config file
-		if(Slit == NULL)
+		if(slit == NULL)
 		{
 			strcpy(mess, "ERROR: The slit motors do not exist in the config file.");
 			return -1;
@@ -1914,7 +1914,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			return -1;
 		}
 
-		sprintf(mess,"%f",Slit->getSlitWidth());
+		sprintf(mess,"%f",slit->getSlitWidth());
 		return 0;
 	}
 
@@ -1927,7 +1927,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 	else if(strcasecmp(args[0],"widthrel")==0)
 	{
 		//if slits are not included in config file
-		if(Slit == NULL)
+		if(slit == NULL)
 		{
 			strcpy(mess, "ERROR: The slit motors do not exist in the config file.");
 			return -1;
@@ -1950,22 +1950,22 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 		}
 
 		halfWidth = atof(args[1])/2;
-		newPosition = Motor[slit1_exists]->getPosition() - halfWidth;
-		newPosition2 = Motor[slit2_exists]->getPosition() - halfWidth;
+		newPosition = motor[slit1_exists]->getPosition() - halfWidth;
+		newPosition2 = motor[slit2_exists]->getPosition() - halfWidth;
 
 		// checks if width is too large, then the motors will go past the original positions
-		if(Slit->canBothSlitsMove(newPosition,newPosition2))
+		if(slit->canBothSlitsMove(newPosition,newPosition2))
 		{
 			strcpy(mess,"ERROR: The width should be small enough so that the slit motors can move");
 			return -1;
 		}
 
-		Motor[slit1_exists]->moveRel(0-halfWidth ,Motor[slit2_exists]->getAxis(),0-halfWidth );
+		motor[slit1_exists]->moveRel(0-halfWidth ,motor[slit2_exists]->getAxis(),0-halfWidth );
 
 		// sets the positions in the motor objects and the slit object
-		Motor[slit1_exists]->setPosition(newPosition);
-		Motor[slit2_exists]->setPosition(newPosition2);
-		Slit->setBothpos(newPosition,newPosition2);
+		motor[slit1_exists]->setPosition(newPosition);
+		motor[slit2_exists]->setPosition(newPosition2);
+		slit->setBothpos(newPosition,newPosition2);
 
 		sprintf(mess,"The Slit width has been increased by %f and slit_x1 has moved to %f and slit_x2 has moved to %f",atof(args[1]),newPosition, newPosition2);
 		return 0;
@@ -1980,7 +1980,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 	else if(strcasecmp(args[0],"widthabs")==0)
 	{
 		//if slits are not included in config file
-		if(Slit == NULL)
+		if(slit == NULL)
 		{
 			strcpy(mess, "ERROR: The slit motors do not exist in the config file.");
 			return -1;
@@ -2002,27 +2002,27 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 		}
 
 		// the absolute middle position of the slits
-		midpos = (Motor[slit1_exists]->getPosition()+Slit->getX1Limit())/2;
+		midpos = (motor[slit1_exists]->getPosition()+slit->getX1Limit())/2;
 		// the distance to be moved relatively from the middle position of the slits
 		double moveby = atof(args[1])/2;
 
 		newPosition = midpos - moveby;
-		newPosition2 = Slit->getLimit()-(midpos+moveby);
+		newPosition2 = slit->getLimit()-(midpos+moveby);
 
 		// checks if width is too large, then the motors will go past the original positions
-		if(Slit->canBothSlitsMove(newPosition,newPosition2))
+		if(slit->canBothSlitsMove(newPosition,newPosition2))
 		{
 			strcpy(mess,"ERROR: The width should be small enough so that the slit motors can move");
 			return -1;
 		}
-		Motor[slit1_exists]->moveAbs(newPosition,Motor[slit2_exists]->getAxis(),newPosition2,Motor[slit2_exists]->getPosition());
+		motor[slit1_exists]->moveAbs(newPosition,motor[slit2_exists]->getAxis(),newPosition2,motor[slit2_exists]->getPosition());
 
 		// sets the positions in the motor objects and the slit object
-		Motor[slit1_exists]->setPosition(newPosition);
-		Motor[slit2_exists]->setPosition(newPosition2);
-		Slit->setBothpos(newPosition,newPosition2);
-		midpos = (Motor[slit1_exists]->getPosition()+Slit->getX1Limit())/2;
-		sprintf(mess,"Slit_x1 has been moved to %f and slit_x2 to %f, with a width of %f and midpos is %f",newPosition, newPosition2,Slit->getSlitWidth(),midpos);
+		motor[slit1_exists]->setPosition(newPosition);
+		motor[slit2_exists]->setPosition(newPosition2);
+		slit->setBothpos(newPosition,newPosition2);
+		midpos = (motor[slit1_exists]->getPosition()+slit->getX1Limit())/2;
+		sprintf(mess,"Slit_x1 has been moved to %f and slit_x2 to %f, with a width of %f and midpos is %f",newPosition, newPosition2,slit->getSlitWidth(),midpos);
 		return 0;
 	}
 
@@ -2034,7 +2034,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 	else if(strcasecmp(args[0],"centerrel")==0)
 	{
 		//if slits are not included in config file
-		if(Slit == NULL)
+		if(slit == NULL)
 		{
 			strcpy(mess, "ERROR: The slit motors do not exist in the config file.");
 			return -1;
@@ -2055,20 +2055,20 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			return -1;
 		}
 
-		newPosition = Motor[slit1_exists]->getPosition()+atof(args[1]);
-		newPosition2 = Motor[slit2_exists]->getPosition()-atof(args[1]);
+		newPosition = motor[slit1_exists]->getPosition()+atof(args[1]);
+		newPosition2 = motor[slit2_exists]->getPosition()-atof(args[1]);
 
-		if(Slit->canBothSlitsMove(newPosition,newPosition2))
+		if(slit->canBothSlitsMove(newPosition,newPosition2))
 		{
 			strcpy(mess,"ERROR: Either of the slits cannot be moved to a negative position ");
 			return -1;
-		}	  Motor[slit1_exists]->moveRel(atof(args[1]),Motor[slit2_exists]->getAxis(),0-atof(args[1]));
+		}	  motor[slit1_exists]->moveRel(atof(args[1]),motor[slit2_exists]->getAxis(),0-atof(args[1]));
 		// sets the positions in the motor objects and the slit object
-		Motor[slit1_exists]->setPosition(newPosition);
-		Motor[slit2_exists]->setPosition(newPosition2);
-		Slit->setBothpos(newPosition,newPosition2);
-		midpos = (Motor[slit1_exists]->getPosition()+Slit->getX1Limit())/2;
-		sprintf(mess,"Slit_x1 has been moved to %f and slit_x2 to %f, with same width %f but midpos is %f",newPosition, newPosition2,Slit->getSlitWidth(),midpos );
+		motor[slit1_exists]->setPosition(newPosition);
+		motor[slit2_exists]->setPosition(newPosition2);
+		slit->setBothpos(newPosition,newPosition2);
+		midpos = (motor[slit1_exists]->getPosition()+slit->getX1Limit())/2;
+		sprintf(mess,"Slit_x1 has been moved to %f and slit_x2 to %f, with same width %f but midpos is %f",newPosition, newPosition2,slit->getSlitWidth(),midpos );
 		return 0;
 
 	}
@@ -2082,7 +2082,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 	else if(strcasecmp(args[0],"centerabs")==0)
 	{
 		//if slits are not included in config file
-		if(Slit == NULL)
+		if(slit == NULL)
 		{
 			strcpy(mess, "ERROR: The slit motors do not exist in the config file.");
 			return -1;
@@ -2104,27 +2104,27 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 		}
 
 		// the absolute middle position of the slits
-		midpos = (Motor[slit1_exists]->getPosition()+Slit->getX1Limit())/2;
+		midpos = (motor[slit1_exists]->getPosition()+slit->getX1Limit())/2;
 		// calculate the relative position to be moved
 		double relpos =  atof(args[1]) - midpos;
 
-		newPosition = Motor[slit1_exists]->getPosition() + relpos;
-		newPosition2 = Motor[slit2_exists]->getPosition() - relpos;
+		newPosition = motor[slit1_exists]->getPosition() + relpos;
+		newPosition2 = motor[slit2_exists]->getPosition() - relpos;
 
 		//check if the slits will crash into each other
-		if(Slit->canBothSlitsMove(newPosition,newPosition2))
+		if(slit->canBothSlitsMove(newPosition,newPosition2))
 		{
 			strcpy(mess,"ERROR: Either of the slits cannot be moved to a negative position");
 			return -1;
 		}
 
-		Motor[slit1_exists]->moveRel(relpos,Motor[slit2_exists]->getAxis(),0-relpos);
+		motor[slit1_exists]->moveRel(relpos,motor[slit2_exists]->getAxis(),0-relpos);
 		// sets the positions in the motor objects and the slit object
-		Motor[slit1_exists]->setPosition(newPosition);
-		Motor[slit2_exists]->setPosition(newPosition2);
-		Slit->setBothpos(newPosition,newPosition2);
-		midpos = (Motor[slit1_exists]->getPosition()+Slit->getX1Limit())/2;
-		sprintf(mess,"Slit_x1 has been moved to %f and slit_x2 to %f, with same width %f but midpos is %f",newPosition, newPosition2,Slit->getSlitWidth(),midpos );
+		motor[slit1_exists]->setPosition(newPosition);
+		motor[slit2_exists]->setPosition(newPosition2);
+		slit->setBothpos(newPosition,newPosition2);
+		midpos = (motor[slit1_exists]->getPosition()+slit->getX1Limit())/2;
+		sprintf(mess,"Slit_x1 has been moved to %f and slit_x2 to %f, with same width %f but midpos is %f",newPosition, newPosition2,slit->getSlitWidth(),midpos );
 		return 0;
 
 	}
@@ -2137,7 +2137,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 	else if(strcasecmp(args[0],"exactcenter")==0)
 	{
 		//if slits are not included in config file
-		if(Slit == NULL)
+		if(slit == NULL)
 		{
 			strcpy(mess, "ERROR: The slit motors do not exist in the config file.");
 			return -1;
@@ -2149,12 +2149,12 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
 		}
-		double exactcenter = Slit->getLimit()/2;
+		double exactcenter = slit->getLimit()/2;
 		// moving both slits to exact center
-		Motor[slit1_exists]->moveAbs(exactcenter,Motor[slit2_exists]->getAxis(),exactcenter,Motor[slit2_exists]->getPosition());
-		Motor[slit1_exists]->setPosition(exactcenter);
-		Motor[slit2_exists]->setPosition(exactcenter);
-		Slit->setBothpos(exactcenter,exactcenter);
+		motor[slit1_exists]->moveAbs(exactcenter,motor[slit2_exists]->getAxis(),exactcenter,motor[slit2_exists]->getPosition());
+		motor[slit1_exists]->setPosition(exactcenter);
+		motor[slit2_exists]->setPosition(exactcenter);
+		slit->setBothpos(exactcenter,exactcenter);
 		sprintf(mess,"Moved both the slits to the exact center at position 51.25");
 		return 0;
 
@@ -2167,7 +2167,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 	else if(strcasecmp(args[0],"x1zerowidth")==0)
 	{
 		//if slits are not included in config file
-		if(Slit == NULL)
+		if(slit == NULL)
 		{
 			strcpy(mess, "ERROR: The slit motors do not exist in the config file.");
 			return -1;
@@ -2180,11 +2180,11 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 			return -1;
 		}
 
-		newPosition=Slit->getX2Limit();
-		Motor[slit2_exists]->moveAbs(newPosition,0,0,0);
-		Motor[slit2_exists]->setPosition(newPosition);
-		Slit->setX2pos(newPosition);
-		sprintf(mess,"Moved slit_x2 to %f position, slit_x1:%f position,width:%f",newPosition,Motor[slit1_exists]->getPosition(),Slit->getSlitWidth());
+		newPosition=slit->getX2Limit();
+		motor[slit2_exists]->moveAbs(newPosition,0,0,0);
+		motor[slit2_exists]->setPosition(newPosition);
+		slit->setX2pos(newPosition);
+		sprintf(mess,"Moved slit_x2 to %f position, slit_x1:%f position,width:%f",newPosition,motor[slit1_exists]->getPosition(),slit->getSlitWidth());
 		return 0;
 
 	}
@@ -2198,7 +2198,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 	else if(strcasecmp(args[0],"zerowidth")==0)
 	{
 		//if slits are not included in config file
-		if(Slit == NULL)
+		if(slit == NULL)
 		{
 			strcpy(mess, "ERROR: The slit motors do not exist in the config file.");
 			return -1;
@@ -2220,20 +2220,20 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 		}
 
 		newPosition=atof(args[2]);
-		newPosition2=Slit->getLimit()-newPosition;
+		newPosition2=slit->getLimit()-newPosition;
 
 		// check if position given is within limit
-		if(newPosition>Slit->getLimit())
+		if(newPosition>slit->getLimit())
 		{
-			sprintf(mess, "ERROR: Position should be less than %f, else slits crash into each other",Slit->getLimit());
+			sprintf(mess, "ERROR: Position should be less than %f, else slits crash into each other",slit->getLimit());
 			return -1;
 		}
 
 
-		Motor[slit1_exists]->moveAbs(newPosition,Motor[slit2_exists]->getAxis(),newPosition2,Motor[slit2_exists]->getPosition());
-		Motor[slit1_exists]->setPosition(newPosition);
-		Motor[slit2_exists]->setPosition(newPosition2);
-		Slit->setBothpos(newPosition,newPosition2);
+		motor[slit1_exists]->moveAbs(newPosition,motor[slit2_exists]->getAxis(),newPosition2,motor[slit2_exists]->getPosition());
+		motor[slit1_exists]->setPosition(newPosition);
+		motor[slit2_exists]->setPosition(newPosition2);
+		slit->setBothpos(newPosition,newPosition2);
 		sprintf(mess,"Moved slit_x1 to %f position and slit_x2 to %f position with 0 width",newPosition,newPosition2);
 		return 0;
 
@@ -2264,17 +2264,17 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 
 
 		// find motor name  and execute cmd
-		for(int i=0;i<MOTOR::NumMotors;i++)
-			if(strcasecmp(args[1],Motor[i]->getName())==0)
+		for(int i=0;i<Motor::NumMotors;i++)
+			if(strcasecmp(args[1],motor[i]->getName())==0)
 			{
-				newPosition=Motor[i]->getPosition()+atof(args[2]);
+				newPosition=motor[i]->getPosition()+atof(args[2]);
 
 #ifndef LASERBOX
 				// if its a slit motor, checks if the slit motor can move to the new position without crashin into other one
 				if(strcasecmp(args[1],"slit_x1")==0)
 				{
 					slitnum=1;
-					int move = Slit->canX1Move(newPosition);
+					int move = slit->canX1Move(newPosition);
 					if(move==1)
 					{
 						sprintf(mess, "ERROR: If slit_x1 moves to that position, it will crash into slit_x2");
@@ -2289,7 +2289,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 				else if(strcasecmp(args[1],"slit_x2")==0)
 				{
 					slitnum=2;
-					int move = Slit->canX2Move(newPosition);
+					int move = slit->canX2Move(newPosition);
 					if(move==1)
 					{
 						sprintf(mess, "ERROR: If slit_x2 moves to that position, it will crash into slit_x1");
@@ -2303,22 +2303,22 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 				}
 #endif
 
-				if(!Motor[i]->canMotorMove(newPosition))
+				if(!motor[i]->canMotorMove(newPosition))
 				{
-					sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[1],Motor[i]->getLowerLimit(),Motor[i]->getUpperLimit());
+					sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[1],motor[i]->getLowerLimit(),motor[i]->getUpperLimit());
 					return -1;
 				}
 
-				Motor[i]->moveRel(atof(args[2]),0,0);
+				motor[i]->moveRel(atof(args[2]),0,0);
 
 				//set position member of motor to the updated position
-				Motor[i]->setPosition(newPosition);
+				motor[i]->setPosition(newPosition);
 #ifndef LASERBOX
 				//set slit positions and limits in slit class
 				if(slitnum==1)
-					Slit->setX1pos(newPosition);
+					slit->setX1pos(newPosition);
 				else if(slitnum==2)
-					Slit->setX2pos(newPosition);
+					slit->setX2pos(newPosition);
 #endif
 				sprintf(mess,"Moved %s by %s position",args[1],args[2]);
 				return 0;
@@ -2356,11 +2356,11 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 		}
 
 		// find motor name (case insensitive) and execute cmd
-		for(int i=0;i<MOTOR::NumMotors;i++)
-			if(strcasecmp(args[1],Motor[i]->getName())==0)
+		for(int i=0;i<Motor::NumMotors;i++)
+			if(strcasecmp(args[1],motor[i]->getName())==0)
 				// find second motor to move simultaneously
-				for(int j=0;j<MOTOR::NumMotors;j++)
-					if(strcasecmp(args[3],Motor[j]->getName())==0)
+				for(int j=0;j<Motor::NumMotors;j++)
+					if(strcasecmp(args[3],motor[j]->getName())==0)
 					{
 						// if both motors are the same, print error and exit
 						if(strcasecmp(args[1],args[3])==0)
@@ -2370,10 +2370,10 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 						}
 
 						//if they have the same controller, only then move
-						if(strcmp(Motor[i]->getController(),Motor[j]->getController())==0)
+						if(strcmp(motor[i]->getController(),motor[j]->getController())==0)
 						{
-							newPosition=Motor[i]->getPosition()+atof(args[2]);
-							newPosition2=Motor[j]->getPosition()+atof(args[4]);
+							newPosition=motor[i]->getPosition()+atof(args[2]);
+							newPosition2=motor[j]->getPosition()+atof(args[4]);
 
 
 #ifndef LASERBOX
@@ -2394,12 +2394,12 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 									if(strcasecmp(args[1],"slit_x1")==0)
 									{
 										slitnum=1;
-										move=Slit->canBothSlitsMove(newPosition,newPosition2);
+										move=slit->canBothSlitsMove(newPosition,newPosition2);
 									}
 									else
 									{
 										slitnum=2;
-										move=Slit->canBothSlitsMove(newPosition2,newPosition);
+										move=slit->canBothSlitsMove(newPosition2,newPosition);
 									}
 
 									if(move==1)
@@ -2418,37 +2418,37 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 #endif
 
 							//checks if the motor is going to move within its limits
-							if(!Motor[i]->canMotorMove(newPosition))
+							if(!motor[i]->canMotorMove(newPosition))
 							{
-								sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[1],Motor[i]->getLowerLimit(),Motor[i]->getUpperLimit());
+								sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[1],motor[i]->getLowerLimit(),motor[i]->getUpperLimit());
 								return -1;
 							}
-							if(!Motor[j]->canMotorMove(newPosition2))
+							if(!motor[j]->canMotorMove(newPosition2))
 							{
-								sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[3],Motor[j]->getLowerLimit(),Motor[j]->getUpperLimit());
+								sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[3],motor[j]->getLowerLimit(),motor[j]->getUpperLimit());
 								return -1;
 							}
 
 #ifndef LASERBOX
 							if(  (!strcasecmp(args[1],"Huber")) ||(!strcasecmp(args[3],"Huber")) )
 							{
-								Motor[i]->moveRel(atof(args[2]),0,0);
-								Motor[j]->moveRel(atof(args[4]),0,0);
+								motor[i]->moveRel(atof(args[2]),0,0);
+								motor[j]->moveRel(atof(args[4]),0,0);
 							}
 							else
 #endif
 
-								Motor[i]->moveRel(atof(args[2]),Motor[j]->getAxis(),atof(args[4]));
+								motor[i]->moveRel(atof(args[2]),motor[j]->getAxis(),atof(args[4]));
 							//set position member of motors to the updated position
-							Motor[i]->setPosition(newPosition);
-							Motor[j]->setPosition(newPosition2);
+							motor[i]->setPosition(newPosition);
+							motor[j]->setPosition(newPosition2);
 
 #ifndef LASERBOX
 							//setting both the positions and limits of the slit object if its the slit motors which moved
 							if (slitnum==1)
-								Slit->setBothpos(newPosition,newPosition2);
+								slit->setBothpos(newPosition,newPosition2);
 							else if (slitnum==2)
-								Slit->setBothpos(newPosition2,newPosition);
+								slit->setBothpos(newPosition2,newPosition);
 #endif
 
 							sprintf(mess,"Moved simultaneously %s by %s position and %s by %s position",args[1],args[2],args[3],args[4]);
@@ -2486,8 +2486,8 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 		}
 
 		// find motor name  and execute cmd
-		for(int i=0;i<MOTOR::NumMotors;i++)
-			if(strcasecmp(args[1],Motor[i]->getName())==0)
+		for(int i=0;i<Motor::NumMotors;i++)
+			if(strcasecmp(args[1],motor[i]->getName())==0)
 			{
 
 #ifndef LASERBOX
@@ -2495,12 +2495,12 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 				if(strcasecmp(args[1],"slit_x1")==0)
 				{
 					slitnum=1;
-					if(Slit->canX1Move(atof(args[2]))>0)
+					if(slit->canX1Move(atof(args[2]))>0)
 					{
 						sprintf(mess, "ERROR: If slit_x1 moves to that position, it will crash into slit_x2");
 						return -1;
 					}
-					else if(Slit->canX1Move(atof(args[2]))<0)
+					else if(slit->canX1Move(atof(args[2]))<0)
 					{
 						sprintf(mess, "ERROR: Slit_x1 cannot move to a negative position");
 						return -1;
@@ -2509,12 +2509,12 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 				else if(strcasecmp(args[1],"slit_x2")==0)
 				{
 					slitnum=2;
-					if(Slit->canX2Move(atof(args[2]))>0)
+					if(slit->canX2Move(atof(args[2]))>0)
 					{
 						sprintf(mess, "ERROR: If slit_x2 moves to that position, it will crash into slit_x1");
 						return -1;
 					}
-					else if(Slit->canX1Move(atof(args[2]))<0)
+					else if(slit->canX1Move(atof(args[2]))<0)
 					{
 						sprintf(mess, "ERROR: Slit_x2 cannot move to a negative position");
 						return -1;
@@ -2523,22 +2523,22 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 #endif
 
 
-				if(!Motor[i]->canMotorMove(atof(args[2])))
+				if(!motor[i]->canMotorMove(atof(args[2])))
 				{
-					sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[1],Motor[i]->getLowerLimit(),Motor[i]->getUpperLimit());
+					sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[1],motor[i]->getLowerLimit(),motor[i]->getUpperLimit());
 					return -1;
 				}
 
-				Motor[i]->moveAbs(atof(args[2]),0,0,0);
+				motor[i]->moveAbs(atof(args[2]),0,0,0);
 				//set position member of motor to the updated position
-				Motor[i]->setPosition(atof(args[2]));
+				motor[i]->setPosition(atof(args[2]));
 
 #ifndef LASERBOX
 				//set slit positions and limits in slit class
 				if(slitnum==1)
-					Slit->setX1pos(atof(args[2]));
+					slit->setX1pos(atof(args[2]));
 				else if(slitnum==2)
-					Slit->setX2pos(atof(args[2]));
+					slit->setX2pos(atof(args[2]));
 #endif
 
 
@@ -2577,11 +2577,11 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 		}
 
 		// find motor name (case insensitive) and execute cmd
-		for(int i=0;i<MOTOR::NumMotors;i++)
-			if(strcasecmp(args[1],Motor[i]->getName())==0)
+		for(int i=0;i<Motor::NumMotors;i++)
+			if(strcasecmp(args[1],motor[i]->getName())==0)
 				// find second motor to move simultaneously
-				for(int j=0;j<MOTOR::NumMotors;j++)
-					if(strcasecmp(args[3],Motor[j]->getName())==0)
+				for(int j=0;j<Motor::NumMotors;j++)
+					if(strcasecmp(args[3],motor[j]->getName())==0)
 					{
 						// if both motors are the same, print error and exit
 						if(strcasecmp(args[1],args[3])==0)
@@ -2590,7 +2590,7 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 							return -1;
 						}
 						//if they have the same controller, move
-						if(strcmp(Motor[i]->getController(),Motor[j]->getController())==0)
+						if(strcmp(motor[i]->getController(),motor[j]->getController())==0)
 						{
 
 
@@ -2612,12 +2612,12 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 									if(strcasecmp(args[1],"slit_x1")==0)
 									{
 										slitnum=1;
-										move=Slit->canBothSlitsMove(atof(args[2]),atof(args[4]));
+										move=slit->canBothSlitsMove(atof(args[2]),atof(args[4]));
 									}
 									else
 									{
 										slitnum=2;
-										move=Slit->canBothSlitsMove(atof(args[4]),atof(args[2]));
+										move=slit->canBothSlitsMove(atof(args[4]),atof(args[2]));
 									}
 
 									if(move>0)
@@ -2635,39 +2635,39 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 #endif
 
 
-							if(!Motor[i]->canMotorMove(atof(args[2])))
+							if(!motor[i]->canMotorMove(atof(args[2])))
 							{
-								sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[1],Motor[i]->getLowerLimit(),Motor[i]->getUpperLimit());
+								sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[1],motor[i]->getLowerLimit(),motor[i]->getUpperLimit());
 								return -1;
 							}
-							if(!Motor[j]->canMotorMove(atof(args[4])))
+							if(!motor[j]->canMotorMove(atof(args[4])))
 							{
-								sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[3],Motor[j]->getLowerLimit(),Motor[j]->getUpperLimit());
+								sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[3],motor[j]->getLowerLimit(),motor[j]->getUpperLimit());
 								return -1;
 							}
 
 #ifndef LASERBOX
 							if(  (!strcasecmp(args[1],"Huber")) ||(!strcasecmp(args[3],"Huber")) )
 							{
-								Motor[i]->moveAbs(atof(args[2]),0,0,0);
-								Motor[j]->moveAbs(atof(args[4]),0,0,0);
+								motor[i]->moveAbs(atof(args[2]),0,0,0);
+								motor[j]->moveAbs(atof(args[4]),0,0,0);
 							}
 							else
 #endif
 
-								Motor[i]->moveAbs(atof(args[2]),Motor[j]->getAxis(),atof(args[4]), Motor[j]->getPosition());
+								motor[i]->moveAbs(atof(args[2]),motor[j]->getAxis(),atof(args[4]), motor[j]->getPosition());
 
 							//set position member of motors to the updated position
-							Motor[i]->setPosition(atof(args[2]));
-							Motor[j]->setPosition(atof(args[4]));
+							motor[i]->setPosition(atof(args[2]));
+							motor[j]->setPosition(atof(args[4]));
 
 
 #ifndef LASERBOX
 							//setting both the positions and limits of the slit object if the motors to be moved were slits
 							if(slitnum==1)
-								Slit->setBothpos(atof(args[2]),atof(args[4]));
+								slit->setBothpos(atof(args[2]),atof(args[4]));
 							else if(slitnum==2)
-								Slit->setBothpos(atof(args[4]),atof(args[2]));
+								slit->setBothpos(atof(args[4]),atof(args[2]));
 #endif
 
 
@@ -2720,14 +2720,14 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 		}
 
 		// find motor name (case insensitive)
-		for(int i=0;i<MOTOR::NumMotors;i++)
-			if(strcasecmp(args[1],Motor[i]->getName())==0)
+		for(int i=0;i<Motor::NumMotors;i++)
+			if(strcasecmp(args[1],motor[i]->getName())==0)
 				// find second motor
-				for(int j=0;j<MOTOR::NumMotors;j++)
-					if(strcasecmp(args[3],Motor[j]->getName())==0)
+				for(int j=0;j<Motor::NumMotors;j++)
+					if(strcasecmp(args[3],motor[j]->getName())==0)
 						//find third motor
-						for(int k=0;k<MOTOR::NumMotors;k++)
-							if(strcasecmp(args[5],Motor[k]->getName())==0)
+						for(int k=0;k<Motor::NumMotors;k++)
+							if(strcasecmp(args[5],motor[k]->getName())==0)
 							{
 								// if two motors are the same, print error and exit
 								if( (!strcasecmp(args[1],args[3])) ||(!strcasecmp(args[2],args[3])) || (!strcasecmp(args[1],args[2])) )
@@ -2736,8 +2736,8 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 									return -1;
 								}
 								//if they all have the same controller, move
-								if(  (!strcmp(Motor[i]->getController(),Motor[j]->getController())) &&
-										(!strcmp(Motor[j]->getController(),Motor[k]->getController())) )
+								if(  (!strcmp(motor[i]->getController(),motor[j]->getController())) &&
+										(!strcmp(motor[j]->getController(),motor[k]->getController())) )
 								{
 
 
@@ -2756,12 +2756,12 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 										}
 
 										//depending on the first motor being slit_X1/slit_x2, the parameters for canbothslitsmove(x1,x2) change
-										if(Slit->canBothSlitsMove(atof(args[x1+1]),atof(args[x2+1]))>0)
+										if(slit->canBothSlitsMove(atof(args[x1+1]),atof(args[x2+1]))>0)
 										{
 											sprintf(mess, "ERROR: If slits move to these positions, they will crash into each other");
 											return -1;
 										}
-										else if(Slit->canBothSlitsMove(atof(args[x1+1]),atof(args[x2+1]))<0)
+										else if(slit->canBothSlitsMove(atof(args[x1+1]),atof(args[x2+1]))<0)
 										{
 											sprintf(mess, "ERROR: Either of the slits cannot be moved to a negative position");
 											return -1;
@@ -2771,19 +2771,19 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 #endif
 
 
-									if(!Motor[i]->canMotorMove(atof(args[2])))
+									if(!motor[i]->canMotorMove(atof(args[2])))
 									{
-										sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[1],Motor[i]->getLowerLimit(),Motor[i]->getUpperLimit());
+										sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[1],motor[i]->getLowerLimit(),motor[i]->getUpperLimit());
 										return -1;
 									}
-									if(!Motor[j]->canMotorMove(atof(args[4])))
+									if(!motor[j]->canMotorMove(atof(args[4])))
 									{
-										sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[3],Motor[j]->getLowerLimit(),Motor[j]->getUpperLimit());
+										sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[3],motor[j]->getLowerLimit(),motor[j]->getUpperLimit());
 										return -1;
 									}
-									if(!Motor[k]->canMotorMove(atof(args[6])))
+									if(!motor[k]->canMotorMove(atof(args[6])))
 									{
-										sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[5],Motor[k]->getLowerLimit(),Motor[k]->getUpperLimit());
+										sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[5],motor[k]->getLowerLimit(),motor[k]->getUpperLimit());
 										return -1;
 									}
 
@@ -2791,15 +2791,15 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 #ifndef LASERBOX
 									if(  (!strcasecmp(args[1],"Huber")) ||(!strcasecmp(args[3],"Huber")) || (!strcasecmp(args[5],"Huber")) )
 									{
-										Motor[i]->moveAbs(atof(args[2]),0,0,0);
-										Motor[j]->moveAbs(atof(args[4]),0,0,0);
-										Motor[k]->moveAbs(atof(args[6]),0,0,0);
+										motor[i]->moveAbs(atof(args[2]),0,0,0);
+										motor[j]->moveAbs(atof(args[4]),0,0,0);
+										motor[k]->moveAbs(atof(args[6]),0,0,0);
 									}
 									else
 									{
 #endif
 
-										int axis = Motor[i]->getAxis();
+										int axis = motor[i]->getAxis();
 										int p =2;
 										for(int repeat=0;repeat<3;repeat++)
 										{
@@ -2814,33 +2814,33 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 											if(repeat==2) break;
 											else if(!repeat)
 											{
-												axis = Motor[j]->getAxis();
+												axis = motor[j]->getAxis();
 												p=4;
 											}
 											else
 											{
-												axis = Motor[k]->getAxis();
+												axis = motor[k]->getAxis();
 												p=6;
 											}
 										}
 
 
-										Motor[i]->moveAllAbs(pos1,pos2,pos3);
+										motor[i]->moveAllAbs(pos1,pos2,pos3);
 
 #ifndef LASERBOX
 									}
 #endif
 
 									//set position member of motors to the updated position
-									Motor[i]->setPosition(atof(args[2]));
-									Motor[j]->setPosition(atof(args[4]));
-									Motor[k]->setPosition(atof(args[6]));
+									motor[i]->setPosition(atof(args[2]));
+									motor[j]->setPosition(atof(args[4]));
+									motor[k]->setPosition(atof(args[6]));
 
 
 #ifndef LASERBOX
 									//setting both the positions and limits of the slit object if the motors to be moved were slits
 									if(slitnum)
-										Slit->setBothpos(atof(args[x1+1]),atof(args[x2+1]));
+										slit->setBothpos(atof(args[x1+1]),atof(args[x2+1]));
 #endif
 
 									sprintf(mess,"Moved simultaneously %s to %s position,%s to %s and %s to %s position",
@@ -2882,19 +2882,19 @@ int INITIALIZE::executeCommand(int argc, char* args[], char mess[])
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 /**  closes all the serialfds
  */
-INITIALIZE::~INITIALIZE()
+Initialize::~Initialize()
 {
 #ifdef LOCAL
 	//closes all the serialfds
 	for(int i=0;i<NUMBER_OF_CONTROLLERS;i++)
-		Interface[i]->close_serialfd();
+		interface[i]->close_serialfd();
 
 #ifndef LASERBOX
-	if(TubeInterface!=NULL)
-		TubeInterface->close_serialfd();
+	if(tubeInterface!=NULL)
+		tubeInterface->close_serialfd();
 #ifdef VACUUMBOX
-	if(PressureInterface!=NULL)
-		PressureInterface->close_serialfd();
+	if(pressureInterface!=NULL)
+		pressureInterface->close_serialfd();
 #endif
 #endif
 
@@ -2907,17 +2907,17 @@ INITIALIZE::~INITIALIZE()
  */
 
 #ifndef LASERBOX
-INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName3,string const fName4):slit1_exists(-1),slit2_exists(-1),maxTubePower(0),xrayStatus(-9), NUMBER_OF_CONTROLLERS(0)
+Initialize::Initialize(string const fName,string const fName2,string const fName3,string const fName4):slit1_exists(-1),slit2_exists(-1),maxTubePower(0),xrayStatus(-9), NUMBER_OF_CONTROLLERS(0)
 #else
-INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName3):NUMBER_OF_CONTROLLERS(0),NUMBER_OF_REFPOINTS(0)
+Initialize::Initialize(string const fName,string const fName2,string const fName3):NUMBER_OF_CONTROLLERS(0),NUMBER_OF_REFPOINTS(0)
 #endif
 {
 #ifndef LASERBOX
 	XrayTube = NULL;
-	TubeInterface=NULL;
+	tubeInterface=NULL;
 #ifdef VACUUMBOX
-	Pgauge = NULL;
-	PressureInterface = NULL;
+	pgauge = NULL;
+	pressureInterface = NULL;
 #endif
 #endif
 
@@ -2993,14 +2993,14 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 		inFile.close();
 #ifndef LASERBOX
 		// After processing and the motor count is still 0, print error and exit
-		if (MOTOR::NumMotors==0)
+		if (Motor::NumMotors==0)
 		{
 			cout<<"ERROR:Config file not in proper format"<<endl<<endl;
 			exit(-1);
 		}
 #else
 		// After processing and the motor count and filter wheel count is still 0, print error and exit
-		if ((MOTOR::NumMotors==0) && (FWHEEL::NumFwheels))
+		if ((Motor::NumMotors==0) && (Fwheel::NumFwheels))
 		{
 			cout<<"ERROR:Config file not in proper format"<<endl<<endl;
 			exit(-1);
@@ -3018,20 +3018,20 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 	//VALIDATION
 	//------------------------------------------
 	// to ensure there is a required number of controllers for the motors
-	if (((MOTOR::NumMotors>3)&&(NUMBER_OF_CONTROLLERS<2)) ||
-			((MOTOR::NumMotors>6)&&(NUMBER_OF_CONTROLLERS<3)) )//took off the first condition repeated,maybe there's another condition missing
+	if (((Motor::NumMotors>3)&&(NUMBER_OF_CONTROLLERS<2)) ||
+			((Motor::NumMotors>6)&&(NUMBER_OF_CONTROLLERS<3)) )//took off the first condition repeated,maybe there's another condition missing
 	{
 		cout<<"\nERROR: The number of controllers is not sufficient for the motors. Add controller and fix config file."<<endl;
 		exit(-1);
 	}
 
 	// to check theres no repetition for controllername in config file
-	for(int i=0;i<MOTOR::NumMotors;i++)
-		for(int j=0;j<MOTOR::NumMotors;j++)
+	for(int i=0;i<Motor::NumMotors;i++)
+		for(int j=0;j<Motor::NumMotors;j++)
 		{
-			if((i!=j)&&(!(strcasecmp(Motor[i]->getName(),Motor[j]->getName())) ||
-					((Motor[i]->getAxis()==Motor[j]->getAxis()) &&
-							(!(strcasecmp(Motor[i]->getController(),Motor[j]->getController()))))))
+			if((i!=j)&&(!(strcasecmp(motor[i]->getName(),motor[j]->getName())) ||
+					((motor[i]->getAxis()==motor[j]->getAxis()) &&
+							(!(strcasecmp(motor[i]->getController(),motor[j]->getController()))))))
 			{
 				cout<<"\nERROR: In the config file,two motors should not have same name or connected to same axis of same controller."<<endl;
 				exit(-1);
@@ -3048,10 +3048,10 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 	}
 	else if (slit1_exists >= 0 && slit2_exists >= 0)
 	{
-		Slit = new SLIT(Motor[slit1_exists]->getPosition(),Motor[slit2_exists]->getPosition());
+		slit = new Slit(motor[slit1_exists]->getPosition(),motor[slit2_exists]->getPosition());
 	}
 	else // if both are zero, then they cant be positions in the motor array list
-		Slit = NULL;
+		slit = NULL;
 
 
 	//----------------------------------
@@ -3133,16 +3133,16 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 #endif
 
 	// For debugging purposes: to print the motors and controllers read from file
-	cout<<"Number of motors:"<<MOTOR::NumMotors<<endl;
+	cout<<"Number of motors:"<<Motor::NumMotors<<endl;
 	cout<<"Number of controllers:"<<NUMBER_OF_CONTROLLERS<<endl;
 #ifdef LASERBOX
-	cout<<"Number of filter wheels:"<<FWHEEL::NumFwheels<<endl;
+	cout<<"Number of filter wheels:"<<Fwheel::NumFwheels<<endl;
 	cout<<"Number of refernce points:"<<NUMBER_OF_REFPOINTS<<endl;
 #endif
 	cout<<endl<<"Motors:"<<endl;
 	cout<<"======="<<endl;
-	for(int i=0;i<MOTOR::NumMotors;i++)
-		Motor[i]->print();
+	for(int i=0;i<Motor::NumMotors;i++)
+		motor[i]->print();
 	cout<<endl;
     cout<<endl<<"Controllers:"<<endl;
     cout<<"============"<<endl;
@@ -3154,18 +3154,18 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 	}
 	cout<<endl;
 #ifndef LASERBOX
-	  //Slit->print();
+	  //slit->print();
 	//to put a default speed to all the controllers
 	char changeVel[200];
-	sprintf(changeVel,"%f setvel ",MOTOR::defaultSpeed);
+	sprintf(changeVel,"%f setvel ",Motor::defaultSpeed);
 
 	for(int k=0;k<NUMBER_OF_CONTROLLERS;k++)
-		Interface[k]->send_command(changeVel,0);
+		interface[k]->send_command(changeVel,0);
 #else
 	cout<<endl<<"Filter Wheels:"<<endl;
 	cout<<"=============="<<endl;
-	for(int i=0;i<FWHEEL::NumFwheels;i++)
-		Fwheel[i]->print();
+	for(int i=0;i<Fwheel::NumFwheels;i++)
+		fwheel[i]->print();
     cout<<endl<<"Reference Points:"<<endl;
     cout<<"================="<<endl;
 	for(int i=0;i<NUMBER_OF_REFPOINTS;i++)
@@ -3183,10 +3183,10 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 	    XrayTube->print();
 	}
 #ifdef VACUUMBOX
-	if (PressureInterface != NULL) {
+	if (pressureInterface != NULL) {
         cout<<endl<<"Pressure Gauge Controller:"<<endl;
         cout<<"=========================="<<endl;
-	    Pgauge->print();
+	    pgauge->print();
 	}
 #endif
 #endif
@@ -3204,10 +3204,10 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 	ReadWarmupTimestamps(warmupTimeFileName);
 #else
 	//to make sure they work, move to pos 1
-	for(int i=0;i<FWHEEL::NumFwheels;i++)
+	for(int i=0;i<Fwheel::NumFwheels;i++)
 	{
-		Fwheel[i]->setStartPosition();
-		Fwheel[i]->setStartPosition();//the second time it works
+		fwheel[i]->setStartPosition();
+		fwheel[i]->setStartPosition();//the second time it works
 	}
 #endif
 
@@ -3222,7 +3222,7 @@ INITIALIZE::INITIALIZE(string const fName,string const fName2,string const fName
 /**executes commands from the command line through both server and local
    @param sLine the fluorescence line read from the config file
  */
-void INITIALIZE::initFluorNames(string sLine)
+void Initialize::initFluorNames(string sLine)
 {
 	istringstream sstr(sLine);
 	string sArgName;
@@ -3271,7 +3271,7 @@ void INITIALIZE::initFluorNames(string sLine)
     @param nArg number of arguments in current line read from file
     @param args array of arguments in current line read from file
  */
-void INITIALIZE::init(int nArg, char *args[])
+void Initialize::init(int nArg, char *args[])
 {
 	// the first argument is copied to mode, which is either 'controller' or 'motor'
 	string mode=args[0];
@@ -3295,7 +3295,7 @@ void INITIALIZE::init(int nArg, char *args[])
 		cout<<"\nTube power:"<<maxTubePower<<endl;
 	}
 #else
-	// if mode is FWHEEL, create fwheel objects and store its values-----------------------------------------------------------------
+	// if mode is Fwheel, create fwheel objects and store its values-----------------------------------------------------------------
 	if(mode=="fwheel")
 	{
 		vector<double>ValueList;
@@ -3309,7 +3309,7 @@ void INITIALIZE::init(int nArg, char *args[])
 
 		//check if the values are all numbers.
 		string temp;
-		for(int i=0;i<FWHEEL::NumSlotsInWheel;i++)
+		for(int i=0;i<Fwheel::NumSlotsInWheel;i++)
 		{
 			temp.assign(args[i+3]);
 			if(temp.find_first_not_of("0123456789.-")!=string::npos)
@@ -3320,8 +3320,8 @@ void INITIALIZE::init(int nArg, char *args[])
 		}
 
 		//saving the absorption values in a list
-		ValueList.resize(FWHEEL::NumSlotsInWheel);
-		for(int i=0;i<FWHEEL::NumSlotsInWheel;i++)
+		ValueList.resize(Fwheel::NumSlotsInWheel);
+		for(int i=0;i<Fwheel::NumSlotsInWheel;i++)
 		{
 			ValueList[i]=atof(args[i+3]);
 			cout<<"valuelist:"<<i<<": "<<ValueList[i]<<" argsi+3:"<<args[i+3]<<endl;
@@ -3346,12 +3346,12 @@ void INITIALIZE::init(int nArg, char *args[])
 			serial[11]=usbNum+48;
 
 			//checking if the interfaces with same serial existed before
-			if(INTERFACE::NumFW_Interfaces>0)
+			if(Interface::NumFW_Interfaces>0)
 			{
-				for(int i=0;i<INTERFACE::NumFW_Interfaces;i++)
+				for(int i=0;i<Interface::NumFW_Interfaces;i++)
 				{
 					//checking the last digit with usbNum
-					if(FWInterface[i]->getSerial()[11]==usbNum+48)
+					if(fwInterface[i]->getSerial()[11]==usbNum+48)
 					{
 						cout<<"ERROR: The filter wheel "<<args[1]<<" "<<args[2]<<" has interface "<<serial<<" which seems to be";
 						cout<<" already connected to another filter wheel/controller"<<endl;
@@ -3360,13 +3360,13 @@ void INITIALIZE::init(int nArg, char *args[])
 				}
 			}
 
-			//CREATE INTERFACE
+			//CREATE Interface
 			bool success = false;
-			FWInterface[INTERFACE::NumFW_Interfaces] = new INTERFACE(true,serial,&success);
+			fwInterface[Interface::NumFW_Interfaces] = new Interface(true,serial,&success);
 			if(success){
-				INTERFACE::NumFW_Interfaces++;
-				Fwheel[FWHEEL::NumFwheels] = new FWHEEL(args[1], args[2],ValueList,FWInterface[INTERFACE::NumFW_Interfaces-1]);
-				FWHEEL::NumFwheels++;
+				Interface::NumFW_Interfaces++;
+				fwheel[Fwheel::NumFwheels] = new Fwheel(args[1], args[2],ValueList,fwInterface[Interface::NumFW_Interfaces-1]);
+				Fwheel::NumFwheels++;
 			}else
 			{
 				cout<<"ERROR:Was not able to create interface to filter wheel "<<args[1]<<" "<<args[2]<<endl;
@@ -3409,7 +3409,7 @@ void INITIALIZE::init(int nArg, char *args[])
 
 	}
 
-	// if mode is MOTOR, create motor objects and store its values-----------------------------------------------------------------
+	// if mode is Motor, create motor objects and store its values-----------------------------------------------------------------
 	else if(mode=="motor")
 	{
 
@@ -3430,7 +3430,7 @@ void INITIALIZE::init(int nArg, char *args[])
 		}
 
 		// the FIRST TIME  a motor line is read
-		if(MOTOR::NumMotors==0)
+		if(Motor::NumMotors==0)
 		{
 			// if no controllers are read upto now, print error and exit
 			if (NUMBER_OF_CONTROLLERS==0)
@@ -3460,31 +3460,31 @@ void INITIALIZE::init(int nArg, char *args[])
 				serial[11]=usbNum+48;
 				cout<<endl<<endl<<"******* " << serial << "******* " <<endl;
 
-				Interface[INTERFACE::NumMotorcontroller_Interfaces]= new INTERFACE(serial,&success);
+				interface[Interface::NumMotorcontroller_Interfaces]= new Interface(serial,&success);
 				if(success)
-					INTERFACE::NumMotorcontroller_Interfaces++;
+					Interface::NumMotorcontroller_Interfaces++;
 #ifndef LASERBOX
-               if((!success)&&(TubeInterface==NULL)){
-                    TubeInterface = new INTERFACE(serial , &success, true);
+               if((!success)&&(tubeInterface==NULL)){
+                    tubeInterface = new Interface(serial , &success, true);
                     if(success){
                         xrayStatus=0;
-                        XrayTube = new XRAY(TubeInterface);
+                        XrayTube = new Xray(tubeInterface);
                     }
                     else{
                         xrayStatus=-1;
-                        TubeInterface = NULL;
+                        tubeInterface = NULL;
                     }
                 }
 
 #ifdef VACUUMBOX
-				if((!success)&&(PressureInterface==NULL)){
-					PressureInterface = new INTERFACE(serial, true, &success);
+				if((!success)&&(pressureInterface==NULL)){
+					pressureInterface = new Interface(serial, true, &success);
 					if(success){
-						Pgauge = new PGAUGE(PressureInterface);
+						pgauge = new Pgauge(pressureInterface);
 					}
 					else{
-					    Pgauge = NULL;
-						PressureInterface = NULL;
+					    pgauge = NULL;
+						pressureInterface = NULL;
 					}
 				}
 #endif
@@ -3503,7 +3503,7 @@ void INITIALIZE::init(int nArg, char *args[])
 				{
 					char message[200];
 					sprintf(message,"0 %d setaxis ",j);
-					Interface[i]->send_command(message,0);
+					interface[i]->send_command(message,0);
 				}
 
 		}
@@ -3522,7 +3522,7 @@ void INITIALIZE::init(int nArg, char *args[])
 
 				//setting temp to point to the right interface[] element
 				for(int i=0;i<NUMBER_OF_CONTROLLERS;i++)
-					if(atoi(Interface[i]->getSerial()+11)==temp)
+					if(atoi(interface[i]->getSerial()+11)==temp)
 					{
 						temp=i;
 						break;
@@ -3545,9 +3545,9 @@ void INITIALIZE::init(int nArg, char *args[])
 #ifndef LASERBOX
 		//if motor is slit_x1 or slit_x2,or fluorescence set the slit_exist variables or fluor_exists variable to the position in motor[]
 		if(strcasecmp(args[1],"slit_x1")==0)
-			slit1_exists=MOTOR::NumMotors;
+			slit1_exists=Motor::NumMotors;
 		else if(strcasecmp(args[1],"slit_x2")==0)
-			slit2_exists=MOTOR::NumMotors;
+			slit2_exists=Motor::NumMotors;
 #endif
 
 		//checks if axis values are either 1, 2 or 3
@@ -3570,17 +3570,17 @@ void INITIALIZE::init(int nArg, char *args[])
 		if(!strcasecmp(args[1],"Huber"))
 		{
 			char buffer[200];
-			strcpy(buffer,Interface[temp]->send_command((char*)"getvel ",1));
-			//MOTOR::defaultSpeed = 30.00;//atof(buffer);
-			sprintf(buffer,"%f 1 %s setncalvel ",MOTOR::huberCalSpeed,args[2]);  // [velocity][index=1 for 'to the limit switch'][axis] setncalvel
-			Interface[temp]->send_command(buffer,0);
+			strcpy(buffer,interface[temp]->send_command((char*)"getvel ",1));
+			//Motor::defaultSpeed = 30.00;//atof(buffer);
+			sprintf(buffer,"%f 1 %s setncalvel ",Motor::huberCalSpeed,args[2]);  // [velocity][index=1 for 'to the limit switch'][axis] setncalvel
+			interface[temp]->send_command(buffer,0);
 		}
 #endif
 
 		//to enable this axis of the controller
 		char message[200];
 		sprintf(message,"1 %d setaxis ",atoi(args[2]));
-		Interface[temp]->send_command(message,0);
+		interface[temp]->send_command(message,0);
 
 
 #ifdef LASERBOX
@@ -3588,27 +3588,27 @@ void INITIALIZE::init(int nArg, char *args[])
 		if(!strcasecmp(args[1],"detector_x"))
 		{
 			sprintf(message,"2 %d setpitch ",atoi(args[2]));
-			Interface[temp]->send_command(message,0);
+			interface[temp]->send_command(message,0);
 		}
 
 		if(!strcasecmp(args[1],"detector_y"))
 		{
 			sprintf(message,"1 %d setpitch ",atoi(args[2]));
-			Interface[temp]->send_command(message,0);
+			interface[temp]->send_command(message,0);
 		}
 
 		if(!strcasecmp(args[1],"detector_z"))
 		{
 			sprintf(message,"2 %d setpitch ",atoi(args[2]));
-			Interface[temp]->send_command(message,0);
+			interface[temp]->send_command(message,0);
 		}
 
 #endif
 
 		// creates motor object with an interface pointer. Motor[i] points to these motor objects
-		Motor[MOTOR::NumMotors]=new MOTOR(args[1],atoi(args[2]),args[3],atof(args[4]),atof(args[5]),atof(args[6]), 0.000, Interface[temp]);
+		motor[Motor::NumMotors]=new Motor(args[1],atoi(args[2]),args[3],atof(args[4]),atof(args[5]),atof(args[6]), 0.000, interface[temp]);
 		// increases static memeber for number of motor objects
-		MOTOR::NumMotors++;
+		Motor::NumMotors++;
 	}
 
 
@@ -3670,7 +3670,7 @@ void INITIALIZE::init(int nArg, char *args[])
 
 /**returns the interface number by specifying the serial number of the filter wheel
  */
-int INITIALIZE::getFWInterface(string serialNum)
+int Initialize::getFWInterface(string serialNum)
 {
 
 #ifdef VERBOSE_MOTOR
@@ -3720,7 +3720,7 @@ int INITIALIZE::getFWInterface(string serialNum)
 /** gets the controller interface and fills the 2nd col of
     contInterface[][] with respective serial ports
  */
-void INITIALIZE::getContInterface()
+void Initialize::getContInterface()
 {
 	int temp=0,i,contNo;
 	char buffer[255]="";
@@ -3731,10 +3731,10 @@ void INITIALIZE::getContInterface()
 #endif
 
 	// send getserialno commands to each Interface port, repeat this for each Interface port
-	for(int k=0;k<INTERFACE::NumMotorcontroller_Interfaces;k++)
+	for(int k=0;k<Interface::NumMotorcontroller_Interfaces;k++)
 	{
 		if(contFound==NUMBER_OF_CONTROLLERS) break;
-		strcpy(buffer,Interface[k]->send_command((char*)"getserialno ",1));
+		strcpy(buffer,interface[k]->send_command((char*)"getserialno ",1));
 
 		// convert serial number returned to integer
 		contNo=atoi(buffer);
@@ -3748,9 +3748,9 @@ void INITIALIZE::getContInterface()
 			if(contNo==temp)
 			{
 				// assigns 2nd col of contInterface[][] for the particular controller with the current serial port
-				ContInterface[i][1].assign(Interface[k]->getSerial());
+				ContInterface[i][1].assign(interface[k]->getSerial());
 				contFound++;
-				cout<<":"<<Interface[k]->getSerial()<<":"<<ContInterface[i][1];
+				cout<<":"<<interface[k]->getSerial()<<":"<<ContInterface[i][1];
 				break;
 			}
 		}
@@ -3765,7 +3765,7 @@ void INITIALIZE::getContInterface()
 //------------------------------------------------------------------------------------------------------------------------------------------------
 /** save positions of all the motors to a Positions.txt file
  */
-char* INITIALIZE::savePositions(string const fName)
+char* Initialize::savePositions(string const fName)
 {
 #ifdef VERBOSE_MOTOR
 	cout<<"\n-----Saving the positions to file-----"<<endl<<endl;
@@ -3782,10 +3782,10 @@ char* INITIALIZE::savePositions(string const fName)
 		outFile<<setw(15)<<left<<"#Motor Name"<<"Positions\n\n";
 
 		// prints motor name and the positions
-		for(int i=0;i<MOTOR::NumMotors;i++)
+		for(int i=0;i<Motor::NumMotors;i++)
 		{
-			outFile<<setw(15)<<left<<Motor[i]->getName()<<setprecision(17)<<Motor[i]->getPosition()<<endl;
-			//cout<<setprecision(17)<<Motor[i]->debugPosition()<<"\t";
+			outFile<<setw(15)<<left<<motor[i]->getName()<<setprecision(17)<<motor[i]->getPosition()<<endl;
+			//cout<<setprecision(17)<<motor[i]->debugPosition()<<"\t";
 		}
 		// close file
 		outFile.close();
@@ -3804,7 +3804,7 @@ char* INITIALIZE::savePositions(string const fName)
 //------------------------------------------------------------------------------------------------------------------------------------------------
 /** save positions of all the motors to a Positions.txt file
  */
-char* INITIALIZE::saveToNewConfigFile(string const oldFName, string const fName)
+char* Initialize::saveToNewConfigFile(string const oldFName, string const fName)
 {
 #ifdef VERBOSE_MOTOR
 	cout<<"\n-----Creating new config file to save changed data-----"<<endl<<endl;
@@ -3814,14 +3814,14 @@ char* INITIALIZE::saveToNewConfigFile(string const oldFName, string const fName)
 	ifstream inFile;
 	string sLine;
 	char* cLine;
-	char motor[200];
+	char motorName[200];
 	int loop;
 	char message[200];
 	char*p= message;
 	char* name;
 
 	//for debugging
-	//Motor[3]->setSpeed(45);
+	//motor[3]->setSpeed(45);
 
 	outFile.open(fName.c_str());
 	inFile.open(oldFName.c_str(), ifstream::in);
@@ -3859,13 +3859,13 @@ char* INITIALIZE::saveToNewConfigFile(string const oldFName, string const fName)
 					//for name
 					if(sstr.good())
 					{
-						sstr>>motor;
+						sstr>>motorName;
 #ifndef LASERBOX
-						if(!strcasecmp(motor,"fluorescence"))
-							outFile<<motor<<"\t";
+						if(!strcasecmp(motorName,"fluorescence"))
+							outFile<<motorName<<"\t";
 						else
 #endif
-							outFile<<motor<<"\t\t";
+							outFile<<motorName<<"\t\t";
 					}
 
 					//axis, controller
@@ -3877,9 +3877,9 @@ char* INITIALIZE::saveToNewConfigFile(string const oldFName, string const fName)
 						}
 
 					//find motor in Motor[] to compare speed and limits
-					for(loop=0;loop<MOTOR::NumMotors;loop++)
+					for(loop=0;loop<Motor::NumMotors;loop++)
 					{
-						if(!strcmp(motor,Motor[loop]->getName()))
+						if(!strcmp(motorName,motor[loop]->getName()))
 							break;
 					}
 
@@ -3887,30 +3887,30 @@ char* INITIALIZE::saveToNewConfigFile(string const oldFName, string const fName)
 					if(sstr.good())
 					{
 						sstr>>cLine;
-						if(Motor[loop]->getSpeed()==atof(cLine))
+						if(motor[loop]->getSpeed()==atof(cLine))
 							outFile<<cLine<<"\t";
 						else
-							outFile<<Motor[loop]->getSpeed()<<"\t";
+							outFile<<motor[loop]->getSpeed()<<"\t";
 					}
 
 					//for lower limit
 					if(sstr.good())
 					{
 						sstr>>cLine;
-						if(Motor[loop]->getLowerLimit()==atof(cLine))
+						if(motor[loop]->getLowerLimit()==atof(cLine))
 							outFile<<cLine<<"\t\t";
 						else
-							outFile<<Motor[loop]->getLowerLimit()<<"\t\t";
+							outFile<<motor[loop]->getLowerLimit()<<"\t\t";
 					}
 
 					//for upper limit
 					if(sstr.good())
 					{
 						sstr>>cLine;
-						if(Motor[loop]->getUpperLimit()==atof(cLine))
+						if(motor[loop]->getUpperLimit()==atof(cLine))
 							outFile<<cLine<<"\t";
 						else
-							outFile<<Motor[loop]->getUpperLimit()<<"\t";
+							outFile<<motor[loop]->getUpperLimit()<<"\t";
 					}
 
 					outFile<<endl;
@@ -3940,11 +3940,11 @@ char* INITIALIZE::saveToNewConfigFile(string const oldFName, string const fName)
 //------------------------------------------------------------------------------------------------------------------------------------------------
 /** set the original positions if different from Positions.txt file
  */
-void INITIALIZE::setOrigPositions(string const fName)
+void Initialize::setOrigPositions(string const fName)
 {
 	ifstream inFile;
 	string sLine;
-	char motor[200], pos[200];
+	char motorName[200], pos[200];
 	bool found;
 	int i;
 	char positions[3][200];
@@ -3975,12 +3975,12 @@ void INITIALIZE::setOrigPositions(string const fName)
 				//read motor name
 				istringstream sstr(sLine);
 				if(sstr.good())
-					sstr>>motor;
+					sstr>>motorName;
 
 				found=false;
 				//find the motor in the loop
-				for(i=0;i<MOTOR::NumMotors;i++)
-					if(!strcasecmp(Motor[i]->getName(),motor))
+				for(i=0;i<Motor::NumMotors;i++)
+					if(!strcasecmp(motor[i]->getName(),motorName))
 					{
 						found=true;
 						break;
@@ -3990,7 +3990,7 @@ void INITIALIZE::setOrigPositions(string const fName)
 					if(sstr.good())
 					{
 						sstr>>pos;
-						if(found) Motor[i]->setPosition(atof(pos));
+						if(found) motor[i]->setPosition(atof(pos));
 					}
 			}
 		}
@@ -4011,9 +4011,9 @@ void INITIALIZE::setOrigPositions(string const fName)
 			strcpy(positions[j],"0");
 
 		//for each motor, if the controller is the same as loop, copy its position to the rite position[axis -1]
-		for(int j=0;j<MOTOR::NumMotors;j++)
-			if(!strcmp(Controller[i][0].c_str(),Motor[j]->getController()))
-				sprintf(positions[Motor[j]->getAxis()-1],"%f",0-Motor[j]->getPosition());
+		for(int j=0;j<Motor::NumMotors;j++)
+			if(!strcmp(Controller[i][0].c_str(),motor[j]->getController()))
+				sprintf(positions[motor[j]->getAxis()-1],"%f",0-motor[j]->getPosition());
 
 
 		strcpy(command,positions[0]);
@@ -4027,18 +4027,18 @@ void INITIALIZE::setOrigPositions(string const fName)
 
 		//find the interface and send this command to controller
 		for(int k=0;k<NUMBER_OF_CONTROLLERS;k++)
-			if(!strcmp(Interface[k]->getSerial(),ContInterface[i][1].c_str()))
+			if(!strcmp(interface[k]->getSerial(),ContInterface[i][1].c_str()))
 			{
-				Interface[k]->send_command(command,0);
+				interface[k]->send_command(command,0);
 				break;
 			}
 	}
 
 #ifndef LASERBOX
-	if(Slit!=NULL)// this is made null in INITIALIZE constructor when slit1_exists and slit2_exists are both 0 and both cant b 0 for motor positions
+	if(slit!=NULL)// this is made null in Initialize constructor when slit1_exists and slit2_exists are both 0 and both cant b 0 for motor positions
 	{
-		Slit->setX1pos(Motor[slit1_exists]->getPosition());
-		Slit->setX2pos(Motor[slit2_exists]->getPosition());
+		slit->setX1pos(motor[slit1_exists]->getPosition());
+		slit->setX2pos(motor[slit2_exists]->getPosition());
 	}
 #endif
 
@@ -4052,7 +4052,7 @@ void INITIALIZE::setOrigPositions(string const fName)
 //------------------------------------------------------------------------------------------------------------------------------------------------
 /** waits till all the controllers are not busy
  */
-void INITIALIZE::check_busy()
+void Initialize::check_busy()
 {
 
 	char buffer[200]="";
@@ -4067,7 +4067,7 @@ void INITIALIZE::check_busy()
 		while(check)
 		{
 			// send 'st ' command to check status of controller
-			strcpy(buffer,Interface[i]->send_command((char*)"st ",1));
+			strcpy(buffer,interface[i]->send_command((char*)"st ",1));
 
 			buffer[1]='\0';
 			// if controller is not busy, check=0 and start checking next controller
@@ -4089,7 +4089,7 @@ void INITIALIZE::check_busy()
 //------------------------------------------------------------------------------------------------------------------------------------------------
 /** reads warmuptimestamps from file
  */
-int INITIALIZE::ReadWarmupTimestamps(string const fName)
+int Initialize::ReadWarmupTimestamps(string const fName)
 {
 #ifdef VERY_VERBOSE
 	cout<<"\n-----Reading WarmupTimeStamps-----"<<endl<<endl;
@@ -4143,7 +4143,7 @@ int INITIALIZE::ReadWarmupTimestamps(string const fName)
 //------------------------------------------------------------------------------------------------------------------------------------------------
 /** writes warmuptimestamps from file
  */
-int INITIALIZE::WriteWarmupTimestamps(string const fName)
+int Initialize::WriteWarmupTimestamps(string const fName)
 {
 #ifdef VERY_VERBOSE
 	cout<<"\n-----Writing WarmupTimeStamps-----"<<endl<<endl;

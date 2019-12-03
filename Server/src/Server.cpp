@@ -1,8 +1,8 @@
 /* A simple server in the internet domain using TCP
    The port number is passed as an argument */
 #include "MySocketTCP.h"
-#include "INTERFACE.h"
-#include "INITIALIZE.h"
+#include "Interface.h"
+#include "Initialize.h"
 #include "commonDefs.h"
 #include <stdlib.h>
 #include <iostream>
@@ -47,11 +47,11 @@ cout<<"test"<<endl;
 
 	// reads config file to create motor objects and store controller values
 #ifdef XRAYBOX
-	INITIALIZE init=INITIALIZE("config.txt", "Positions.txt","configNew.txt","warmupTimestamps.txt");
+	Initialize init=Initialize("config.txt", "Positions.txt","configNew.txt","warmupTimestamps.txt");
 #elif LASERBOX
-	INITIALIZE init=INITIALIZE("config.txt", "Positions.txt","configNew.txt");
+	Initialize init=Initialize("config.txt", "Positions.txt","configNew.txt");
 #else
-	INITIALIZE init=INITIALIZE("config.txt", "Positions.txt","configNew.txt","warmupTimestamps.txt");
+	Initialize init=Initialize("config.txt", "Positions.txt","configNew.txt","warmupTimestamps.txt");
 #endif
 
 

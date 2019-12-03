@@ -1,33 +1,28 @@
-/********************************************//**
- * @file PGAUGE.h
- * @short Defines the PGAUGE objects
- * @author Dhanya
- ***********************************************/
-#ifndef PGAUGE_H
-#define PGAUGE_H
+#pragma once
+
 #ifdef VACUUMBOX
 
-#include "INTERFACE.h"
+#include "Interface.h"
 #include <vector>
 #include <string>
 using namespace std;
 
 /**
- *@short Defines the PGAUGE object parameters and their methods.
+ *@short Defines the Pgauge object parameters and their methods.
  */
-class PGAUGE
+class Pgauge
 {
 public:
 
     /**Constructor
-	 @param Interface Pointer to an interface object.<br>(The port that the  pressure gauge's connected to is accessed through this)
+	 @param interface Pointer to an interface object.<br>(The port that the  pressure gauge's connected to is accessed through this)
      */
-    PGAUGE(INTERFACE* Interface);
+    Pgauge(Interface* interface);
 
     /**gets the Interface of the pressure gauge
      * returns the Interface of pressure gauge
      */
-    INTERFACE* getInterface();
+    Interface* getInterface();
 
     /*for debugging - Prints out the parameters of a pressure gauge object: Name, Serialno, Interface.
      */
@@ -51,9 +46,9 @@ private:
 
     /**Interface pointer of pressure gauge
      */
-    INTERFACE* Interface;
+    Interface* interface;
 
 
 };
 #endif
-#endif
+

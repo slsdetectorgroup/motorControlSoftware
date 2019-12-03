@@ -1,9 +1,9 @@
  /********************************************//**
- * @file MOTOR.cpp
+ * @file Motor.cpp
  * @short Defines the motor objects
  * @author Dhanya
  ***********************************************/
-#include "MOTOR.h"
+#include "Motor.h"
 
 #include <iostream>
 #include <sstream>
@@ -13,102 +13,102 @@
 using namespace std;
 
 
-int MOTOR::NumMotors(0);
+int Motor::NumMotors(0);
 
 #ifndef LASERBOX
-double MOTOR::defaultSpeed(30);
+double Motor::defaultSpeed(30);
 #endif
 
-MOTOR::MOTOR(char* Name, int Axis, char* Controller, double Speed, double LowerLimit, double UpperLimit, double Position, INTERFACE* Interface):Axis(Axis),Speed(Speed),LowerLimit(LowerLimit),UpperLimit(UpperLimit),Position(Position)
+Motor::Motor(char* Name, int Axis, char* Controller, double Speed, double LowerLimit, double UpperLimit, double Position, Interface* interface):Axis(Axis),Speed(Speed),LowerLimit(LowerLimit),UpperLimit(UpperLimit),Position(Position)
 {
   /* motor parameters are set according to arguments*/
   strcpy(this->Name,Name);
   strcpy(this->Controller,Controller);
-  this->Interface=Interface;
+  this->interface=interface;
 }
 
-void MOTOR::setName(char* Name)
+void Motor::setName(char* Name)
 {
 	strcpy(this->Name,Name);
 }
 
-char* MOTOR::getName()
+char* Motor::getName()
 {
 	return Name;
 }
 
-void MOTOR::setAxis(int Axis)
+void Motor::setAxis(int Axis)
 {
 	this->Axis = Axis;
 }
 
-int MOTOR::getAxis()
+int Motor::getAxis()
 {
 	return Axis;
 }
 
-void MOTOR::setController(char* Controller)
+void Motor::setController(char* Controller)
 {
 	strcpy(this->Controller,Controller);
 }
 
-char* MOTOR::getController()
+char* Motor::getController()
 {
 	return Controller;
 }
 	
-void MOTOR::setSpeed(double Speed)
+void Motor::setSpeed(double Speed)
 {
 	this->Speed = Speed;
 }
 
-double MOTOR::getSpeed()
+double Motor::getSpeed()
 {
 	return Speed;
 }
 
-void MOTOR::setLowerLimit(double LowerLimit)
+void Motor::setLowerLimit(double LowerLimit)
 {
 	this->LowerLimit = LowerLimit;
 }
 
-double MOTOR::getLowerLimit()
+double Motor::getLowerLimit()
 {
 	return LowerLimit;
 }
 
-void MOTOR::setUpperLimit(double UpperLimit)
+void Motor::setUpperLimit(double UpperLimit)
 {
 	this->UpperLimit = UpperLimit;
 }
 
-double MOTOR::getUpperLimit()
+double Motor::getUpperLimit()
 {
 	return UpperLimit;
 }
 
-void MOTOR::setPosition(double Position)
+void Motor::setPosition(double Position)
 {
 	this->Position = Position;
 }
 
-double MOTOR::getPosition()
+double Motor::getPosition()
 {
 	return Position;
 }
 
-void MOTOR::setInterface(INTERFACE* Interface)
+void Motor::setInterface(Interface* interface)
 {
-  this->Interface=Interface;
+  this->interface=interface;
 }
 
-INTERFACE* MOTOR::getInterface()
+Interface* Motor::getInterface()
 {
-  return Interface;
+  return interface;
 }
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void MOTOR::print()
+void Motor::print()
 {
   /* prints all the characteristics of the motor object */
   cout<<"Name of Motor\t:\t"<<Name;
@@ -118,13 +118,13 @@ void MOTOR::print()
   cout<<"\nSpeed\t\t:\t"<<Speed;
   cout<<"\nLowerLimit\t:\t"<<LowerLimit;
   cout<<"\nUpperLimit\t:\t"<<UpperLimit;
-  cout<<"\nInterface\t:\t"<<Interface->getSerial();
+  cout<<"\nInterface\t:\t"<<interface->getSerial();
   cout<<"\n";
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-double MOTOR::debugPosition()
+double Motor::debugPosition()
 {
   char buffer[255]="";
   int i=0;
@@ -133,7 +133,7 @@ double MOTOR::debugPosition()
   double args[3];                                         
 
   /* sends command 'pos ' to controller */
-  strcpy(buffer,Interface->send_command((char*)"pos ",1));
+  strcpy(buffer,interface->send_command((char*)"pos ",1));
   istringstream sstr(buffer);
 
   /* separates pos values from all the axis of controller returned and white spaces */
@@ -151,7 +151,7 @@ double MOTOR::debugPosition()
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-bool MOTOR::canMotorMove(double position)
+bool Motor::canMotorMove(double position)
 {
   // if by any chance the upper and lower limit is -1.. it doesnt really check
   if((UpperLimit==-1)&& (LowerLimit==-1))
@@ -165,7 +165,7 @@ bool MOTOR::canMotorMove(double position)
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void MOTOR::moveRel(double position, int otherAxis, double otherPosition)
+void Motor::moveRel(double position, int otherAxis, double otherPosition)
 {
   /* create the command using string concatenation */
   char command[200]="";
@@ -196,7 +196,7 @@ void MOTOR::moveRel(double position, int otherAxis, double otherPosition)
   /* if motor is not huber   */
     if(strcasecmp(Name,"Huber"))
 #endif
-	  Interface->send_command(command,0);   
+	  interface->send_command(command,0);   
 #ifndef LASERBOX
   else
 	{
@@ -204,14 +204,14 @@ void MOTOR::moveRel(double position, int otherAxis, double otherPosition)
 	  char changeVel[200];
 	  sprintf(changeVel,"%f setvel ",Speed);
 	  cout<<"motor class:"<<changeVel<<endl;
-	  Interface->send_command(changeVel,0);
+	  interface->send_command(changeVel,0);
 
-	  Interface->send_command(command,0); 
+	  interface->send_command(command,0); 
 
 	  //change speed back
 	  sprintf(changeVel,"%f setvel ",defaultSpeed);
 	  cout<<"motor class:"<<changeVel<<endl; 
-	  Interface->send_command(changeVel,0);
+	  interface->send_command(changeVel,0);
 
 	}  
 #endif
@@ -219,7 +219,7 @@ void MOTOR::moveRel(double position, int otherAxis, double otherPosition)
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void MOTOR::moveAbs(double position, int otherAxis, double otherPosition, double otherOrigPosition)
+void Motor::moveAbs(double position, int otherAxis, double otherPosition, double otherOrigPosition)
 {
 #ifdef VERBOSE_MOTOR
   cout<<"move motor of Axis"<<Axis<<"from "<<Position<<" to "<<position<<endl<<endl;
@@ -259,7 +259,7 @@ void MOTOR::moveAbs(double position, int otherAxis, double otherPosition, double
   /* if motor is not huber   */
   if(strcasecmp(Name,"Huber"))
 #endif
-	Interface->send_command(command,0);
+	interface->send_command(command,0);
 #ifndef LASERBOX
   else
 	{
@@ -267,14 +267,14 @@ void MOTOR::moveAbs(double position, int otherAxis, double otherPosition, double
 	  char changeVel[200];
 	  sprintf(changeVel,"%f setvel ",Speed);
 	  cout<<"in motor class:"<<changeVel<<endl;
-	  Interface->send_command(changeVel,0);
+	  interface->send_command(changeVel,0);
 
-	  Interface->send_command(command,0); 
+	  interface->send_command(command,0); 
 
 	  //change speed back
 	  sprintf(changeVel,"%f setvel ",defaultSpeed);
 	  cout<<"in motor class:"<<changeVel<<endl; 
-	  Interface->send_command(changeVel,0);
+	  interface->send_command(changeVel,0);
 	}  
 #endif
 
@@ -302,7 +302,7 @@ void MOTOR::moveAbs(double position, int otherAxis, double otherPosition, double
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void MOTOR::moveAllAbs(double position1,double position2, double position3)
+void Motor::moveAllAbs(double position1,double position2, double position3)
 {
 #ifdef VERBOSE_MOTOR
   cout<<"move all the motors of controller "<<Controller<<" to positions"<<position1<<", "<<position2<<" and "<<position3<<endl;
@@ -321,7 +321,7 @@ void MOTOR::moveAllAbs(double position1,double position2, double position3)
   sprintf(command,"%s %s %s m ",pos1,pos2,pos3);
 
    /* sending the command to move with readback/rb=0 */
-  Interface->send_command(command,0);  
+  interface->send_command(command,0);  
   
   //confirming the move is over
   char buffer[255]="";
@@ -331,7 +331,7 @@ void MOTOR::moveAllAbs(double position1,double position2, double position3)
   //need to keep checking until all the positions are the same
   while((args[0]!=position1)||(args[1]!=position2)||(args[2]!=position3))
 	{
-	  strcpy(buffer,Interface->send_command((char*)"pos ",1));
+	  strcpy(buffer,interface->send_command((char*)"pos ",1));
 	  istringstream sstr(buffer);
 
 	  // separates pos values from all the axis of controller returned and white spaces 
@@ -347,12 +347,12 @@ void MOTOR::moveAllAbs(double position1,double position2, double position3)
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void MOTOR::calibrate()
+void Motor::calibrate()
 {
   char command[200]="";
   sprintf(command,"%d",Axis);
   strcat(command," ncal ");
-  Interface->send_command(command,0);
+  interface->send_command(command,0);
 
   //keep checking till the motor has moved to its position 0
   while(debugPosition()!=0) ;

@@ -1,9 +1,9 @@
 /********************************************//**
- * @file PGAUGE.cpp
- * @short Defines the PGAUGE objects
+ * @file Pgauge.cpp
+ * @short Defines the Pgauge objects
  * @author Dhanya
  ***********************************************/
-#include "PGAUGE.h"
+#include "Pgauge.h"
 #ifdef VACUUMBOX
 
 #include <iostream>
@@ -14,20 +14,20 @@
 using namespace std;
 
 
-PGAUGE::PGAUGE(INTERFACE* Interface)
+Pgauge::Pgauge(Interface* interface)
 {
-    this->Interface=Interface;
+    this->interface=interface;
 }
 
 
-INTERFACE* PGAUGE::getInterface()
+Interface* Pgauge::getInterface()
 {
-    return Interface;
+    return interface;
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-bool PGAUGE::getPressure(string& status1, double& value1, string& status2, double& value2) {
+bool Pgauge::getPressure(string& status1, double& value1, string& status2, double& value2) {
     cout << "Getting Pressure" << endl;
     char command[10]="com\r\n";
     char crapstring[10]="c\r\n";
@@ -38,7 +38,7 @@ bool PGAUGE::getPressure(string& status1, double& value1, string& status2, doubl
     // send command
     memset(buffer, 0, size);
     strncpy(buffer, command, strlen(command));
-    if(!Interface->send_command_to_pressure(buffer, size, true, false))
+    if(!interface->send_command_to_pressure(buffer, size, true, false))
         return false;
 
     // could be fail due to max_retries or reading half the values
@@ -75,8 +75,8 @@ bool PGAUGE::getPressure(string& status1, double& value1, string& status2, doubl
     }
 
     //sending crap to stop sending from the controller
-    Interface->send_command_to_pressure(crapstring, strlen(crapstring), false, false);
-    Interface->read_from_pressure(crapstring, strlen(crapstring));
+    interface->send_command_to_pressure(crapstring, strlen(crapstring), false, false);
+    interface->read_from_pressure(crapstring, strlen(crapstring));
 
     return true;
 }
@@ -84,11 +84,11 @@ bool PGAUGE::getPressure(string& status1, double& value1, string& status2, doubl
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void PGAUGE::print()
+void Pgauge::print()
 {
-    /* prints all the characteristics of the PGAUGE object */
+    /* prints all the characteristics of the Pgauge object */
     cout << "Pressure Gauge" << endl;
-    cout<<"Interface\t:\t"<<Interface->getSerial()<<endl;
+    cout<<"interface\t:\t"<<interface->getSerial()<<endl;
     string status1="";double value1=-1;string status2="";double value2=-1;
     if(getPressure(status1,value1,status2,value2)) {
         printf("Gauge 1\n\tStatus\t:\t%s\n\tPressure:\t%e\nGauge 2\n\tStatus\t:\t%s\n\tPressure:\t%e\n",

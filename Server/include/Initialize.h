@@ -1,22 +1,15 @@
-/********************************************//**
- * @file INITIALIZE.h
- * @short reads config files, moves the motors, and saves positions and a new config file
- * @author Dhanya
- ***********************************************/
-#ifndef INITIALIZE_H
-#define INITIALIZE_H
+#pragma once
 
-
-#include "MOTOR.h"
-#include "INTERFACE.h"
+#include "Motor.h"
+#include "Interface.h"
 
 #ifdef LASERBOX
-#include "FWHEEL.h"
+#include "Fwheel.h"
 #else
-#include "SLIT.h"
-#include "XRAY.h"
+#include "Slit.h"
+#include "Xray.h"
 #ifdef VACUUMBOX
-#include "PGAUGE.h"
+#include "Pgauge.h"
 #endif
 #endif
 
@@ -32,7 +25,7 @@ using namespace std;
   *@short reads config files, creates motor and interface objects, also executes commands from commandline
   */
 
-class INITIALIZE
+class Initialize
 {
  public:
 #ifndef LASERBOX
@@ -43,7 +36,7 @@ class INITIALIZE
 	 @param fName3 name of new config file
 	 @param fName4 name of warmupTimingsstamp file
   */
-  INITIALIZE(string const fName,string const fName2,string const fName3,string const fName4);
+  Initialize(string const fName,string const fName2,string const fName3,string const fName4);
 #else
   /**Constructor
 	 reads config files, gets the controller interface,creates motor objects and interface objects
@@ -51,12 +44,12 @@ class INITIALIZE
 	 @param fName2 name of positions file to save the positions to
 	 @param fName3 name of new config file
   */
-  INITIALIZE(string const fName,string const fName2,string const fName3);
+  Initialize(string const fName,string const fName2,string const fName3);
 #endif
   /**Destructor
 	 closes all the serial fds for the interface
   */
-  ~INITIALIZE();
+  ~Initialize();
 
   /**executes commands from the command line through both server and local
 	 @param argc number of command line arguments - 1 (not including the object name eg ./localClient)
@@ -135,35 +128,35 @@ class INITIALIZE
 //#ifdef LOCAL
   /**array of motor object pointers
    */    
-  MOTOR* Motor[10];
+  Motor* motor[10];
 
   /**array of interface object pointers
    */
-  INTERFACE* Interface[6];
+  Interface* interface[6];
 
 
 #ifndef LASERBOX
   /**pointer to xray tube serial object
    */
-  INTERFACE* TubeInterface;
+  Interface* tubeInterface;
 
   /**xray class object
    */
-  XRAY* XrayTube;
+  Xray* XrayTube;
 
 #ifdef VACUUMBOX
   /**pointer to pressure gauge serial object for vacuumbox
    */
-  INTERFACE* PressureInterface;
+  Interface* pressureInterface;
 
   /** pressure object
    */
-  PGAUGE* Pgauge;
+  Pgauge* pgauge;
 #endif
 
  /**a slit pointer
    */
-  SLIT* Slit;
+  Slit* slit;
 
   /**if slit_x1 exists,0 for not,else position of its object ptr in Motor[] array
    */
@@ -183,11 +176,11 @@ class INITIALIZE
 #else
   /**array of fwheel object pointers
    */
-  FWHEEL* Fwheel[5];
+  Fwheel* fwheel[5];
 
   /**array of interface object pointers for the filter wheels
    */
-  INTERFACE* FWInterface[5];
+  Interface* fwInterface[5];
 #endif
 
 
@@ -264,4 +257,3 @@ class INITIALIZE
 
 };
 
-#endif

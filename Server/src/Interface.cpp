@@ -1,9 +1,9 @@
 /********************************************//**
- * @file INTERFACE.cpp
+ * @file Interface.cpp
  * @short Defines the interface objects
  * @author Dhanya
  ***********************************************/
-#include "INTERFACE.h"
+#include "Interface.h"
 #include <fcntl.h>  /* File control definitions */
 #include <iostream>
 #include <cstring>
@@ -13,13 +13,13 @@
 using namespace std;
 
 
-	int INTERFACE::NumMotorcontroller_Interfaces(0);
+	int Interface::NumMotorcontroller_Interfaces(0);
 #ifdef LASERBOX
-	int INTERFACE::NumFW_Interfaces(0);
+	int Interface::NumFW_Interfaces(0);
 #endif
 
 
-INTERFACE::INTERFACE(char* serial, bool* success)
+Interface::Interface(char* serial, bool* success)
 {
     *success=false;
 
@@ -95,7 +95,7 @@ INTERFACE::INTERFACE(char* serial, bool* success)
 
 #ifndef LASERBOX
 //-------------------------------------------------------------------------------------------------------------------------------------------------
-INTERFACE::INTERFACE(char* serial, bool* success, bool xray)
+Interface::Interface(char* serial, bool* success, bool xray)
 {
     *success = false;
 
@@ -158,7 +158,7 @@ INTERFACE::INTERFACE(char* serial, bool* success, bool xray)
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-INTERFACE::INTERFACE(char* serial,bool pressure, bool* success)
+Interface::Interface(char* serial,bool pressure, bool* success)
 {
 	*success = false;
 
@@ -215,7 +215,7 @@ INTERFACE::INTERFACE(char* serial,bool pressure, bool* success)
 #else
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-INTERFACE::INTERFACE(bool fw, char* serial, bool* success)
+Interface::Interface(bool fw, char* serial, bool* success)
 {
     *success = false;
 
@@ -272,14 +272,14 @@ INTERFACE::INTERFACE(bool fw, char* serial, bool* success)
 #endif
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-char* INTERFACE::getSerial()
+char* Interface::getSerial()
 {
 	return serial;
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void INTERFACE::close_serialfd()
+void Interface::close_serialfd()
 {
 	close(serialfd);
 	delete this;
@@ -287,7 +287,7 @@ void INTERFACE::close_serialfd()
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void INTERFACE::print()
+void Interface::print()
 {
 	cout<<"\nPort:"<<serial<<", Serialfd:"<<serialfd<<endl;
 }
@@ -296,7 +296,7 @@ void INTERFACE::print()
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-char* INTERFACE::send_command(char* c, int rb)  
+char* Interface::send_command(char* c, int rb)  
 {
 
 #ifndef LASERBOX
@@ -431,7 +431,7 @@ char* INTERFACE::send_command(char* c, int rb)
 #ifndef LASERBOX
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-char* INTERFACE::send_command_to_tube(char* c, int rb, int &value, int &value2)  
+char* Interface::send_command_to_tube(char* c, int rb, int &value, int &value2)  
 {
 	//for safety,if a usb serial port calls this function, it exits
 	//if(strstr (serial,"USB")!=NULL) exit(-1);
@@ -515,7 +515,7 @@ char* INTERFACE::send_command_to_tube(char* c, int rb, int &value, int &value2)
 
 	}
 #ifdef VERBOSE_MOTOR
-	cout<<"INTERFACE: Command:"<<c<<"  Received value:"<<p<<" : value:"<<value<<endl;
+	cout<<"Interface: Command:"<<c<<"  Received value:"<<p<<" : value:"<<value<<endl;
 #endif 
 	return p;
 }
@@ -527,7 +527,7 @@ char* INTERFACE::send_command_to_tube(char* c, int rb, int &value, int &value2)
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-bool INTERFACE::checkPressureGaugePort() {
+bool Interface::checkPressureGaugePort() {
 
     char crapstring[10]="c\r\n";
     const int size = 255;
@@ -558,7 +558,7 @@ bool INTERFACE::checkPressureGaugePort() {
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-int INTERFACE::read_from_pressure(char* c, int size) {
+int Interface::read_from_pressure(char* c, int size) {
     const int max_retries = 10;
     const int usleep_time = 200000; // 100ms
     int ret = -1;
@@ -582,7 +582,7 @@ int INTERFACE::read_from_pressure(char* c, int size) {
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-bool INTERFACE::send_command_to_pressure(char* c, const int size, bool rb, bool enq)
+bool Interface::send_command_to_pressure(char* c, const int size, bool rb, bool enq)
 {
     char ackstring[10]="\x6\r\n"; //\x6\xd\xa
     char enqstring[10]="\x5";
@@ -631,7 +631,7 @@ bool INTERFACE::send_command_to_pressure(char* c, const int size, bool rb, bool 
 #else
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-char* INTERFACE::send_command_to_fw(char* c, int rb)
+char* Interface::send_command_to_fw(char* c, int rb)
 {
 	//rb=1;
 	char buffer[255]="", command[200]="";

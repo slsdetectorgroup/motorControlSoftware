@@ -1,16 +1,11 @@
- /********************************************//**
- * @file SLIT.h
- * @short Defines slit object
- * @author Dhanya
- ***********************************************/
-#ifndef SLIT_H
-#define SLIT_H
+#pragma once
+
 #ifndef LASERBOX
 /**
   *@short Defines the slit object parameters and some methods to do before calling a slit motor move function.
   */
 
-class SLIT
+class Slit
 {
  public:
 
@@ -19,7 +14,7 @@ class SLIT
 	 @param x1pos position of slit_x1
 	 @param x2pos position of slit_x2
   */
-  SLIT(double x1pos, double x2pos);
+  Slit(double x1pos, double x2pos);
   
   /** returns the Limit member for slit object
 	  @returns the Limit member for slit object
@@ -102,5 +97,4 @@ class SLIT
 
 
 }; 
-#endif
 #endif

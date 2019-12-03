@@ -1,21 +1,16 @@
-/********************************************//**
- * @file FWHEEL.h
- * @short Defines the FWHEEL objects
- * @author Dhanya
- ***********************************************/
-#ifndef FWHEEL_H
-#define FWHEEL_H
+#pragma once 
+
 #ifdef LASERBOX
 
-#include "INTERFACE.h"
+#include "Interface.h"
 #include <vector>
 #include <string>
 using namespace std;
 
 /**
- *@short Defines the FWHEEL object parameters and their methods.
+ *@short Defines the Fwheel object parameters and their methods.
  */
-class FWHEEL
+class Fwheel
 {
 public:
 
@@ -25,7 +20,7 @@ public:
 	 @param ValueList The absorption values for all positions of the filter wheel
 	 @param Interface Pointer to an interface object.<br>(The port that the  filter wheel's connected to is accessed through this)
 	 */
-	FWHEEL(char* Name, char* Serialno, vector<double> ValueList, INTERFACE* Interface);
+	Fwheel(char* Name, char* Serialno, vector<double> ValueList, Interface* interface);
 
 	/**gets the name of the filter wheel.
 	 * returns the name of filter wheel
@@ -40,7 +35,7 @@ public:
 	/**gets the Interface of the filter wheel.
 	 * returns the Interface of filter wheel
 	 */
-	INTERFACE* getInterface();
+	Interface* getInterface();
 
 	/**sets the filter wheel to the position.
 	 * Only used during server start up to know the position of wheel
@@ -93,9 +88,8 @@ private:
 
 	/**Interface pointer of filter wheel
 	 */
-	INTERFACE* Interface;
+	Interface* interface;
 
 
 };
-#endif
 #endif

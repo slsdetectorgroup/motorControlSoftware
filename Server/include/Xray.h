@@ -1,25 +1,19 @@
- /********************************************//**
- * @file XRAY.h
- * @short defines the xray tube object
- * @author Dhanya
- ***********************************************/
-#ifndef XRAY_H
-#define XRAY_H
+#pragma once
 
 #ifndef LASERBOX
 
-#include "INTERFACE.h"
+#include "Interface.h"
 
 /**
  *@short Defines the xray tube object
  */
-class XRAY
+class Xray
 {
  public:
   /**Constructor
      @param Interface is the pointer to the xray tube serial port
   */
-  XRAY(INTERFACE* Interface);
+  Xray(Interface* interface);
 
   /**checks if the xray tube is on standby
      @return 1 if it is on standby,-9999 if its switched off, else 0
@@ -158,7 +152,7 @@ class XRAY
 
   /**Interface of xray tube
    */
-  INTERFACE* Interface;
+  Interface* interface;
 
   /**temporary command to send to Interface
    */
@@ -169,6 +163,5 @@ class XRAY
   int value;
 
 }; 
-#endif
 #endif
 

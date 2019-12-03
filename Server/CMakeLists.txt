@@ -1,15 +1,15 @@
 set(SOURCES
-    src/MotorControlServer.cpp
-    src/INITIALIZE.cpp
-    src/INTERFACE.cpp 
-    src/MOTOR.cpp 
+    src/Server.cpp
+    src/Initialize.cpp
+    src/Interface.cpp 
+    src/Motor.cpp 
     ../include/MySocketTCP.cpp
 )
 
 set(HEADERS
-    include/INITIALIZE.h
-    include/INTERFACE.h 
-    include/MOTOR.h 
+    include/Initialize.h
+    include/Interface.h 
+    include/Motor.h 
     ../include/MySocketTCP.h  
     ../include/commonDefs.h
 )
@@ -17,36 +17,36 @@ set(HEADERS
 #options
 if (USE_BIG_XRAY)
     list (APPEND HEADERS 
-        include/SLIT.h 
-        include/XRAY.h 
+        include/Slit.h 
+        include/Xray.h 
     )
     list (APPEND SOURCES 
-        src/SLIT.cpp 
-        src/XRAY.cpp 
+        src/Slit.cpp 
+        src/Xray.cpp 
     )
     set(bin_name  "xrayServer")
 endif (USE_BIG_XRAY)
 
 if (USE_LASER)
     list (APPEND HEADERS 
-        include/FWHEEL.h 
+        include/Fwheel.h 
     )
     list (APPEND SOURCES 
-        src/FWHEEL.cpp 
+        src/Fwheel.cpp 
     )
     set(bin_name  "laserServer")
 endif (USE_LASER)
 
 if (USE_VACUUM)
     list (APPEND HEADERS 
-        include/PGAUGE.h 
-        include/SLIT.h 
-        include/XRAY.h 
+        include/Pgauge.h 
+        include/Slit.h 
+        include/Xray.h 
     )
     list (APPEND SOURCES 
-        src/PGAUGE.cpp 
-        src/SLIT.cpp 
-        src/XRAY.cpp 
+        src/Pgauge.cpp 
+        src/Slit.cpp 
+        src/Xray.cpp 
     )
     set(bin_name  "vacuumServer")
 endif (USE_VACUUM)
