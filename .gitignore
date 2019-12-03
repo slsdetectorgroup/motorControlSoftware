@@ -1,8 +1,8 @@
 .cproject
 .project
 bin
+build
 .settings
-Makefile.gui
 *.o
 moc_*
 objs
