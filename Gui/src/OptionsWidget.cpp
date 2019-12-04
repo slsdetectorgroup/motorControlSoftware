@@ -140,7 +140,7 @@ void OptionsWidget::MoveToHome()
   strcat(message,list[current].c_str());
   strcpy(message,MotorWidget::SendCommand(3,message));
   if(strstr (message,"ERROR")==NULL)
-    optionWidgets[current]->UpdatePosition("0",0);
+    optionWidgets[current]->UpdatePosition((char*)"0",0);
   else
     MotorWidget::ErrorMessage(message);
 }
@@ -163,7 +163,7 @@ void OptionsWidget::SetOption()
       sprintf(charPos,"%f",text.toDouble());
       
       if(!QString::compare(text, ""))
-	MotorWidget::ErrorMessage("ERROR: Please enter a value to set the position");
+	MotorWidget::ErrorMessage((char*)"ERROR: Please enter a value to set the position");
       else
 	{
 	  if(posInput->isModified())
@@ -184,7 +184,7 @@ void OptionsWidget::SetOption()
     {
       text = speedInput->text();
       if(!QString::compare(text, ""))
-	MotorWidget::ErrorMessage("ERROR: Please enter a value to set the speed");
+	MotorWidget::ErrorMessage((char*)"ERROR: Please enter a value to set the speed");
       else
 	{
 	  if(speedInput->isModified())
@@ -203,7 +203,7 @@ void OptionsWidget::SetOption()
     {
       text = upperInput->text();
       if(!QString::compare(text, ""))
-	MotorWidget::ErrorMessage("ERROR: Please enter a value to set the upper limit");
+	MotorWidget::ErrorMessage((char*)"ERROR: Please enter a value to set the upper limit");
       else
 	{
 	  if(upperInput->isModified())
@@ -225,7 +225,7 @@ void OptionsWidget::SetOption()
     {
       text = lowerInput->text();
       if(!QString::compare(text, ""))
-	MotorWidget::ErrorMessage("ERROR: Please enter a value to set the lower limit");
+	MotorWidget::ErrorMessage((char*)"ERROR: Please enter a value to set the lower limit");
       else
 	{
 	  if(lowerInput->isModified())

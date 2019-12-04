@@ -107,7 +107,7 @@ void MotorControlGui::GettingListOfMotors()
 	bool fluorExists = false;
 #endif
 
-	strcpy(listOfMotors,MotorWidget::SendCommand(2,"gui list"));
+	strcpy(listOfMotors,MotorWidget::SendCommand(2,(char*)"gui list"));
 
 	istringstream sstr(listOfMotors);
 
@@ -145,25 +145,25 @@ void MotorControlGui::GettingListOfMotors()
 			//if(boost::iequals(motor, "detector_x"))
 			if(!LowerCase(motor).compare("detector_x"))
 			{
-				strcpy(message,MotorWidget::SendCommand(3,"gui getLowerLimit detector_x"));
+				strcpy(message,MotorWidget::SendCommand(3,(char*)"gui getLowerLimit detector_x"));
 				xLower = atof(message);
-				strcpy(message,MotorWidget::SendCommand(3,"gui getUpperLimit detector_x"));
+				strcpy(message,MotorWidget::SendCommand(3,(char*)"gui getUpperLimit detector_x"));
 				xUpper = atof(message);
 			}
 			//if(boost::iequals(motor, "detector_y"))
 			if(!LowerCase(motor).compare("detector_y"))
 			{
-				strcpy(message,MotorWidget::SendCommand(3,"gui getLowerLimit detector_y"));
+				strcpy(message,MotorWidget::SendCommand(3,(char*)"gui getLowerLimit detector_y"));
 				yLower = atof(message);
-				strcpy(message,MotorWidget::SendCommand(3,"gui getUpperLimit detector_y"));
+				strcpy(message,MotorWidget::SendCommand(3,(char*)"gui getUpperLimit detector_y"));
 				yUpper = atof(message);
 			}
 			//if(boost::iequals(motor, "psf"))
 			if(!LowerCase(motor).compare("psf"))
 			{
-				strcpy(message,MotorWidget::SendCommand(3,"gui getLowerLimit psf"));
+				strcpy(message,MotorWidget::SendCommand(3,(char*)"gui getLowerLimit psf"));
 				pLower = atof(message);
-				strcpy(message,MotorWidget::SendCommand(3,"gui getUpperLimit psf"));
+				strcpy(message,MotorWidget::SendCommand(3,(char*)"gui getUpperLimit psf"));
 				pUpper = atof(message);
 			}
 
@@ -235,7 +235,7 @@ void MotorControlGui::GettingListOfMotors()
 			motors[2][size].assign(motor);
 			break;
 		default:
-			MotorWidget::ErrorMessage("ERROR: Too many corvus controllers in the config file");
+			MotorWidget::ErrorMessage((char*)"ERROR: Too many corvus controllers in the config file");
 			exit(-1);
 		}
 
@@ -257,7 +257,7 @@ void MotorControlGui::GettingListOfMotors()
 	// list of only filter wheel widgets' names
 	vector<string> fwlist;
 
-	strcpy(listOfMotors,MotorWidget::SendCommand(2,"gui fwlist"));
+	strcpy(listOfMotors,MotorWidget::SendCommand(2,(char*)"gui fwlist"));
 	istringstream ssstr(listOfMotors);
 
 	//increase list size and add sArgName name
@@ -276,7 +276,7 @@ void MotorControlGui::GettingListOfMotors()
 	// list of only references
 	vector<string> reflist;
 
-	strcpy(listOfMotors,MotorWidget::SendCommand(2,"gui reflist"));
+	strcpy(listOfMotors,MotorWidget::SendCommand(2,(char*)"gui reflist"));
 	istringstream sssstr(listOfMotors);
 
 
@@ -314,7 +314,7 @@ void MotorControlGui::GetFluorValues()
 
 
 	//finding out which list is being populated
-	strcpy(message,MotorWidget::SendCommand(2,"gui whichflist"));
+	strcpy(message,MotorWidget::SendCommand(2,(char*)"gui whichflist"));
 	if(strstr (listOfFLMotors,"ERROR")!=NULL)
 	{
 		MotorWidget::ErrorMessage(listOfFLMotors);
@@ -323,7 +323,7 @@ void MotorControlGui::GetFluorValues()
 	currentflist = atoi(message);
 
 	//getting the current list from server
-	strcpy(listOfFLMotors,MotorWidget::SendCommand(2,"gui fllist"));
+	strcpy(listOfFLMotors,MotorWidget::SendCommand(2,(char*)"gui fllist"));
 	if(strstr (listOfFLMotors,"ERROR")!=NULL)
 	{
 		MotorWidget::ErrorMessage(listOfFLMotors);
@@ -361,7 +361,7 @@ void MotorControlGui::GetFluorValues()
 	// if last target does not have 3 strings
 	if (fluorescence[fluorescence.size() - 1].size() != FLUOR_PARA_NUM)
 	{
-		MotorWidget::ErrorMessage("ERROR: fluorescene list has inconsistent values.");
+		MotorWidget::ErrorMessage((char*)"ERROR: fluorescene list has inconsistent values.");
 		exit(-1);
 	}
 /*
@@ -394,7 +394,7 @@ void MotorControlGui::LayoutWindow()
 
 	if(size > MaxNumMotorWidgets)
 	{
-		MotorWidget::ErrorMessage("ERROR: Too many motors in the config file to be displayed");
+		MotorWidget::ErrorMessage((char*)"ERROR: Too many motors in the config file to be displayed");
 		exit(-1);
 	}
 
@@ -414,7 +414,7 @@ void MotorControlGui::LayoutWindow()
 		{
 			char message[200] = {0};
 			// first ensure it is the same list being used now
-			strcpy(message,MotorWidget::SendCommand(2,"gui numflist"));
+			strcpy(message,MotorWidget::SendCommand(2,(char*)"gui numflist"));
 			if(strstr (message,"ERROR")!=NULL)
 			{
 				MotorWidget::ErrorMessage(message);
@@ -436,7 +436,7 @@ void MotorControlGui::LayoutWindow()
 #endif
 		if(!currentflist)
 		{
-			MotorWidget::ErrorMessage("ERROR: Fl exists in config file, but list to popoulate has not been noted");
+			MotorWidget::ErrorMessage((char*)"ERROR: Fl exists in config file, but list to popoulate has not been noted");
 			exit(-1);
 		}
 		fluorLabel->setCurrentIndex(currentflist-1);
@@ -561,17 +561,17 @@ void MotorControlGui::LayoutWindow()
 	//check size of motors to be displayed
 	if(size > MaxNumMotorWidgets)
 	{
-		MotorWidget::ErrorMessage("ERROR: Too many corvus motors in the config file to be displayed");
+		MotorWidget::ErrorMessage((char*)"ERROR: Too many corvus motors in the config file to be displayed");
 		exit(-1);
 	}
 	if(size<1)
 	{
-		MotorWidget::ErrorMessage("ERROR: There are no motors in the config file to be displayed");
+		MotorWidget::ErrorMessage((char*)"ERROR: There are no motors in the config file to be displayed");
 		exit(-1);
 	}
 	if(fwsize > MaxNumFwheelWidgets)
 	{
-		MotorWidget::ErrorMessage("ERROR: Too many filter wheel motors in the config file to be displayed");
+		MotorWidget::ErrorMessage((char*)"ERROR: Too many filter wheel motors in the config file to be displayed");
 		exit(-1);
 	}
 
@@ -1566,7 +1566,7 @@ void  MotorControlGui::UpdateEnergyFromServer()
 {
 	char message[200] = {0};
 	// first ensure it is the same list being used now
-	strcpy(message,MotorWidget::SendCommand(2,"gui whichflist"));
+	strcpy(message,MotorWidget::SendCommand(2,(char*)"gui whichflist"));
 	if(strstr (message,"ERROR")!=NULL)
 	{
 		MotorWidget::ErrorMessage(message);
@@ -1647,7 +1647,7 @@ void  MotorControlGui::UpdateEnergyFromServer()
 void MotorControlGui::UpdateHVFromServer()
 {
 	char message[200];
-	strcpy(message,MotorWidget::SendCommand(2,"gui gethv "));
+	strcpy(message,MotorWidget::SendCommand(2,(char*)"gui gethv "));
 	if(strstr (message,"No")!=NULL)
 		highVoltage->setChecked(false);
 	else
@@ -1660,7 +1660,7 @@ void MotorControlGui::UpdateShuttersFromServer()
 {
 	char message[200];
 
-	strcpy(message,MotorWidget::SendCommand(2,"gui getshutters "));
+	strcpy(message,MotorWidget::SendCommand(2,(char*)"gui getshutters "));
 
 	if(strstr (message,"1:ON")!=NULL)
 		shutter1->setChecked(true);
@@ -1689,18 +1689,18 @@ void MotorControlGui::CheckWarmupTime()
 {
 	cout<<"in warmuptime()\n";
 
-	wt = atoi(MotorWidget::SendCommand(2,"gui getwtime"));
+	wt = atoi(MotorWidget::SendCommand(2,(char*)"gui getwtime"));
 	//check wt many times till u think it might be the right one
 	while(wt<0)
-		wt = atoi(MotorWidget::SendCommand(2,"gui getwtime"));
+		wt = atoi(MotorWidget::SendCommand(2,(char*)"gui getwtime"));
 
 	if(wt==0)
-		wt = atoi(MotorWidget::SendCommand(2,"gui getwtime"));
+		wt = atoi(MotorWidget::SendCommand(2,(char*)"gui getwtime"));
 	cout<<"\nwt:"<<wt<<endl;
 	//do something with the wt obtained; either draw graph or gethv and shutters from server
 	if(wt>0)
 	{
-		MotorWidget::ErrorMessage("Warm-up of X-Ray Tube is in progress...");
+		MotorWidget::ErrorMessage((char*)"Warm-up of X-Ray Tube is in progress...");
 		warmupBox->setEnabled(true);
 		highVoltage->setChecked(true);
 		highVoltage->setStyleSheet("background: red");
@@ -1726,7 +1726,7 @@ void MotorControlGui::CheckWarmupTime()
 
 		if(highVoltage->isChecked())
 		{
-			MotorWidget::ErrorMessage("WARNING: Leaving High Voltage ON");
+			MotorWidget::ErrorMessage((char*)"WARNING: Leaving High Voltage ON");
 			UpdateActualValues();
 		}
 
@@ -1744,12 +1744,12 @@ void MotorControlGui::CheckWarmupRequired()
 
 	char message[200],eMess[200],warmupTiming[200];
 
-	int value =  atoi(MotorWidget::SendCommand(2,"gui geterr"));
+	int value =  atoi(MotorWidget::SendCommand(2,(char*)"gui geterr"));
 	cout<<"value="<<value<<endl;
 
 	if ((value==70)||(value==63)||(value==64)||(value==65))
 	{
-		MotorWidget::SendCommand(2,"gui clear ");
+		MotorWidget::SendCommand(2,(char*)"gui clear ");
 
 		//setting the voltage and current again -  to get the error again since we cleared the error for 70, 63, 64, 65
 		sprintf(message,"gui setv %d",voltage);
@@ -1759,10 +1759,10 @@ void MotorControlGui::CheckWarmupRequired()
 	}
 
 	//to switch on hv if hv was off to get the error msg
-	strcpy(message,MotorWidget::SendCommand(2,"gui gethv "));
+	strcpy(message,MotorWidget::SendCommand(2,(char*)"gui gethv "));
 	if(strstr (message,"No")!=NULL)
-		MotorWidget::SendCommand(3,"gui hv on ");
-	value =  atoi(MotorWidget::SendCommand(2,"gui geterr"));
+		MotorWidget::SendCommand(3,(char*)"gui hv on ");
+	value =  atoi(MotorWidget::SendCommand(2,(char*)"gui geterr"));
 
 	cout<<"value inside warmup function after hv on="<<value<<endl;
 	if(value==0)
@@ -1773,7 +1773,7 @@ void MotorControlGui::CheckWarmupRequired()
 	}
 	else if(value==116)
 	{
-		MotorWidget::ErrorMessage("ERROR: An error of 116.Please consult technician.");
+		MotorWidget::ErrorMessage((char*)"ERROR: An error of 116.Please consult technician.");
 		xrayGroup->setTitle("X-Ray Tube ERROR: sr:12 is 116");
 		highVoltage->setChecked(false);
 		actualVDisp->setText("");
@@ -1785,7 +1785,7 @@ void MotorControlGui::CheckWarmupRequired()
 
 		if ((value!=106)&&(value!=109)) //((value==70)||(value==63)||(value==64)||(value==65))
 		{
-			strcpy(eMess,MotorWidget::SendCommand(2,"gui getemess "));
+			strcpy(eMess,MotorWidget::SendCommand(2,(char*)"gui getemess "));
 			sprintf(message,"ERROR: An error of %d:",value);
 			strcat(message,eMess);
 			strcat(message,"Please tell Dhanya of this error and how you got it. Thanks!\n\nDisabling Xray tube part of the GUI");
@@ -1794,8 +1794,8 @@ void MotorControlGui::CheckWarmupRequired()
 			sprintf(message,"X-Ray Tube ERROR: sr:12 is %d", value);
 			xrayGroup->setTitle(message);
 			highVoltage->setChecked(false);
-			MotorWidget::SendCommand(2,"gui clear");
-			MotorWidget::SendCommand(2,"gui clear");
+			MotorWidget::SendCommand(2,(char*)"gui clear");
+			MotorWidget::SendCommand(2,(char*)"gui clear");
 			actualVDisp->setText("");
 			actualCDisp->setText("");
 			xrayGroup->setChecked(false);
@@ -1824,19 +1824,19 @@ void MotorControlGui::CheckWarmupRequired()
 			//if the user canceled the warm up, then it displays an warning message and reverts to last operating values.
 			if (ret == QMessageBox::Cancel)
 			{
-				MotorWidget::ErrorMessage("WARNING:You have chosen not to warm-up. Reverting to last operating voltage and current.");
-				MotorWidget::SendCommand(2,"gui clear ");
-				MotorWidget::SendCommand(2,"gui geterr ");
-				MotorWidget::SendCommand(2,"gui geterr "); //to clear the -9999 error
+				MotorWidget::ErrorMessage((char*)"WARNING:You have chosen not to warm-up. Reverting to last operating voltage and current.");
+				MotorWidget::SendCommand(2,(char*)"gui clear ");
+				MotorWidget::SendCommand(2,(char*)"gui geterr ");
+				MotorWidget::SendCommand(2,(char*)"gui geterr "); //to clear the -9999 error
 
 				//reverting the voltage values
-				voltage = atoi(MotorWidget::SendCommand(2,"gui getv"))/1000;
-				current = atoi(MotorWidget::SendCommand(2,"gui getc"))/1000;
+				voltage = atoi(MotorWidget::SendCommand(2,(char*)"gui getv"))/1000;
+				current = atoi(MotorWidget::SendCommand(2,(char*)"gui getc"))/1000;
 				setVDisp->setText(QString::number(voltage));
 				setCDisp->setText(QString::number(current));
 
 				//to check if the hv is really switched on
-				strcpy(message,MotorWidget::SendCommand(2,"gui gethv "));
+				strcpy(message,MotorWidget::SendCommand(2,(char*)"gui gethv "));
 				if(strstr (message,"No")==NULL)
 				{
 					highVoltage->setStyleSheet("background: red");
@@ -1851,21 +1851,21 @@ void MotorControlGui::CheckWarmupRequired()
 			{ //warm up process
 
 				//switch off hv to start warmup, else hv switches off with the warmup cmd
-				//strcpy(message,MotorWidget::SendCommand(2,"gui gethv "));
+				//strcpy(message,MotorWidget::SendCommand(2,(char*)"gui gethv "));
 				// if(strstr (message,"No")==NULL)
-				MotorWidget::SendCommand(3,"gui hv off ");
+				MotorWidget::SendCommand(3,(char*)"gui hv off ");
 
 
-				int value =  atoi(MotorWidget::SendCommand(2,"gui geterr"));
+				int value =  atoi(MotorWidget::SendCommand(2,(char*)"gui geterr"));
 				if (value==-9999)
-					value =  atoi(MotorWidget::SendCommand(2,"gui geterr"));
+					value =  atoi(MotorWidget::SendCommand(2,(char*)"gui geterr"));
 				cout<<"value after switching off before warmup="<<value<<endl;
-				cout<<"voltage from server:"<<(atoi(MotorWidget::SendCommand(2,"gui getv"))/1000)<<endl;
+				cout<<"voltage from server:"<<(atoi(MotorWidget::SendCommand(2,(char*)"gui getv"))/1000)<<endl;
 
 
 				//clearing the error since 70 error comes back wen u do hv off
 				if ((value==70)||(value==63)||(value==64)||(value==65))
-					MotorWidget::SendCommand(2,"gui clear ");
+					MotorWidget::SendCommand(2,(char*)"gui clear ");
 
 				//setting the voltage and current again
 				sprintf(message,"gui setv %d",voltage);
@@ -1873,7 +1873,7 @@ void MotorControlGui::CheckWarmupRequired()
 				sprintf(message,"gui setc %d",current);
 				MotorWidget::SendCommand(3,message);
 
-				cout<<"voltage after setting it again before warmup & warming up to:  "<<(atoi(MotorWidget::SendCommand(2,"gui getv"))/1000)<<endl;
+				cout<<"voltage after setting it again before warmup & warming up to:  "<<(atoi(MotorWidget::SendCommand(2,(char*)"gui getv"))/1000)<<endl;
 
 				//initiating warmup
 				sprintf(message,"gui warmup %d",voltage);
@@ -1881,7 +1881,7 @@ void MotorControlGui::CheckWarmupRequired()
 				highVoltage->setStyleSheet("background: red");
 
 				//to make sure the error is cleared
-				value =  atoi(MotorWidget::SendCommand(2,"gui geterr"));
+				value =  atoi(MotorWidget::SendCommand(2,(char*)"gui geterr"));
 
 				//successful warmup startup
 				if(!value)
@@ -1889,7 +1889,7 @@ void MotorControlGui::CheckWarmupRequired()
 				//unsuccessful due to some reason
 				else
 				{
-					strcpy(eMess,MotorWidget::SendCommand(2,"gui getemess "));
+					strcpy(eMess,MotorWidget::SendCommand(2,(char*)"gui getemess "));
 					sprintf(message,"ERROR: An error of %d:",value);
 					strcat(message,eMess);
 					strcat(message,"If you can't resolve what it is, please tell Dhanya of this error and how you got it. Disabling the Xray Tube part of the GUI. Thanks!");
@@ -1916,11 +1916,11 @@ int  MotorControlGui::UpdateXrayStatus()
 		int xrayStatus;
 		char message[200];
 
-		xrayStatus = atoi(MotorWidget::SendCommand(2,"gui xraystatus "));
+		xrayStatus = atoi(MotorWidget::SendCommand(2,(char*)"gui xraystatus "));
 
 		if((xrayStatus==-9)||(xrayStatus==-1))
 		{
-			strcpy(message,MotorWidget::SendCommand(2,"gui createxrayport "));
+			strcpy(message,MotorWidget::SendCommand(2,(char*)"gui createxrayport "));
 			if(strstr (message,"ERROR: Unable")!=NULL)
 			{
 				strcat(message,"\nSwitch it on/Fix it to enable its GUI");
@@ -1939,7 +1939,7 @@ int  MotorControlGui::UpdateXrayStatus()
 		}
 
 		//--- for standby/switched off-----
-		strcpy(message,MotorWidget::SendCommand(2,"gui isstandby "));
+		strcpy(message,MotorWidget::SendCommand(2,(char*)"gui isstandby "));
 
 		if(strstr (message,"No")!=NULL)
 			xrayGroup->setTitle("X-Ray Tube");
@@ -1947,12 +1947,12 @@ int  MotorControlGui::UpdateXrayStatus()
 		{
 			if(strstr (message,"off")!=NULL)
 			{
-				MotorWidget::ErrorMessage("WARNING: The X-Ray Tube is on Switched off!\nSwitch it on to enable its GUI");
+				MotorWidget::ErrorMessage((char*)"WARNING: The X-Ray Tube is on Switched off!\nSwitch it on to enable its GUI");
 				xrayGroup->setTitle("X-Ray Tube SWITCHED OFF");
 			}
 			else
 			{
-				MotorWidget::ErrorMessage("WARNING: The X-Ray Tube is on Standby!\nSwitch it on to enable its GUI");
+				MotorWidget::ErrorMessage((char*)"WARNING: The X-Ray Tube is on Standby!\nSwitch it on to enable its GUI");
 				xrayGroup->setTitle("X-Ray Tube ON STANDBY");
 			}
 			xrayGroup->setChecked(false);
@@ -1960,12 +1960,12 @@ int  MotorControlGui::UpdateXrayStatus()
 		}
 
 		//get voltage and current value
-		voltage = atoi(MotorWidget::SendCommand(2,"gui getv"))/1000;
-		current = atoi(MotorWidget::SendCommand(2,"gui getc"))/1000;
+		voltage = atoi(MotorWidget::SendCommand(2,(char*)"gui getv"))/1000;
+		current = atoi(MotorWidget::SendCommand(2,(char*)"gui getc"))/1000;
 		setVDisp->setText(QString::number(voltage));
 		setCDisp->setText(QString::number(current));
-		actualV  = atoi(MotorWidget::SendCommand(2,"gui getactualv"))/1000;
-		actualC  = atoi(MotorWidget::SendCommand(2,"gui getactualc"))/1000;
+		actualV  = atoi(MotorWidget::SendCommand(2,(char*)"gui getactualv"))/1000;
+		actualC  = atoi(MotorWidget::SendCommand(2,(char*)"gui getactualc"))/1000;
 		actualCDisp->setText(QString::number(actualC));
 		actualVDisp->setText(QString::number(actualV));
 
@@ -1977,7 +1977,7 @@ int  MotorControlGui::UpdateXrayStatus()
 	{
 		//if the xray group box was disabled
 		if(!QString::compare(xrayGroup->title(), "X-Ray Tube",Qt::CaseInsensitive))
-			MotorWidget::ErrorMessage("WARNING: You just disabled the GUI for the X-Ray Tube.\nPlease monitor its status on your own now OR through the command line");
+			MotorWidget::ErrorMessage((char*)"WARNING: You just disabled the GUI for the X-Ray Tube.\nPlease monitor its status on your own now OR through the command line");
 	}
 
 	return 0;
@@ -1991,7 +1991,7 @@ void MotorControlGui::UpdateXrayGroupforHV()
 
 	if(!highVoltage->isChecked())
 	{
-		MotorWidget::SendCommand(3,"gui hv off ");
+		MotorWidget::SendCommand(3,(char*)"gui hv off ");
 		highVoltage->setStyleSheet("background: gray");
 		warning->setEnabled(false);
 		warningText->setEnabled(false);
@@ -2022,8 +2022,8 @@ void MotorControlGui::UpdateXrayGroupforHV()
 		/*
       //display voltage and current
       //while changing voltage, sometimes you need to switch off hv and this might be where it screws up
-      voltage = atoi(MotorWidget::SendCommand(2,"gui getv"))/1000;
-      current = atoi(MotorWidget::SendCommand(2,"gui getc"))/1000;
+      voltage = atoi(MotorWidget::SendCommand(2,(char*)"gui getv"))/1000;
+      current = atoi(MotorWidget::SendCommand(2,(char*)"gui getc"))/1000;
       setVDisp->setText(QString::number(voltage));
       setCDisp->setText(QString::number(current));
 		 */
@@ -2111,7 +2111,7 @@ void MotorControlGui::UpdateXrayGroupforShutters()
 void MotorControlGui::CheckDoorOpen()
 {
 	char message[200];
-	strcpy(message,MotorWidget::SendCommand(2,"gui geterr"));
+	strcpy(message,MotorWidget::SendCommand(2,(char*)"gui geterr"));
 
 	int value = atoi(message);
 	if((value==63)||(value==64))
@@ -2120,7 +2120,7 @@ void MotorControlGui::CheckDoorOpen()
 		checkDoorTime->disconnect(); //displayActual->disconnect(this);
 		doorConnect = false;
 		//display error message
-		MotorWidget::ErrorMessage("ERROR: By opening the door while the shutters were open, you have switched off the High Voltage!\n\nSwitch off and then back on the Xray Tube MANUALLY to continue");
+		MotorWidget::ErrorMessage((char*)"ERROR: By opening the door while the shutters were open, you have switched off the High Voltage!\n\nSwitch off and then back on the Xray Tube MANUALLY to continue");
 		//disable shutters and uncheck high voltage
 		shutterBox->setEnabled(false);
 		highVoltage->setChecked(false);
@@ -2131,9 +2131,9 @@ void MotorControlGui::CheckDoorOpen()
 		actualCDisp->setText(QString::number(actualC));
 		actualVDisp->setText(QString::number(actualV));
 
-		//MotorWidget::ErrorMessage("ERROR: Warm-up required to reset this error!"); CheckWarmupRequired();
+		//MotorWidget::ErrorMessage((char*)"ERROR: Warm-up required to reset this error!"); CheckWarmupRequired();
 		//to clear the error
-		MotorWidget::SendCommand(2,"gui clear ");
+		MotorWidget::SendCommand(2,(char*)"gui clear ");
 	}
 	else
 		checkDoorTime->start(200);
@@ -2151,21 +2151,21 @@ void MotorControlGui::UpdateCurrentOrVoltage()
 	if(!QString::compare(clickedButton->text(), "Set Voltage"))
 	{
 		if(!QString::compare(setV->text(), ""))
-			MotorWidget::ErrorMessage("ERROR: Please enter a value to set the X-Ray Tube voltage");
+			MotorWidget::ErrorMessage((char*)"ERROR: Please enter a value to set the X-Ray Tube voltage");
 		else if(!QString::compare(setV->text(),setVDisp->text()))
-			MotorWidget::ErrorMessage("ERROR: The high voltage is already set to this voltage");
+			MotorWidget::ErrorMessage((char*)"ERROR: The high voltage is already set to this voltage");
 		else
 		{
 			//clear the 70 before u set the voltage or before u try to read it
-			int value =  atoi(MotorWidget::SendCommand(2,"gui geterr"));
+			int value =  atoi(MotorWidget::SendCommand(2,(char*)"gui geterr"));
 			cout<<"value="<<value<<endl;
 			if ((value==70)||(value==63)||(value==64)||(value==65))
-				MotorWidget::SendCommand(2,"gui clear ");
+				MotorWidget::SendCommand(2,(char*)"gui clear ");
 
 			sprintf(message,"gui setv %d",setV->text().toInt());
 			strcpy(message,MotorWidget::SendCommand(3,message));
 
-			cout<<"voltage from server:"<<(atoi(MotorWidget::SendCommand(2,"gui getv"))/1000)<<endl;
+			cout<<"voltage from server:"<<(atoi(MotorWidget::SendCommand(2,(char*)"gui getv"))/1000)<<endl;
 
 			if(strstr (message,"ERROR")==NULL)
 			{
@@ -2179,16 +2179,16 @@ void MotorControlGui::UpdateCurrentOrVoltage()
 	else
 	{
 		if(!QString::compare(setC->text(), ""))
-			MotorWidget::ErrorMessage("ERROR: Please enter a value to set the X-Ray Tube current");
+			MotorWidget::ErrorMessage((char*)"ERROR: Please enter a value to set the X-Ray Tube current");
 		else if(!QString::compare(setC->text(),setCDisp->text()))
-			MotorWidget::ErrorMessage("ERROR: The high voltage is already set to this current");
+			MotorWidget::ErrorMessage((char*)"ERROR: The high voltage is already set to this current");
 		else
 		{
 			//clear the 70 before u set the voltage or before u try to read it
-			int value =  atoi(MotorWidget::SendCommand(2,"gui geterr"));
+			int value =  atoi(MotorWidget::SendCommand(2,(char*)"gui geterr"));
 			cout<<"value="<<value<<endl;
 			if ((value==70)||(value==63)||(value==64)||(value==65))
-				MotorWidget::SendCommand(2,"gui clear ");
+				MotorWidget::SendCommand(2,(char*)"gui clear ");
 
 			sprintf(message,"gui setc %d",setC->text().toInt());
 			strcpy(message,MotorWidget::SendCommand(3,message));
@@ -2204,11 +2204,11 @@ void MotorControlGui::UpdateCurrentOrVoltage()
 	//ull get the error code only when hv is on
 	if(highVoltage->isChecked())
 	{
-		int value =  atoi(MotorWidget::SendCommand(2,"gui geterr"));
+		int value =  atoi(MotorWidget::SendCommand(2,(char*)"gui geterr"));
 		if((value!=0)&&(value!=109))
 		{
 			char eMess[200];
-			strcpy(eMess,MotorWidget::SendCommand(2,"gui getemess "));
+			strcpy(eMess,MotorWidget::SendCommand(2,(char*)"gui getemess "));
 			sprintf(message,"ERROR: An error of %d:",value);
 			strcat(message,eMess);
 			strcat(message,"Please tell Dhanya this error occurred while changing voltage or current.");
@@ -2226,11 +2226,11 @@ void MotorControlGui::UpdateCurrentOrVoltage()
 void MotorControlGui::GetErrorCodeFromTube()
 {
 	char message[200]="Error Code:";
-	strcat(message,MotorWidget::SendCommand(2,"gui geterr"));
+	strcat(message,MotorWidget::SendCommand(2,(char*)"gui geterr"));
 	strcat(message,":");
-	strcat(message,MotorWidget::SendCommand(2,"gui getemess"));
+	strcat(message,MotorWidget::SendCommand(2,(char*)"gui getemess"));
 	strcat(message," \n warmup time remaining: ");
-	strcat(message,MotorWidget::SendCommand(2,"gui getwtime"));
+	strcat(message,MotorWidget::SendCommand(2,(char*)"gui getwtime"));
 	MotorWidget::ErrorMessage(message);
 }
 
@@ -2244,10 +2244,10 @@ void MotorControlGui::ShowWarmupGraph()
 	//if this function is called when hv switched off while warming up
 	if(!highVoltage->isChecked())
 	{
-		MotorWidget::ErrorMessage("ERROR: High Voltage has been switched off during the warm-up process.\nHence, the voltage/current has not been changed");
+		MotorWidget::ErrorMessage((char*)"ERROR: High Voltage has been switched off during the warm-up process.\nHence, the voltage/current has not been changed");
 
-		voltage = atoi(MotorWidget::SendCommand(2,"gui getv"))/1000;
-		current = atoi(MotorWidget::SendCommand(2,"gui getc"))/1000;
+		voltage = atoi(MotorWidget::SendCommand(2,(char*)"gui getv"))/1000;
+		current = atoi(MotorWidget::SendCommand(2,(char*)"gui getc"))/1000;
 		setVDisp->setText(QString::number(voltage));
 		setCDisp->setText(QString::number(current));
 		displayTime->disconnect();
@@ -2259,16 +2259,16 @@ void MotorControlGui::ShowWarmupGraph()
 	else
 	{
 		//getting the actual voltages, current and wait time to plot graph
-		actualV  = atoi(MotorWidget::SendCommand(2,"gui getactualv"))/1000;
-		actualC  = atoi(MotorWidget::SendCommand(2,"gui getactualc"))/1000;
-		wt = atoi(MotorWidget::SendCommand(2,"gui getwtime"));
+		actualV  = atoi(MotorWidget::SendCommand(2,(char*)"gui getactualv"))/1000;
+		actualC  = atoi(MotorWidget::SendCommand(2,(char*)"gui getactualc"))/1000;
+		wt = atoi(MotorWidget::SendCommand(2,(char*)"gui getwtime"));
 
 		//check wt many times till u think it might be the right one
 		while(wt<0)
-			wt = atoi(MotorWidget::SendCommand(2,"gui getwtime"));
+			wt = atoi(MotorWidget::SendCommand(2,(char*)"gui getwtime"));
 
 		if(wt==0)
-			wt = atoi(MotorWidget::SendCommand(2,"gui getwtime"));
+			wt = atoi(MotorWidget::SendCommand(2,(char*)"gui getwtime"));
 
 		//do something with the wt obtained; either draw graph or gethv and shutters from server
 		if(wt>0)
@@ -2311,7 +2311,7 @@ void MotorControlGui::ShowWarmupGraph()
 			unit2->setEnabled(true);
 			if(highVoltage->isChecked())
 			{
-				MotorWidget::ErrorMessage("Warm-up of X-Ray Tube is Complete. Leaving High Voltage switched on");
+				MotorWidget::ErrorMessage((char*)"Warm-up of X-Ray Tube is Complete. Leaving High Voltage switched on");
 				//now saving the timestamp since warmup was successful
 				sprintf(message,"gui writewarmuptiming %d",voltage);
 				strcpy(message,MotorWidget::SendCommand(3,message));
@@ -2321,9 +2321,9 @@ void MotorControlGui::ShowWarmupGraph()
 			else
 			{
 				//technically this should not happen
-				MotorWidget::ErrorMessage("ERROR: High Voltage has been switched off during the warm-up process.\nHence, the voltage/current has not been changed");
-				voltage = atoi(MotorWidget::SendCommand(2,"gui getv"))/1000;
-				current = atoi(MotorWidget::SendCommand(2,"gui getc"))/1000;
+				MotorWidget::ErrorMessage((char*)"ERROR: High Voltage has been switched off during the warm-up process.\nHence, the voltage/current has not been changed");
+				voltage = atoi(MotorWidget::SendCommand(2,(char*)"gui getv"))/1000;
+				current = atoi(MotorWidget::SendCommand(2,(char*)"gui getc"))/1000;
 				setVDisp->setText(QString::number(voltage));
 				setCDisp->setText(QString::number(current));
 			}
@@ -2352,8 +2352,8 @@ void MotorControlGui::UpdateActualValues()
 	if(highVoltage->isChecked())
 	{
 
-		actualC = atoi(MotorWidget::SendCommand(2,"gui getactualc"))/1000;
-		actualV = atoi(MotorWidget::SendCommand(2,"gui getactualv"))/1000;
+		actualC = atoi(MotorWidget::SendCommand(2,(char*)"gui getactualc"))/1000;
+		actualV = atoi(MotorWidget::SendCommand(2,(char*)"gui getactualv"))/1000;
 
 		cout<<"voltage="<<voltage<<" actual voltage="<<actualV<<endl;
 		cout<<"current="<<current<<" actual current="<<actualC<<endl;
@@ -2414,8 +2414,8 @@ void MotorControlGui::UpdateActualValues()
 		actualConnect = false;
 
 		//display voltage and current
-		voltage = atoi(MotorWidget::SendCommand(2,"gui getv"))/1000;
-		current = atoi(MotorWidget::SendCommand(2,"gui getc"))/1000;
+		voltage = atoi(MotorWidget::SendCommand(2,(char*)"gui getv"))/1000;
+		current = atoi(MotorWidget::SendCommand(2,(char*)"gui getc"))/1000;
 		setVDisp->setText(QString::number(voltage));
 		setCDisp->setText(QString::number(current));
 	}
@@ -2430,18 +2430,18 @@ void MotorControlGui::UpdateLowerLimits()
 	//they are equal to -9999 if they are not in the motor list
 	if(xLower!=-9999)
 	{
-		strcpy(message,MotorWidget::SendCommand(3,"gui getLowerLimit detector_x"));
+		strcpy(message,MotorWidget::SendCommand(3,(char*)"gui getLowerLimit detector_x"));
 		xLower = atof(message);
 	}
 	if(yLower!=-9999)
 	{
-		strcpy(message,MotorWidget::SendCommand(3,"gui getLowerLimit detector_y"));
+		strcpy(message,MotorWidget::SendCommand(3,(char*)"gui getLowerLimit detector_y"));
 		yLower = atof(message);
 	}
 
 	if(pLower!=-9999)
 	{
-		strcpy(message,MotorWidget::SendCommand(3,"gui getLowerLimit psf"));
+		strcpy(message,MotorWidget::SendCommand(3,(char*)"gui getLowerLimit psf"));
 		pLower = atof(message);
 	}
 }
@@ -2455,17 +2455,17 @@ void MotorControlGui::UpdateUpperLimits()
 
 	if(xLower!=-9999)
 	{
-		strcpy(message,MotorWidget::SendCommand(3,"gui getUpperLimit detector_x"));
+		strcpy(message,MotorWidget::SendCommand(3,(char*)"gui getUpperLimit detector_x"));
 		xUpper = atof(message);
 	}
 	if(yLower!=-9999)
 	{
-		strcpy(message,MotorWidget::SendCommand(3,"gui getUpperLimit detector_y"));
+		strcpy(message,MotorWidget::SendCommand(3,(char*)"gui getUpperLimit detector_y"));
 		yUpper = atof(message);
 	}
 	if(pLower!=-9999)
 	{
-		strcpy(message,MotorWidget::SendCommand(3,"gui getUpperLimit psf"));
+		strcpy(message,MotorWidget::SendCommand(3,(char*)"gui getUpperLimit psf"));
 		pUpper = atof(message);
 	}
 }
@@ -2647,7 +2647,7 @@ void  MotorControlGui::CenterRelative()
 	double pos = text.toDouble();
 
 	if(!QString::compare(text, ""))
-		MotorWidget::ErrorMessage("ERROR: Please enter a value for the center relative position");
+		MotorWidget::ErrorMessage((char*)"ERROR: Please enter a value for the center relative position");
 	else
 	{
 
@@ -2682,7 +2682,7 @@ void  MotorControlGui::WidthRelative()
 	double pos = text.toDouble();
 
 	if(!QString::compare(text, ""))
-		MotorWidget::ErrorMessage("ERROR: Please enter a value for the relative width");
+		MotorWidget::ErrorMessage((char*)"ERROR: Please enter a value for the relative width");
 	else
 	{
 
@@ -2721,7 +2721,7 @@ void  MotorControlGui::CenterAbs()
 	sprintf(charPos," %f ",pos);
 
 	if(!QString::compare(text, ""))
-		MotorWidget::ErrorMessage("ERROR: Please enter a value for the slit width");
+		MotorWidget::ErrorMessage((char*)"ERROR: Please enter a value for the slit width");
 	else
 	{
 		sprintf(charCenter," %f ",center);
@@ -2756,7 +2756,7 @@ void  MotorControlGui::WidthAbs()
 	sprintf(charPos," %f ",pos);
 
 	if(!QString::compare(text, ""))
-		MotorWidget::ErrorMessage("ERROR: Please enter a value for the slit width");
+		MotorWidget::ErrorMessage((char*)"ERROR: Please enter a value for the slit width");
 	else
 	{
 		sprintf(charWidth," %f ",width);
@@ -2861,13 +2861,13 @@ int  MotorControlGui::Execute()
 						{
 							if((centerAbsDisplay->isModified())&&(QString::compare(centerAbsDisplay->text(), "")))
 							{
-								MotorWidget::ErrorMessage("ERROR: The slits cannot be moved absolutely and the center changed at the same time");
+								MotorWidget::ErrorMessage((char*)"ERROR: The slits cannot be moved absolutely and the center changed at the same time");
 								return -1;
 							}
 
 							if((widthAbsDisplay->isModified())&&(QString::compare(widthAbsDisplay->text(), "")))
 							{
-								MotorWidget::ErrorMessage("ERROR: The slits cannot be moved absolutely and the width changed at the same time");
+								MotorWidget::ErrorMessage((char*)"ERROR: The slits cannot be moved absolutely and the width changed at the same time");
 								return -1;
 							}
 						}
@@ -2952,7 +2952,7 @@ int  MotorControlGui::Execute()
 	if(  ((centerAbsDisplay->isModified())&&(QString::compare(centerAbsDisplay->text(), ""))) &&
 			((widthAbsDisplay->isModified())&&(QString::compare(widthAbsDisplay->text(), "")))  )
 	{
-		MotorWidget::ErrorMessage("ERROR: The center and the width cannot be changed at the same time");
+		MotorWidget::ErrorMessage((char*)"ERROR: The center and the width cannot be changed at the same time");
 		return -1;
 	}
 
@@ -3069,11 +3069,11 @@ void MotorControlGui::closeEvent(QCloseEvent* event)
 	if (ret == QMessageBox::Ok)
 	{
 		char command[200];
-		strcpy(command,MotorWidget::SendCommand(2,"gui save"));
+		strcpy(command,MotorWidget::SendCommand(2,(char*)"gui save"));
 		if(strstr (command,"ERROR")!=NULL)
 			MotorWidget::ErrorMessage(command);
 
-		MotorWidget::SendCommand(2,"gui unlock");
+		MotorWidget::SendCommand(2,(char*)"gui unlock");
 
 		event->accept();
 	}

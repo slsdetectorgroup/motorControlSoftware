@@ -174,7 +174,7 @@ void MotorWidget::MoveRelative(bool positive)
   double pos = text.toDouble();
 
   if(!QString::compare(text, ""))
-    ErrorMessage("ERROR: Please enter a value for the relative position");
+    ErrorMessage((char*)"ERROR: Please enter a value for the relative position");
   else
     {
 
@@ -243,7 +243,7 @@ char* MotorWidget::SendCommand(int argc, char args[])
     }
   else
     {
-      ErrorMessage("ERROR: Cannot connect to server");
+      ErrorMessage((char*)"ERROR: Cannot connect to server");
       exit(-1);
     }
 

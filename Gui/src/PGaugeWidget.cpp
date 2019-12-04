@@ -40,7 +40,7 @@ PGaugeWidget::PGaugeWidget(QWidget *parent):QWidget(parent), updating(false)
 
 void PGaugeWidget::StopRefresh() {
     timer->stop();
-    MotorWidget::ErrorMessage("Switching off automatic pressure update.\n");
+    MotorWidget::ErrorMessage((char*)"Switching off automatic pressure update.\n");
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -52,7 +52,7 @@ void PGaugeWidget::TimeoutRefresh() {
     if (UpdateValueFromServer())
         timer->start(spinUpdate->value() * 1000);
     else
-        MotorWidget::ErrorMessage("Switching off automatic pressure update.\n");
+        MotorWidget::ErrorMessage((char*)"Switching off automatic pressure update.\n");
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
