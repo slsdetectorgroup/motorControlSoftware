@@ -3606,7 +3606,7 @@ void Initialize::init(int nArg, char *args[])
 #endif
 
 		// creates motor object with an interface pointer. Motor[i] points to these motor objects
-		motor[Motor::NumMotors]=new Motor(args[1],atoi(args[2]),args[3],atof(args[4]),atof(args[5]),atof(args[6]), 0.000, interface[temp]);
+		motor[Motor::NumMotors]=new Motor(args[1],atoi(args[2]),args[3],atof(args[4]),atof(args[5]),atof(args[6]), interface[temp]);
 		// increases static memeber for number of motor objects
 		Motor::NumMotors++;
 	}

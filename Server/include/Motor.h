@@ -3,10 +3,6 @@
 
 #include "Interface.h"
 
-#ifndef LASERBOX
-#include "Slit.h"
-#endif
-
 /**
   *@short Defines the motor object parameters and their methods.
   */
@@ -15,61 +11,60 @@ class Motor
  public:
 
   /**Constructor
-	 @param Name Name of the motor
-	 @param Axis The axis of the controller that the motor's connected to
-	 @param Controller The controller connected to motor, eg. corvus_1
-	 @param Speed The speed the motor is set to
-	 @param LowerLimit The lower limit of the motor
-	 @param UpperLimit The upper limit of the motor
-	 @param Position The position of the motor
+	 @param name name of the motor
+	 @param axis The axis of the controller that the motor's connected to
+	 @param controller The controller connected to motor, eg. corvus_1
+	 @param speed The speed the motor is set to
+	 @param lowerLimit The lower limit of the motor
+	 @param upperLimit The upper limit of the motor
 	 @param interface Pointer to an interface object.<br>(The port that the  motor's connected to is accessed through this)
   */
-  Motor(char* Name, int Axis, char* Controller, double Speed, double LowerLimit, double UpperLimit, double Position, Interface* interface);
+  Motor(char* name, int axis, char* controller, double speed, double lowerLimit, double upperLimit, Interface* interface);
 
  /**sets the name of motor.
-	@param Name sets name of motor to this value
+	@param name sets name of motor to this value
  */			
-  void setName(char* Name);	
+  void setName(char* name);	
 
  /**gets the name of the motor.
    @returns the name of motor
  */ 
   char* getName();
 
- /**sets the Axis of motor.
-	@param Axis sets Axis of motor to this value
+ /**sets the axis of motor.
+	@param axis sets axis of motor to this value
  */		
-  void setAxis(int Axis);	
+  void setAxis(int axis);	
 
- /**gets the Axis of the motor.
-   @returns the Axis of motor
+ /**gets the axis of the motor.
+   @returns the axis of motor
  */  
   int getAxis();
 
- /**sets the Controller of the motor.
-	@param Controller sets Controller of the motor to this value
+ /**sets the controller of the motor.
+	@param controller sets controller of the motor to this value
  */		
-  void setController(char* Controller);	
+  void setController(char* controller);	
  
- /**gets the Controller of the motor.
-   @returns the Controller of the motor
+ /**gets the controller of the motor.
+   @returns the controller of the motor
  */
   char* getController();
 
- /**sets the Speed of motor.
-	@param Speed sets Speed of motor to this value
+ /**sets the speed of motor.
+	@param speed sets speed of motor to this value
  */		
-  void setSpeed(double Speed);	
+  void setSpeed(double speed);	
 
- /**gets the Speed of the motor.
-   @returns the Speed of motor
+ /**gets the speed of the motor.
+   @returns the speed of motor
  */
   double getSpeed();
 
  /**sets the Lower Limit of motor.
-	@param LowerLimit sets  Lower Limit of motor to this value
+	@param lowerLimit sets  Lower Limit of motor to this value
  */		
-  void setLowerLimit(double LowerLimit);	
+  void setLowerLimit(double lowerLimit);	
 
  /**gets the Lower Limit of the motor.
    @returns the Lower Limit of motor
@@ -77,9 +72,9 @@ class Motor
   double getLowerLimit();
 
  /**sets the Upper Limit of motor.
-	@param UpperLimit sets Upper Limit of motor to this value
+	@param upperLimit sets Upper Limit of motor to this value
  */		
-  void setUpperLimit(double UpperLimit);	
+  void setUpperLimit(double upperLimit);	
 
  /**gets the Upper Limit of the motor.
    @returns the Upper Limit of motor
@@ -87,12 +82,12 @@ class Motor
   double getUpperLimit();
 
 /**sets the Position of motor.
-	@param Position sets Position of motor to this value
- */		
-  void setPosition(double Position);	
+       @param Position sets Position of motor to this value
+ */            
+  void setPosition(double position);  
 
- /**gets the Position of the motor.
-   @returns the Position of motor
+ /**gets the position of the motor.
+   @returns the position of motor
  */
   double getPosition();
 
@@ -106,7 +101,7 @@ class Motor
  */
   Interface* getInterface();
 
- /*for debugging - Prints out the parameters of a motor object: Name, Axis, Controller connected to, Speed, LowerLimit, UpperLimit, Interface.
+ /*for debugging - Prints out the parameters of a motor object: name, axis, controller connected to, speed, lowerLimit, upperLimit, Interface.
  */		
   void print();
 
@@ -119,7 +114,7 @@ class Motor
    @param the absolute position the motor is about to move to
    @returns true if it can move
  */
-  bool canMotorMove(double Position);
+  bool canMotorMove(double position);
 
  /**moves the motor to a relative position.
 	@param position relative position
@@ -164,33 +159,33 @@ class Motor
 		
  private:
 
-/**Name of motor
+/**name of motor
  */
-  char Name[200];
+  char name[200];
 
-/**Axis of motor
+/**axis of motor
  */
-  int Axis;
+  int axis;
 
-/**Controller connected to motor
+/**controller connected to motor
  */
-  char Controller[200];
+  char controller[200];
 
-/**Speed of motor
+/**speed of motor
  */
-  double Speed;
+  double speed;
 
 /**Lower limit of motor
  */
-  double LowerLimit;
+  double lowerLimit;
 
 /**Upper limit of motor
  */
-  double UpperLimit;
+  double upperLimit;
 
-/**Position of motor
+/**position of motor
  */
-  double Position;
+  double position;
 
 /**Interface pointer of motor
  */
