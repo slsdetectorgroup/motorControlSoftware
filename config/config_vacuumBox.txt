@@ -2,28 +2,31 @@
 controller	corvus_1	09040218
 
 
-#mode	name		axis	controller	speed   lowerlimit	upperlimit
-motor	Fluorescence	1	corvus_1	-1	0	350
+#mode	name		        axis	controller	lowerlimit	upperlimit
+motor	Fluorescence_wheel	1	    corvus_1	0	        350
 
 
 
-#mode 		pos	name	energy(KeV)
-fluorescence	1 	In	24.2
-fluorescence	2 	Mo	17.5
-fluorescence	3 	Ni	7.5	
-fluorescence	4 	Fe	6.4	
-fluorescence	5 	Cr	5.4	
-fluorescence	6 	V	5.0	
-fluorescence	7 	Ti	4.5	
-fluorescence	8	Al	1.5	
-
-fluorescence	1 	Al	1.5	
-fluorescence	2 	Ti	4.5	
-fluorescence	3 	V	5.0	
-fluorescence	4 	Cr	5.4	
-fluorescence	5 	Fe	6.4	
-fluorescence	6 	Ni	7.5	
-fluorescence	7 	Mo	17.5
-fluorescence	8	In	24.2
+#mode 		        name	energy(KeV)
+# first defined set
+fluorescence_wheel	In	    24.2
+fluorescence_wheel	Mo	    17.5
+fluorescence_wheel	Ni	    7.5	
+fluorescence_wheel	Fe	    6.4	
+fluorescence_wheel	Cr	    5.4	
+fluorescence_wheel	V	    5.0	
+fluorescence_wheel	Ti	    4.5	
+fluorescence_wheel	Al	    1.5	
+# second defined set
+fluorescence_wheel	Al	    1.5	
+fluorescence_wheel	Ti	    4.5	
+fluorescence_wheel	V	    5.0	
+fluorescence_wheel	Cr	    5.4	
+fluorescence_wheel	Fe	    6.4	
+fluorescence_wheel	Ni	    7.5	
+fluorescence_wheel	Mo	    17.5
+fluorescence_wheel	In	    24.2
 
 power 1900
+
+pressure

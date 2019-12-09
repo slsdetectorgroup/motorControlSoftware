@@ -1,259 +1,57 @@
 #pragma once
 
-#include "Motor.h"
+class Xray;
+class Pgauge;
+class Fwheel;
+class ReferencePoint;
+class Fluorescence;
+class Slit;
+class Controller;
+class Motor;
 #include "Interface.h"
-
-#ifdef LASERBOX
-#include "Fwheel.h"
-#else
-#include "Slit.h"
-#include "Xray.h"
-#ifdef VACUUMBOX
-#include "Pgauge.h"
-#endif
-#endif
 
 #include <vector>
 #include <string>
 #include "time.h"
 using namespace std;
 
-#define FLUOR_LASERNAME	"laser"
-#define FLUOR_PARA_NUM 3
 
-/**
-  *@short reads config files, creates motor and interface objects, also executes commands from commandline
-  */
-
-class Initialize
-{
+class Initialize {
  public:
-#ifndef LASERBOX
-  /**Constructor
-	 reads config files, gets the controller interface,creates motor objects and interface objects
-	 @param fName name of config file
-	 @param fName2 name of positions file to save the positions to
-	 @param fName3 name of new config file
-	 @param fName4 name of warmupTimingsstamp file
-  */
-  Initialize(string const fName,string const fName2,string const fName3,string const fName4);
-#else
-  /**Constructor
-	 reads config files, gets the controller interface,creates motor objects and interface objects
-	 @param fName name of config file
-	 @param fName2 name of positions file to save the positions to
-	 @param fName3 name of new config file
-  */
-  Initialize(string const fName,string const fName2,string const fName3);
-#endif
-  /**Destructor
-	 closes all the serial fds for the interface
-  */
+  Initialize();
   ~Initialize();
 
   /**executes commands from the command line through both server and local
-	 @param argc number of command line arguments - 1 (not including the object name eg ./localClient)
 	 @param args array of command line arguments (not including the object name eg ./localClient
 	 @param mess message to be sent to client after executing the command
 	 @returns 0 for successful command execution,-1 for fail
   */	
-  int executeCommand(int argc, char* args[], char mess[]);
+  int executeCommand(std::vector<std::string> args, char mess[]);
 
-#ifndef LASERBOX
-  /**executes commands from the command line through both server and local
-	 @param sLine the fluorescence line read from the config file
-  */	
-  void initFluorNames(string sLine);
-
-#else
-  /**gets the interface of the filter wheel by specifying serial number
-   * @param serialNum serial number of the filter wheel
-   * returns the interfacenumber
-   */
-  int getFWInterface(string const serialNum);
-#endif
- 
-  /**called from the constructor,creates motor/interface objects for current line read from config file,
-	 calls the getContInterface() to get the controller interface after reading all controllers
-	 @param nArg number of arguments in current line of config file
-	 @param args array of arguments in current line of config file
-  */                                 
-  void init(int nArg, char *args[]);
-
-  /**called from init() after reading in all the controllers,
-	 gets the controller interface and sets the controller[][] and contInterface[][] values
-	 by sending 'getserialno' to each interface
-   */
-  void getContInterface();
-
-  /**the positions of the motors are saved to file before exiting from the program
-	 @param fName name of file the positions are saved in
-	 returns the errormessage
-  */
-  char* savePositions(string const fName);
-
-  /**a new config file is written with any updated values
-	 @param oldFName the name of the config file used in the beginning
-	 @param fName the name of the new config file to save everything to
-	 returns the errormessage
-  */
-  char* saveToNewConfigFile(string const oldFName, string const fName);
-
-  /**if the positions of the motors in config file(the ones being presently used)
-	 are different from the positions saved to file the last time,
-	 then it resets the positions of the motors to that of the file
-	 @param fName name of file the positions were saved in
-  */
-  void setOrigPositions(string const fName);
-
-  /**waits till all the controllers are not busy 
-   */
-  void check_busy(); 
-
-#ifndef LASERBOX
-  /**reads the warmupTimingstamps file upon startup
-	 @param fName name of file of the warmuptiming stamps
-	 returns 0
-  */
-  int ReadWarmupTimestamps(string const fName);
-
-  /**writes the warmupTimingstamps file upon gui close
-	 @param fName name of file of the warmuptiming stamps
-	 returns 0
-  */
-  int WriteWarmupTimestamps(string const fName);
-#endif
  private:
 
-//#ifdef LOCAL
-  /**array of motor object pointers
-   */    
-  Motor* motor[10];
+  int ReadWarmupTimestamps(string const fName);
+  int WriteWarmupTimestamps(string const fName);
+  void ReadConfigFile();
+  void UpdateInterface(InterfaceIndex index);
+  void TubeMode(vector<string> args);
+  void PressureMode();
+  void FwheelMode(vector<string> args);
+  void ReferencePointMode(vector<string> args);
+  void FluorescenceMode(vector<string> args);
+  void ControllerMode(vector<string> args);
+  void MotorMode(vector<string> args);
 
-  /**array of interface object pointers
-   */
-  Interface* interface[6];
-
-
-#ifndef LASERBOX
-  /**pointer to xray tube serial object
-   */
-  Interface* tubeInterface;
-
-  /**xray class object
-   */
-  Xray* XrayTube;
-
-#ifdef VACUUMBOX
-  /**pointer to pressure gauge serial object for vacuumbox
-   */
-  Interface* pressureInterface;
-
-  /** pressure object
-   */
-  Pgauge* pgauge;
-#endif
-
- /**a slit pointer
-   */
-  Slit* slit;
-
-  /**if slit_x1 exists,0 for not,else position of its object ptr in Motor[] array
-   */
-  int slit1_exists;
-
-  /**if slit_x2 exists,0 for not,else position of its object ptr in Motor[] array
-   */
-  int slit2_exists;
-
-  /**max power of the xray tube
-   */
+  vector<bool> usbSerialPortsUsed;
+  Xray* xrayTube;
   int maxTubePower;
-
-  /**xray tube status while starting server
-   */
-  int xrayStatus;
-#else
-  /**array of fwheel object pointers
-   */
-  Fwheel* fwheel[5];
-
-  /**array of interface object pointers for the filter wheels
-   */
-  Interface* fwInterface[5];
-#endif
-
-
-  /**name of config file
-   */
-  string configFileName;
-
-  /**name of configNew file
-   */
-  string configNewFileName;
-
-  /**name of positions file
-   */
-  string positionsFileName;
-
-#ifndef LASERBOX
-  /**name of warmuptime file
-   */
-  string warmupTimeFileName;
-
-  /**fluorwidth  34 or 45
-   */
-#ifdef XRAYBOX
-  static const double fluorwidth = 34;
-  static const double fluoroffset = 12;
-  static const double laserPosition = 128;
-#else
-  static const double fluorwidth = 45;
-  static const double fluoroffset = 0;
-#endif
-
-  /**max fluorescence values
-   */
-  static const int maxfluorvalues = 8;
-
-
-  /**list of current target names for fluorescence
-   */
-  vector < vector<string> > fluorList;
-
-  /** array of target holders for fluorescence */
-  vector <vector < vector<string> > > fluorListArray;
-
-  /**the list of warmup Timings for all the different voltages of the XRay Tube
-   */  
   vector<string> warmupTimings;
-#endif
-
-
-//#endif
-
-  /**number of controllers
-   */
-  int NUMBER_OF_CONTROLLERS;
-
-#ifdef LASERBOX
-  /**number of reference points
-   */
-  int NUMBER_OF_REFPOINTS;
-
-  /** reference points. cols: name, detx position, dety position, detz position
-   */
-  vector <vector<string> >referencePoints;
-#endif
-
-
-  /** 2-d array: 1st col is controller names, 2nd col is controller serial numbers
-   */
-  vector <vector<string> >controller;
-
-  /** 2-d array: 1st col is controller names, 2nd col is the port the controller is connected to
-   */
-  vector <vector<string> >contInterface;
-
+  Pgauge* pgauge;
+  vector<Fwheel*> fwheel;
+  vector<ReferencePoint*> referencePoint;
+  vector<Fluorescence*> fluorescence;
+  Slit* slit;
+  vector<Controller*> controller;
+  vector<Motor*> motor;
 };
 

@@ -4,38 +4,40 @@
 controller	corvus_2	09040216
 #controller	corvus_3	09040218
 
-
-#mode	name		axis	controller	speed   lowerlimit	upperlimit
-#motor	Crystal		1	corvus_3	-1	0		360
-#motor	Huber		2	corvus_3	0.23	-50		150
-motor	Fluorescence	3	corvus_2	-1	0		251.8267
-#motor	Slit_x1		1	corvus_2	-1	-1		-1
-#motor	Slit_x2		2	corvus_2	-1	-1		-1
-#motor	PSF		3	corvus_1	-1	0		42.4
-#motor	Detector_x	1	corvus_1	-1	0		255.5
-#motor	Detector_y	1	corvus_1	-1	0		102.7
+#huber: use separate controller (speed and ncalvel 0.23)
 
 
-#mode 		    name	energy(KeV)	HV (#do not use "KW" in a target name)
+#mode	name		    axis	controller	lowerlimit	upperlimit
+#motor	Crystal		    1	    corvus_3	0		    360
+#motor	Huber		    2	    corvus_3	-50		    150
+motor	Fluorescence	3	    corvus_2	0		    251.8267
+#motor	Slit_x1		    1	    corvus_2	-1		    -1
+#motor	Slit_x2		    2	    corvus_2	-1		    -1
+#motor	PSF		        3	    corvus_1	0		    42.4
+#motor	Detector_x	    1	    corvus_1	0		    255.5
+#motor	Detector_y	    1	    corvus_1	0		    102.7
+
+
+#mode 		    name    energy(KeV) 
 # 1st set for random use
-fluorescence    1       -           10KW
-fluorescence    2       -           10KW
-fluorescence    3       -           10KW
-fluorescence    4       -           10KW
-fluorescence    5       -           10KW
-fluorescence    6       -           10KW
-fluorescence    7       -           10KW
-fluorescence    8       -           10KW
+fluorescence    1       - 
+fluorescence    2       - 
+fluorescence    3       - 
+fluorescence    4       - 
+fluorescence    5       - 
+fluorescence    6       - 
+fluorescence    7       - 
+fluorescence    8       - 
 
 # second defined set
-fluorescence    Ti      4.5         10KW
-fluorescence	Cr	    5.4         10KW
-fluorescence	Fe	    6.4         10KW
-fluorescence	Cu	    8.0         10KW
-fluorescence	Ge	    9.9         10KW
-fluorescence	Mo	    17.5        10KW
-fluorescence    Screen	0            10KW
-fluorescence    Bla     -           10KW
+fluorescence    Ti      4.5  
+fluorescence	Cr	    5.4  
+fluorescence	Fe	    6.4  
+fluorescence	Cu	    8.0  
+fluorescence	Ge	    9.9  
+fluorescence	Mo	    17.5 
+fluorescence    Screen	0    
+fluorescence    Bla     -    
 
 
 power 2400

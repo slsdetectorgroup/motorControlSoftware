@@ -87,7 +87,7 @@ void FwheelWidget::UpdateValueFromServer()
 	}
 	if(!found)
 	{
-		MotorWidget::ErrorMessage("ERROR: Could not match value from server to the lists for filter wheel.\nThis should not happen.");
+		MotorWidget::ErrorMessage((char*)"ERROR: Could not match value from server to the lists for filter wheel.\nThis should not happen.");
 		exit(-1);
 	}
 	else

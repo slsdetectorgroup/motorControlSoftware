@@ -1,438 +1,325 @@
-/********************************************//**
- * @file Interface.cpp
- * @short Defines the interface objects
- * @author Dhanya
- ***********************************************/
 #include "Interface.h"
+#include "commonDefs.h"
+
+#include <sstream>
+
 #include <fcntl.h>  /* File control definitions */
 #include <iostream>
 #include <cstring>
 #include <cstdlib> //exit
 #include <unistd.h> //usleep in raspberrypi
 #include <stdio.h>
-using namespace std;
+#include <termios.h>  /* POSIX terminal control definitions */
+
+/*	for serial programming see:  http://www.easysw.com/~mike/serial/serial.html */
 
 
-	int Interface::NumMotorcontroller_Interfaces(0);
-#ifdef LASERBOX
-	int Interface::NumFW_Interfaces(0);
-#endif
+#define CONTROLLER_MAX_TX_ATTEMPTS		(10)
+#define CONTROLLER_MAX_RX_ATTEMPTS		(10)
+#define CONTROLLER_MAX_WAIT_ATTEMPTS	(10)
+#define CONTROLLER_READ_WAIT_US			(50000) // because of raspberry pi
 
-
-Interface::Interface(char* serial, bool* success)
-{
-    *success=false;
-
-    /* serial port is copied to serial*/
-	strcpy(this->serial,serial);
-	cout << endl << "Motorcontroller, checking:" << serial << endl;
-
-	serialfd= open (serial, O_RDWR | O_NOCTTY | O_NDELAY);
-
-	/* exits program if port cant be opened */
-	if (serialfd==-1)
-	{
-		cout<<"WARNING: Unable to open port "<<serial<<", check permissions to use it next time"<<endl;
-		//exit(-1);
+Interface::Interface(std::string serial, InterfaceIndex index) {
+	this->serial = serial;
+	switch	(index) {
+		case TUBE:
+			TubeInterface();
+			break;
+		case PRESSURE:
+			PressureInterface();
+			break;
+		case FILTER_WHEEL:
+			FilterWheelInterface();
+			break;
+		default:
+			ControllerInterface();
+			break;
 	}
-	else
-	{
-		/* control options */
-		new_serial_conf.c_cflag = B57600 | CS8 | CREAD | CLOCAL;
-		/* input options */
-		new_serial_conf.c_iflag = 0;
-		/* output options */
-		new_serial_conf.c_oflag = 0;
-		/* line options */
-		new_serial_conf.c_lflag = ICANON;
-		/* flush input */
-		sleep(2);
-		tcflush(serialfd, TCIOFLUSH);
-		tcsetattr(serialfd, TCSANOW, &new_serial_conf);
-
-		/*
-		for serial programming see:  http://www.easysw.com/~mike/serial/serial.html
-		 */
-
-
-		//sending a command st to controller to check if the usb is  really connected and can read data back from controller
-		char command[200]="st ";
-		char buffer[200]="";
-
-		//so that the error doesnt print a million times
-		int writeValue=-1, attempt=0;
-		while(writeValue==-1)  //while (write (serialfd,command,strlen(command))==-1)
-		{
-			writeValue = write (serialfd,command,strlen(command));
-			attempt++;
-			if(attempt==10)
-				cout<<"error (attempt number10) sending the command "<<command<<" to port"<<serial<<" trying again"<<endl;
-		}
-		if(attempt>10)
-			cout<<"succesful in sending the command,"<<command<<" to port"<<serial<<endl;
-
-
-
-		buffer[0]='\0';
-		usleep(50000);
-
-		for(int i=0;i<100;i++)
-			if(read(serialfd, buffer, 255)!=-1)
-			{
-				*success = true;
-				break;
-			}
-	}
-
-    if(*success==false){
-        cout << "Fail" << endl;
-        close_serialfd();
-    }else
-        cout << "Success" << endl;
-
 }
 
 
-#ifndef LASERBOX
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-Interface::Interface(char* serial, bool* success, bool xray)
-{
-    *success = false;
+void Interface::ControllerInterface() {
+	FILE_LOG(logINFO) << "\tMotorcontroller, checking:" << serial;
+	serialfd = open (serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
+	if (serialfd == -1) {
+		FILE_LOG(logWARNING) << "Unable to open port " << serial << ", check permissions to use it next time";
+		FILE_LOG(logWARNING) << "Fail";
+		throw std::runtime_error("Fail to open port");
+	}
 
-    /* serial port is copied to serial*/
-	strcpy(this->serial,serial);
+	struct termios new_serial_conf;
+	memset(&new_serial_conf, 0, sizeof(new_serial_conf));
+	new_serial_conf.c_cflag = B57600 | CS8 | CREAD | CLOCAL; // control options
+	new_serial_conf.c_iflag = 0; // input options
+	new_serial_conf.c_oflag = 0; // output options
+	new_serial_conf.c_lflag = ICANON; // line options
+	//flush input
+	sleep(2);
+	tcflush(serialfd, TCIOFLUSH);
+	tcsetattr(serialfd, TCSANOW, &new_serial_conf);
 
+	// validate controller 
+	try {
+		isControllerIdle(false);
+	} catch (...) {
+		close(serialfd);
+		FILE_LOG(logWARNING) << "Fail";
+		throw;
+	}
+
+    FILE_LOG(logINFO) << "\tSuccess";
+}
+
+
+void Interface::TubeInterface() {
 	//O_NOCTTY flag tells UNIX that this program doesn't want to be the "controlling terminal" for that port.
 	//O_NDELAY flag tells UNIX that this program doesn't care what state the DCD signal line is in - whether the other end of the port is up and running. If you do not specify this flag, your process will be put to sleep until the DCD signal line is the space voltage.
 
-	serialfd= open (serial, O_RDWR | O_NOCTTY | O_NDELAY);
-	cout << endl << "Xray tube, checking:" << serial << endl;
-
-	/* exits program if port cant be opened */
-	if (serialfd==-1)
-	{
-		cout<<"ERROR: Unable to open port "<<serial<<" for xray tube, check permissions to use it\n";
-		//exit(-1);
+	FILE_LOG(logINFO) << "Xray tube, checking:" << serial;
+	serialfd= open (serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
+	if (serialfd==-1) {
+		FILE_LOG(logWARNING) << "Unable to open port " << serial << " for xray tube, check permissions to use it\n";
+        FILE_LOG(logWARNING) << "Fail" << std::endl;
+		throw std::runtime_error("Fail to open port");
 	}
-	else
-	{
-		/* control options */
-		//B9600	9600 baud
-		//CS8	8 data bits
-		//CSTOPB	2 stop bits (1 otherwise)
-		//CLOCAL	Local line - do not change "owner" of port
-		//CREAD	Enable receiver
-		new_serial_conf.c_cflag = B9600 | CS8 | CLOCAL | CREAD ;
+	struct termios new_serial_conf;
+	memset(&new_serial_conf, 0, sizeof(new_serial_conf));
+	/* control options */
+	//B9600	9600 baud
+	//CS8	8 data bits
+	//CSTOPB	2 stop bits (1 otherwise)
+	//CLOCAL	Local line - do not change "owner" of port
+	//CREAD	Enable receiver
+	new_serial_conf.c_cflag = B9600 | CS8 | CLOCAL | CREAD ;
 
-		/* input options */
-		//IGNPAR	Ignore parity errors
-		new_serial_conf.c_iflag = IGNPAR;
+	/* input options */
+	//IGNPAR	Ignore parity errors
+	new_serial_conf.c_iflag = IGNPAR;
 
-		/* output options */
-		new_serial_conf.c_oflag = 0;
+	/* output options */
+	new_serial_conf.c_oflag = 0;
 
-		/* line options */
-		new_serial_conf.c_lflag = 0; // doesnt work with ICANON
+	/* line options */
+	new_serial_conf.c_lflag = 0; // doesnt work with ICANON
 
-		/* flush input */
-		sleep(2);
-		tcflush(serialfd, TCIOFLUSH);
-		tcsetattr(serialfd, TCSANOW, &new_serial_conf);
+	/* flush input */
+	sleep(2);
+	tcflush(serialfd, TCIOFLUSH);
+	tcsetattr(serialfd, TCSANOW, &new_serial_conf);
 
-		int a,b;
-		send_command_to_tube((char*)"sr:12 ", 1, a,b);
-		send_command_to_tube((char*)"sr:12 ", 1, a,b);
-		if(a!=-9999)
-			*success = true;
+	int a,b;
+	send_command_to_tube((char*)"sr:12 ", 1, a,b);
+	send_command_to_tube((char*)"sr:12 ", 1, a,b);
+	if(a == -9999) {
+		FILE_LOG(logWARNING) << "Fail" << std::endl;
+		close(serialfd);
+		throw std::runtime_error("Fail to communicate with tube");
 	}
-
-    if(*success == false){
-        cout << "Fail" << endl;
-        close_serialfd();
-    } else
-        cout << "Success" << endl;
-
-}
-
-#ifdef VACUUMBOX
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-Interface::Interface(char* serial,bool pressure, bool* success)
-{
-	*success = false;
-
-	/* serial port is copied to serial*/
-	strcpy(this->serial,serial);
-
-	serialfd= open (serial, O_RDWR | O_NOCTTY | O_NDELAY);
-	cout << endl << "Pressure, checking:" << serial << endl;
-
-	/* exits program if port cant be opened */
-	if (serialfd==-1)
-	{
-		cout<<"ERROR: Unable to open port "<<serial<<" for pressure, check permissions to use it\n";
-		//exit(-1);
-	}
-	else
-	{
-		/* control options */
-		//B9600	9600 baud
-		//CS8	8 data bits
-		//CSTOPB	2 stop bits (1 otherwise)
-		//CLOCAL	Local line - do not change "owner" of port
-		//CREAD	Enable receiver
-		new_serial_conf.c_cflag = B9600 | CS8 | CLOCAL | CREAD ;
-
-		/* input options */
-		//IGNPAR	Ignore parity errors
-		new_serial_conf.c_iflag = IGNPAR;
-
-		/* output options */
-		new_serial_conf.c_oflag = 0;
-
-		/* line options */
-		new_serial_conf.c_lflag = 0; // doesnt work with ICANON
-
-		/* flush input */
-		sleep(2);
-		tcflush(serialfd, TCIOFLUSH);
-		tcsetattr(serialfd, TCSANOW, &new_serial_conf);
-
-
-		*success = checkPressureGaugePort();
-	}
-
-    if(*success == false){
-        cout << "Fail" << endl;
-        close_serialfd();
-    } else
-        cout << "Success" << endl;
+    FILE_LOG(logINFO) << "Success" << std::endl;
 }
 
 
-#endif
-#else
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
-Interface::Interface(bool fw, char* serial, bool* success)
-{
-    *success = false;
+void Interface::PressureInterface() {
+	FILE_LOG(logINFO) << "Pressure, checking:" << serial;
+	serialfd = open (serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
+	if (serialfd == -1) {
+		FILE_LOG(logWARNING) << "Unable to open port " << serial << " for pressure, check permissions to use it\n";
+        FILE_LOG(logWARNING) << "Fail" << std::endl;
+		throw std::runtime_error("Fail to open port");
+	}
+	struct termios new_serial_conf;
+	memset(&new_serial_conf, 0, sizeof(new_serial_conf));
+	/* control options */
+	//B9600	9600 baud
+	//CS8	8 data bits
+	//CSTOPB	2 stop bits (1 otherwise)
+	//CLOCAL	Local line - do not change "owner" of port
+	//CREAD	Enable receiver
+	new_serial_conf.c_cflag = B9600 | CS8 | CLOCAL | CREAD ;
 
-    /* serial port is copied to serial*/
-	strcpy(this->serial,serial);
+	/* input options */
+	//IGNPAR	Ignore parity errors
+	new_serial_conf.c_iflag = IGNPAR;
+
+	/* output options */
+	new_serial_conf.c_oflag = 0;
+
+	/* line options */
+	new_serial_conf.c_lflag = 0; // doesnt work with ICANON
+
+	/* flush input */
+	sleep(2);
+	tcflush(serialfd, TCIOFLUSH);
+	tcsetattr(serialfd, TCSANOW, &new_serial_conf);
+
+
+	if (!checkPressureGaugePort()) {
+		FILE_LOG(logWARNING) << "Fail" << std::endl;
+		close(serialfd);
+		throw std::runtime_error("Fail to communicate with pressure gauge");
+	}
+    FILE_LOG(logINFO) << "Success" << std::endl;
+}
+
+
+void Interface::FilterWheelInterface() {
 
 	//O_NOCTTY flag tells UNIX that this program doesn't want to be the "controlling terminal" for that port.
 	//O_NDELAY flag tells UNIX that this program doesn't care what state the DCD signal line is in - whether the other end of the port is up and running. If you do not specify this flag, your process will be put to sleep until the DCD signal line is the space voltage.
-
-	serialfd= open (serial, O_RDWR | O_NOCTTY | O_NDELAY);
-	cout << endl << "Filter wheel, checking:" << serial << endl;
-
-	/* exits program if port cant be opened */
-	if (serialfd==-1)
-	{
-		cout<<"ERROR: Unable to open port "<<serial<<" for filter wheel, check permissions to use it\n";
-		//exit(-1);
+	FILE_LOG(logINFO) << "Filter wheel, checking:" << serial;
+	serialfd= open (serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
+	if (serialfd == -1) {
+		FILE_LOG(logWARNING) << "Unable to open port " << serial << " for filter wheel, check permissions to use it\n";
+        FILE_LOG(logWARNING) << "Fail" << std::endl;
+		throw std::runtime_error("Fail to open port");
 	}
-	else
-	{
-		/* control options */
-		//B9600	115200 baud
-		//CS8	8 data bits
-		//CSTOPB	2 stop bits (1 otherwise)
-		//CLOCAL	Local line - do not change "owner" of port
-		//CREAD	Enable receiver
-		new_serial_conf.c_cflag = B115200 | CS8 | CREAD | CLOCAL;
+	struct termios new_serial_conf;
+	memset(&new_serial_conf, 0, sizeof(new_serial_conf));
+	/* control options */
+	//B9600	115200 baud
+	//CS8	8 data bits
+	//CSTOPB	2 stop bits (1 otherwise)
+	//CLOCAL	Local line - do not change "owner" of port
+	//CREAD	Enable receiver
+	new_serial_conf.c_cflag = B115200 | CS8 | CREAD | CLOCAL;
 
-		/* input options */
-		//IGNPAR	Ignore parity errors
-		new_serial_conf.c_iflag = IGNPAR;
+	/* input options */
+	//IGNPAR	Ignore parity errors
+	new_serial_conf.c_iflag = IGNPAR;
 
-		/* output options */
-		new_serial_conf.c_oflag = 0;
+	/* output options */
+	new_serial_conf.c_oflag = 0;
 
-		/* line options */
-		new_serial_conf.c_lflag = 0;//ICANON;
+	/* line options */
+	new_serial_conf.c_lflag = 0;//ICANON;
 
-		/* flush input */
-		sleep(2);
-		tcflush(serialfd, TCIOFLUSH);
-		tcsetattr(serialfd, TCSANOW, &new_serial_conf);
+	/* flush input */
+	sleep(2);
+	tcflush(serialfd, TCIOFLUSH);
+	tcsetattr(serialfd, TCSANOW, &new_serial_conf);
 
-		*success = true;
-	}
-
-    if(*success==false){
-        cout << "Fail" << endl;
-        close_serialfd();
-    }else
-        cout << "Success" << endl;
-
+    FILE_LOG(logINFO) << "Success";
 }
-#endif
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
-char* Interface::getSerial()
-{
+
+std::string Interface::getSerial() {
 	return serial;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-void Interface::close_serialfd()
-{
-	close(serialfd);
-	delete this;
+void Interface::controllerWaitForIdle(bool keepWaiting) {
+	int waitAttempts = 0;
+	while (!isControllerIdle()) {
+		++waitAttempts;
+		usleep(CONTROLLER_READ_WAIT_US);
+		if (!keepWaiting) {
+			if (waitAttempts == CONTROLLER_MAX_WAIT_ATTEMPTS) {
+				std::ostringstream oss;
+				oss << "Attempt number " << CONTROLLER_MAX_WAIT_ATTEMPTS << " in waiting for idle at port " << serial << ". Aborting wait. Check if joystick connected.";
+				throw RuntimeError(oss.str());
+			}	
+		}		
+	}	
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-void Interface::print()
-{
-	cout<<"\nPort:"<<serial<<", Serialfd:"<<serialfd<<endl;
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-char* Interface::send_command(char* c, int rb)  
-{
-
-#ifndef LASERBOX
-	//for safety, exit if by any chance this command is called by the tube serial object
-	if(!strcasecmp(serial,"/dev/ttyS0"))
-		exit(-1);
-#endif
-
-	/* while checking if controller busy check=1, else check=0 while sending command */
-	int check=1,busy=1,count;
-	char buffer[255]="", command[200]="st ";
-	char* p=buffer;
-
-	/* this loop executes once to check if controller is busy & then to send command */
-	for(int i=0;i<2;i++)
-	{
-
-		/* in not check mode: 'c' passed as argument is copied to 'command' to be sent */
-		if(check==0)
-		{
-			/* if c is also 'st', then exit as check mode is already over */
-			if(strcmp(c,"st ")==0) return p;
-
-			strcpy(command,c);
-
-#ifdef VERBOSE_MOTOR
-			cout<<"Sending command: "<<command<<" with rb: "<<rb<<" to port "<<serial<<endl;
-#endif
-		}
-
-
-		/*busy is always 1.
-		 for check=1: keeps executing till st=0 and then breaks out of this while loop to send command
-		 for check=0: sends the command and breaks out of loop by returning something
-		 */
-		count=1;
-		while(busy)
-		{
-			/* keeps sending command till no error */
-			//while (write (serialfd,command,strlen(command))==-1)
-			//	cout<<"error sending the command,"<<command<<" to port"<<serial<<" trying again"<<endl;
-
-			//so that the error doesnt print a million times
-			int writeValue=-1, attempt=0;
-			while(writeValue==-1)
-			{
-				writeValue = write (serialfd,command,strlen(command));
-				attempt++;
-				if(attempt==10)
-					cout<<"error (attempt number10) sending the command "<<command<<" to port"<<serial<<" trying again"<<endl;
+bool Interface::isControllerIdle(bool verbose) {
+	// send st to controller
+	int ret = -1;
+	int attempt = 0;
+	while (ret == -1) {
+		ret = write (serialfd, "st ", strlen("st "));
+		++attempt;
+		if (attempt == CONTROLLER_MAX_TX_ATTEMPTS) {
+			if (verbose) {
+				std::ostringstream oss;
+				oss << "Attempt number " << CONTROLLER_MAX_TX_ATTEMPTS << " in sending command [st] to port " << serial << ". Aborting command.";
+				FILE_LOG(logERROR) << oss.str();
 			}
-			if(attempt>10)
-				cout<<"successful in sending the command,"<<command<<" to port"<<serial<<" after 10+ times" << endl;
-
-
-
-			/* for check=1: ignores
-			  for check=0: if read back from controller not required, returns a useless variable to exit the function
-			 */
-			if(!rb&&!check) return p;
-
-			/* For read back from controller, wait 50 microsec before reading buffer*/
-			buffer[0]='\0';
-			usleep(50000);
-			int repeat = 0;
-			/* keeps reading buffer till no error ,&
-			 dont print error if command is 0 0 0 r which is just to wait for controller not to be busy*/
-			while ((read(serialfd, buffer, 255)==-1) )
-			{
-				//error while reading 'pos' for 'm' movts and for 'ncal' movts..so don print this error for 'pos'
-				if(strcmp(c,"pos "))
-					repeat++;
-
-				if(repeat==100)
-				{
-					cout<<"\nERROR:Error receiving data back, reading again: command sent is '"<<command<<"' to port '"<<serial<<"'\n";
-					cout<<"The original command being:"<<c<<endl;
-					cout<<"ERROR: The controllers might be busy with something else. \n";
-					cout<<"Maybe you're trying to read from the buffer when a relative movement command is going on. \n";
-					cout<<"Please check and resume.\n\n";
-					//exit(-1);
-				}			
-			}
-
-			/* returns buffer for read back commands */
-			if(check==0)
-			{
-#ifdef VERBOSE_MOTOR
-				cout<<"Received data:*"<<buffer<<"*\n";
-#endif 
-				return p;
-			}
-
-			/* in check mode */
-			else
-			{
-				buffer[1]='\0';
-
-				/* if 'st' reads back '0', signifies not busy, sets check=0 &
-				  breaks out of busy loop to send command in next for loop
-				 */
-				if((strcmp(command,"st ")==0)&&(strcmp(buffer,"0")==0))
-				{
-					check=0;
-					break;
-				}
-
-				/* 'st' did not read back '0',signifies busy, wait for 50 microsec
-				  and repeat the busy loop to send 'st' command again
-				 */
-				usleep(50000);
-			}
-
-			/*checking if the controllers are busy with something else,
-			present command sent:st, cmd required to be sent shoudl not be st*/
-			count++;
-			if((strcmp(c,"pos ")) &&(count==10) && (!strcmp(command,"st ")))
-			{
-				cout<<"\n\nERROR: The controllers are busy with something else as the status does not show '0' each time.\n";
-				cout<<"Maybe you're trying to read from the buffer when a relative movement command is going on.\nPlease check and resume.\n\n";
-				cout<<"command:"<<c<<" rb:"<<rb<<endl;
-				cout<<"check if joystick is being used or the controller is stuck\n";
-				//exit(-1);
-			}
+			throw std::runtime_error("Failed");
 		}
 	}
-
-	/* returning a useless variable to avoid warning */
-	return p;
+	// read back 0
+	char result[COMMAND_BUFFER_LENGTH];
+	ret = -1;
+	attempt = 0;
+	while (ret == -1) {
+		memset(result, 0, sizeof(result));	
+		usleep(CONTROLLER_READ_WAIT_US);
+		ret = read (serialfd, result, sizeof(result));
+		++attempt;
+		if (attempt == CONTROLLER_MAX_RX_ATTEMPTS) {
+			if (verbose) {
+				std::ostringstream oss;
+				oss << "Attempt number " << CONTROLLER_MAX_RX_ATTEMPTS << " in receiving result for [st] to port " << serial << ". Aborting read.";
+				FILE_LOG(logERROR) << oss.str();
+			}
+			throw std::runtime_error("Failed");
+		}		
+	}
+	// parse result
+	int status = atoi(result);
+	if (status == 0) {
+		FILE_LOG(logDEBUG) << "Controller Idle";
+		return true;
+	}
+	FILE_LOG(logDEBUG) << "Controller Busy";
+	return false;
 }
 
-#ifndef LASERBOX
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
-char* Interface::send_command_to_tube(char* c, int rb, int &value, int &value2)  
-{
+
+
+std::string Interface::controllerSendCommand(std::string command, bool readBack, bool verbose) {
+	FILE_LOG(logINFO) << "\tSending Command [" << command << "] to port " << serial << ", readBack: " << readBack;
+
+	// wait for idle (should not take long)
+	controllerWaitForIdle();
+
+	// send command to controller
+	char buffer[COMMAND_BUFFER_LENGTH];
+	memset(buffer, 0, sizeof(buffer));
+	strcpy(buffer, command.c_str());
+	int ret = -1;
+	int attempt = 0;
+	while (ret == -1) {
+		ret = write (serialfd, buffer, sizeof(buffer));
+		++attempt;
+		if (attempt == CONTROLLER_MAX_TX_ATTEMPTS) {
+			if (verbose) {
+				std::ostringstream oss;
+				oss << "Attempt number " << CONTROLLER_MAX_TX_ATTEMPTS << " in sending command [" << buffer << "] to port " << serial << ". Aborting command.";
+				FILE_LOG(logERROR) << oss.str();
+			}
+			throw std::runtime_error("Failed");
+		}
+	}
+	// no read back
+	if (!readBack) {
+		return command;
+	} 
+	// read back
+	char result[COMMAND_BUFFER_LENGTH];
+	ret = -1;
+	attempt = 0;
+	while (ret == -1) {
+		memset(result, 0, sizeof(result));	
+		usleep(CONTROLLER_READ_WAIT_US);
+		ret = read (serialfd, result, sizeof(result));
+		++attempt;
+		if (attempt == CONTROLLER_MAX_RX_ATTEMPTS) {
+			if (verbose) {
+				std::ostringstream oss;
+				oss << "Attempt number " << CONTROLLER_MAX_RX_ATTEMPTS << " in receiving result for [" << buffer << "] to port " << serial << ". Aborting read.";
+				FILE_LOG(logERROR) << oss.str();
+			}
+			throw std::runtime_error("Failed");
+
+		}		
+	}
+	return std::string(result);
+}
+
+char* Interface::send_command_to_tube(char* c, int rb, int &value, int &value2)  {
 	//for safety,if a usb serial port calls this function, it exits
 	//if(strstr (serial,"USB")!=NULL) exit(-1);
 
@@ -444,11 +331,11 @@ char* Interface::send_command_to_tube(char* c, int rb, int &value, int &value2)
 	strcpy(command,c);
 
 #ifdef VERBOSE_MOTOR
-	cout<<"Tube Sending command:"<<command<<endl;
+	std::cout<<"Tube Sending command:"<<command<<std::endl;
 #endif
 
 	if (write (serialfd,command,strlen(command))==-1)
-		cout<<"error sending the command \n";
+		std::cout<<"error sending the command \n";
 
 	if (rb)
 	{
@@ -459,11 +346,11 @@ char* Interface::send_command_to_tube(char* c, int rb, int &value, int &value2)
 			usleep(200000);
 
 			if ( read (serialfd, buffer, 255)==-1)
-				cout<<"error receiving data back \n";
+				std::cout<<"error receiving data back \n";
 			count++;
 			if(count==5)//if((count==5)&&(!strcmp(c,"sr:12 ")))
 			{
-				cout<<"ERROR:The tube is probably switched off. Received no output from Tube for command:"<<c<<endl;
+				std::cout<<"ERROR:The tube is probably switched off. Received no output from Tube for command:"<<c<<std::endl;
 				value=-9999;
 				value2=-9999;
 				strcpy(binaryNumber,"99999999");
@@ -498,7 +385,7 @@ char* Interface::send_command_to_tube(char* c, int rb, int &value, int &value2)
 			//converts the data received to the binary form
 			if(temp<0)
 			{
-				cout<<"ERROR: the data received for command '"<<command<<"' is :"<<temp<<endl;
+				std::cout<<"ERROR: the data received for command '"<<command<<"' is :"<<temp<<std::endl;
 				exit(-1);
 			}
 			else if (temp>0)
@@ -515,16 +402,10 @@ char* Interface::send_command_to_tube(char* c, int rb, int &value, int &value2)
 
 	}
 #ifdef VERBOSE_MOTOR
-	cout<<"Interface: Command:"<<c<<"  Received value:"<<p<<" : value:"<<value<<endl;
+	std::cout<<"Interface: Command:"<<c<<"  Received value:"<<p<<" : value:"<<value<<std::endl;
 #endif 
 	return p;
 }
-
-
-
-
-#ifdef VACUUMBOX
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 bool Interface::checkPressureGaugePort() {
@@ -547,15 +428,12 @@ bool Interface::checkPressureGaugePort() {
     if (strlen(buffer) < strlen(modelstring)) // could be fail due to max_retries
           return false;
     if (strncmp(buffer, modelstring, strlen(modelstring))) {
-        cout << serial << " is not Pressure Gauge Controller" << endl << endl;
+        std::cout << serial << " is not Pressure Gauge Controller" << std::endl << std::endl;
         return false;
     }
 
     return true;
 }
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 int Interface::read_from_pressure(char* c, int size) {
@@ -570,8 +448,8 @@ int Interface::read_from_pressure(char* c, int size) {
 
         ret = read (serialfd, c, size);
         if (ret < 1)
-            cout << "Error reading back. Attempt #" << retry << " of " <<
-            max_retries << ". Received " << ret << " bytes." << endl;
+            std::cout << "Error reading back. Attempt #" << retry << " of " <<
+            max_retries << ". Received " << ret << " bytes." << std::endl;
         else
             break;
     }
@@ -579,19 +457,15 @@ int Interface::read_from_pressure(char* c, int size) {
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-bool Interface::send_command_to_pressure(char* c, const int size, bool rb, bool enq)
-{
+bool Interface::send_command_to_pressure(char* c, const int size, bool rb, bool enq) {
     char ackstring[10]="\x6\r\n"; //\x6\xd\xa
     char enqstring[10]="\x5";
 
     // send command
-    cout << "Pressure, sending command (size:" << strlen(c) << ") "
-            "[" << c << "]" << endl;
+    std::cout << "Pressure, sending command (size:" << strlen(c) << ") "
+            "[" << c << "]" << std::endl;
     if (write(serialfd, c, strlen(c)) == -1) {
-        cout << "Error sending command" << endl;
+        std::cout << "Error sending command" << std::endl;
         return false;
     }
 
@@ -601,18 +475,18 @@ bool Interface::send_command_to_pressure(char* c, const int size, bool rb, bool 
         if (read_from_pressure(c, size) < strlen(ackstring)) // could be fail due to max_retries
             return false;
         if (strncmp(c, ackstring, strlen(ackstring))) {
-            cout << "Error reading acknowledge. Read";
+            std::cout << "Error reading acknowledge. Read";
             for (int i = 0; i < strlen(c); ++i) printf("0x%x ",c[i]);
-            cout << endl;
+            std::cout << std::endl;
             return false;
-        }cout << "Pressure, received ack"<<endl;
+        }std::cout << "Pressure, received ack"<<std::endl;
 
         // send enquiry
         if (enq) {
-            cout << "Pressure, sending command (size:" << strlen(enqstring) << ") "
-                    "[" << enqstring << "]" << endl;
+            std::cout << "Pressure, sending command (size:" << strlen(enqstring) << ") "
+                    "[" << enqstring << "]" << std::endl;
             if (write(serialfd, enqstring, strlen(enqstring)) == -1) {
-                cout << "Error sending enquiry command" << endl;
+                std::cout << "Error sending enquiry command" << std::endl;
                 return false;
             }
         }
@@ -626,32 +500,24 @@ bool Interface::send_command_to_pressure(char* c, const int size, bool rb, bool 
 }
 
 
-#endif
-
-#else
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-char* Interface::send_command_to_fw(char* c, int rb)
-{
+char* Interface::send_command_to_fw(char* c, int rb) {
 	//rb=1;
 	char buffer[255]="", command[200]="";
 	char* p = buffer;
 
 	strcpy(command,c);
 #ifdef VERBOSE_MOTOR
-	cout<<"Sending command:*"<<command<<"*"<<;
+	std::cout<<"Sending command:*"<<command<<"*"<<;
 #endif
 	strcat(command,"\r");
 
 #ifdef VERBOSE_MOTOR
-	cout<<" to port "<<serial<<endl;
+	std::cout<<" to port "<<serial<<std::endl;
 #endif
 
 	if (write (serialfd,command,strlen(command))==-1)
-		cout<<"error sending the command \n";
+		std::cout<<"error sending the command \n";
 
 		return p;
 }
 
-#endif
-//-------------------------------------------------------------------------------------------------------------------------------------------------

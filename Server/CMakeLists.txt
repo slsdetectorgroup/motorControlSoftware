@@ -2,6 +2,14 @@ set(SOURCES
     src/Server.cpp
     src/Initialize.cpp
     src/Interface.cpp 
+    src/Xray.cpp
+    src/Pgauge.cpp
+    src/Fwheel.cpp
+    src/ReferencePoint.cpp
+    src/Fluorescence.cpp
+    src/TargetHolder.cpp
+    src/Slit.cpp
+    src/Controller.cpp
     src/Motor.cpp 
     ../include/MySocketTCP.cpp
 )
@@ -9,51 +17,33 @@ set(SOURCES
 set(HEADERS
     include/Initialize.h
     include/Interface.h 
+    include/Xray.h
+    include/Pgauge.h
+    include/Fwheel.h
+    include/ReferencePoint.h
+    include/Fluorescence.h
+    include/TargetHolder.h
+    include/Slit.h
+    include/Controller.h
     include/Motor.h 
     ../include/MySocketTCP.h  
     ../include/commonDefs.h
+    ../include/ansi.h
+    ../include/logger.h
 )
 
 #options
 if (USE_BIG_XRAY)
-    list (APPEND HEADERS 
-        include/Slit.h 
-        include/Xray.h 
-    )
-    list (APPEND SOURCES 
-        src/Slit.cpp 
-        src/Xray.cpp 
-    )
     set(bin_name  "xrayServer")
 endif (USE_BIG_XRAY)
 
 if (USE_LASER)
-    list (APPEND HEADERS 
-        include/Fwheel.h 
-    )
-    list (APPEND SOURCES 
-        src/Fwheel.cpp 
-    )
     set(bin_name  "laserServer")
 endif (USE_LASER)
 
 if (USE_VACUUM)
-    list (APPEND HEADERS 
-        include/Pgauge.h 
-        include/Slit.h 
-        include/Xray.h 
-    )
-    list (APPEND SOURCES 
-        src/Pgauge.cpp 
-        src/Slit.cpp 
-        src/Xray.cpp 
-    )
     set(bin_name  "vacuumServer")
 endif (USE_VACUUM)
-
-add_definitions(
-    -DLOCAL
-)
 
 add_executable(${bin_name}
     ${SOURCES}

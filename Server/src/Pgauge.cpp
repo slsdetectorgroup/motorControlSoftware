@@ -1,34 +1,26 @@
-/********************************************//**
- * @file Pgauge.cpp
- * @short Defines the Pgauge objects
- * @author Dhanya
- ***********************************************/
 #include "Pgauge.h"
-#ifdef VACUUMBOX
+#include "Interface.h"
+#include "commonDefs.h"
 
-#include <iostream>
 #include <sstream>
 #include <cstring>
-#include <cstdio>
-#include <stdio.h>
-using namespace std;
+
+#define NUM_PRESSURE_GAUGES_PER_CONTROLLER  (2)
 
 
-Pgauge::Pgauge(Interface* interface)
-{
+Pgauge::Pgauge(Interface* interface) {
     this->interface=interface;
+    FILE_LOG(logINFO) << "Pressure Gauge: [usbPort:" << interface->getSerial() << "]";
 }
 
 
-Interface* Pgauge::getInterface()
-{
+Interface* Pgauge::getInterface() {
     return interface;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
-bool Pgauge::getPressure(string& status1, double& value1, string& status2, double& value2) {
-    cout << "Getting Pressure" << endl;
+bool Pgauge::getPressure(std::string& status1, double& value1, std::string& status2, double& value2) {
+    std::cout << "Getting Pressure" << std::endl;
     char command[10]="com\r\n";
     char crapstring[10]="c\r\n";
     int retsize = 27;
@@ -49,12 +41,11 @@ bool Pgauge::getPressure(string& status1, double& value1, string& status2, doubl
     int s1=-1, s2=-1;
     int sret = sscanf(buffer,"%d,%lf,%d,%lf\r\n",&s1, &value1, &s2, &value2);
     if (sret < 4) {
-        cout << "Error: cannot scan pressure return buffer. [sret:" << sret << "]. Buffer:" << buffer << endl;
+        FILE_LOG(logERROR) << "Cannot scan pressure return buffer. [sret:" << sret << "]. Buffer:" << buffer;
         return false;
     }
-#ifdef VERBOSE_MOTOR
-    printf("Status:%d, value:%e\nStatus2:%d, value2:%e\n",status1, value1, status2, value2);
-#endif
+    //printf("Status:%d, value:%e\nStatus2:%d, value2:%e\n",status1, value1, status2, value2);
+    
     switch(s1) {
     case 0: status1.assign("Measurement data okay"); break;
     case 1: status1.assign("Underrange"); break;
@@ -82,21 +73,18 @@ bool Pgauge::getPressure(string& status1, double& value1, string& status2, doubl
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void Pgauge::print()
-{
-    /* prints all the characteristics of the Pgauge object */
-    cout << "Pressure Gauge" << endl;
-    cout<<"interface\t:\t"<<interface->getSerial()<<endl;
-    string status1="";double value1=-1;string status2="";double value2=-1;
-    if(getPressure(status1,value1,status2,value2)) {
-        printf("Gauge 1\n\tStatus\t:\t%s\n\tPressure:\t%e\nGauge 2\n\tStatus\t:\t%s\n\tPressure:\t%e\n",
+void Pgauge::print() {
+    std::cout << "Pressure Gauge" << std::endl;
+    std::cout << "\tUsb port: "<< interface->getSerial() << std::endl;
+    std::string status1,status2;
+    double value1 = -1, value2 = -1;
+    if(getPressure(status1, value1, status2, value2)) {
+        printf("\tGauge 1\n\tStatus\t:\t%s\n\tPressure:\t%e\nGauge 2\n\tStatus\t:\t%s\n\tPressure:\t%e\n",
                 status1.c_str(), value1, status2.c_str(), value2);
-    }else printf("ERROR: Could not read pressure from pressure controller\n");
-
-    cout<<"\n";
+    } else {
+        FILE_LOG(logERROR) << "Could not read pressure from pressure controller";
+    } 
+    std::cout << std::endl;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-#endif

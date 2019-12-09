@@ -35,9 +35,9 @@ int Client::Connect(char* host_ip_or_name)
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-char* Client::SendCommand(int argc, char arg[])
-{
-  char args[255];
+std::string Client::SendCommand(int argc, char arg[]) {
+  char args[TCP_PACKET_LENGTH];
+  memset(args, 0, sizeof(args));
   strcpy(args,arg);
   
 #ifdef VERY_VERBOSE
@@ -56,18 +56,23 @@ char* Client::SendCommand(int argc, char arg[])
 #endif
 
   // receives the ret from server
+  int ret = OK; // do what??
   sock->ReceiveDataOnly(&ret, sizeof(ret));
 #ifdef VERY_VERBOSE
   cout<<"--- receive worked?: "<<ret<<endl;
 #endif
 
   // recceives the message from the server
+    /**After executing command,message received
+   */
+  char message[TCP_PACKET_LENGTH];
+  memset(message, 0, sizeof(message));
   sock->ReceiveDataOnly(message, sizeof(message));
 #ifdef VERY_VERBOSE
   cout<<"--- received: "<<message<<endl;
 #endif
 
-  return message;
+  return string(message);
 
 }
 //-------------------------------------------------------------------------------------------------------------------------------------------------

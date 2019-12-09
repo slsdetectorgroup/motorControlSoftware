@@ -219,10 +219,10 @@ char* MotorWidget::SendCommand(int argc, char args[])
   //save userDetais only once
   if(!strcmp(userDetails,"")) 
     {
-	  strcpy(userName,useSystemCommand("whoami"));
-	  strcpy(userName,useSystemCommand("whoami"));
-	  strcpy(pcName,useSystemCommand("uname -n"));
-	  strcpy(pcName,useSystemCommand("uname -n"));
+	  strcpy(userName,useSystemCommand((char*)"whoami"));
+	  strcpy(userName,useSystemCommand((char*)"whoami"));
+	  strcpy(pcName,useSystemCommand((char*)"uname -n"));
+	  strcpy(pcName,useSystemCommand((char*)"uname -n"));
 	  sprintf(userDetails,"%s %s %d",userName,pcName,getpid());
 	  /*DEBUGGING
       cout<<endl<<"userDetails:"<<userDetails<<"."<<endl;
@@ -230,7 +230,7 @@ char* MotorWidget::SendCommand(int argc, char args[])
     }
 
   //include userdetails, timestamp and commands to send ot server
-  strcpy(currTime,useSystemCommand("date"));
+  strcpy(currTime,useSystemCommand((char*)"date"));
   sprintf(sargs,"%s %s %s ",args,userDetails,currTime);
   argc+=4;
   //cout<<"hostname:"<<serverHostname<<" argc:"<<argc<<" sargs:"<<sargs<<"."<<endl;
@@ -265,12 +265,12 @@ char* MotorWidget::SendCommand(int argc, char args[])
       int ret = lockMsg->exec();
       if (ret == QMessageBox::Ok)
 	{
-	  strcpy(buffer,SendCommand(2,"gui unlock"));
+	  strcpy(buffer,SendCommand(2,(char*)"gui unlock"));
 	  strcat(buffer,"\nStarting up/Updating GUI in a few seconds...");
 	  ErrorMessage(buffer);
 	  //if this was done at the start of gui, let it continue
 	  if(strstr (args,"gui list")!=NULL)
-	    strcpy(buffer,SendCommand(2,"gui list"));
+	    strcpy(buffer,SendCommand(2,(char*)"gui list"));
 	  //not done at start of gui, so have to update gui
 	  else
 	    {

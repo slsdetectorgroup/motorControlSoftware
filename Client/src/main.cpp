@@ -19,7 +19,7 @@ using namespace std;
 char* useSystemCommand(char* systemCommand);
 
 //read server.txt file if it exists to read the default server(eg.beamline server)
-char* readFile(string const fName);  
+string getServerHostname(string const fName);  
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
  /**the main function
@@ -44,8 +44,8 @@ int main(int argc, char* argv[])
   bool serverOption=false;
 
   //read server.txt file if it exists to read the default server(eg.beamline server)
-  strcpy(serverHostname,readFile("init.txt"));
-  strcpy(serverHostname,readFile("init.txt")); 
+  strcpy(serverHostname,getServerHostname("init.txt").c_str());
+  strcpy(serverHostname,getServerHostname("init.txt").c_str()); 
   //cout<<"serverHostname:"<<serverHostname<<"."<<endl;
 
   //include first argument for server to differentiate between gui and socketclient
@@ -130,51 +130,32 @@ char* useSystemCommand(char* systemCommand)
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-char* readFile(string const fName)
+string getServerHostname(string const fName)
 {
-  char output[255],arg[255];
-  char *result=output+0;
-  ifstream inFile;
-  string sLine;
-
   //default server hostname
   strcpy(output,Server_Hostname);
 
-  //oprning the positions file
+  ifstream inFile;
   inFile.open(fName.c_str(), ifstream::in);                             
-  if(inFile.is_open())
-    {
-      while(inFile.good())
-	{
-	  getline(inFile,sLine);
-	  if(sLine.find('#')!=string::npos)                    
-	    {
-	      continue;
-	    }
-	  else if(sLine.length()<2)          
-	    {
-	      continue;
-	    }
-	  else                                                
-	    {
-	      //read motor name
-	      istringstream sstr(sLine);
-	      if(sstr.good())
-		sstr>>arg;
-	      if(!strcasecmp(arg,"server"))
-		{
-		sstr>>output;
-		//cout<<"From file, using server "<<output<<"."<<endl;
-		}
-	    }
-	}
+  if(inFile.is_open()) {
+    while(inFile.good()) {
+      string sLine;
+      getline(inFile,sLine);
+      // delete lines after comments
+      if (sLine.find('#') != string::npos) {
+          sLine.erase(sLine.find('#'));
+      }
+      // scan arguments
+      istringstream iss(sLine);
+      vector<string> args = vector<string>(istream_iterator<string>(iss), istream_iterator<string>());
+      // blank lines
+      if (args.size() < 2 || args[0] != "server") {
+        continue;
+      }
       inFile.close();
+      return args[1];
     }
-  else
-    { 
-      //default server hostname
-      ;// cerr<<"Using default server \n";
-    }
-  return result;
+  }
+  return string(Server_Hostname);
 }
 //-------------------------------------------------------------------------------------------------------------------------------------------------

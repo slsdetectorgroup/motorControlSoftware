@@ -1,174 +1,40 @@
- /********************************************//**
- * @file Slit.cpp
- * @short Defines the slit objects
- * @author Dhanya
- ***********************************************/
-
 #include "Slit.h"
-#ifndef LASERBOX
+#include "Motor.h"
+#include "commonDefs.h"
 
 #include <iostream>
-using namespace std;
+
+#define SLITS_LIMIT (105000)
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-Slit::Slit(double x1pos, double x2pos):x1pos(x1pos),x2pos(x2pos),Limit(105000)//102.5)
-{
-  x1Limit=Limit-x2pos;
-  x2Limit=Limit-x1pos;
-#ifdef VERY_VERBOSE
-  print();
-#endif 
+Slit::Slit(Controller* controllerX1, Controller* controllerX2, int axisX1, int axisX2) 
+  : controllerX1(controllerX1), controllerX2(controllerX2), axisX1(axisX1), axisX2(axisX2),limit(SLITS_LIMIT) {
+  controllerX1->getMotor(axisX1)->setLowerLimit(0);
+  controllerX2->getMotor(axisX2)->setLowerLimit(0);
+ 	FILE_LOG(logINFO) << "Slit: [controllerX1:" << controllerX1->getName() << ", controllerX2:(" << controllerX2->getName() << ", axisX1:" << axisX1 << ", axisX2:" << axisX2 << "]";       
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-double Slit::getLimit()
-{
-  return Limit;
+void Slit::updateLimits() {
+  int x1pos = controllerX1->getMotor(axisX1)->getPosition();  
+  int x2pos = controllerX2->getMotor(axisX2)->getPosition();
+  controllerX1->getMotor(axisX1)->setUpperLimit(limit - x2pos);
+  controllerX2->getMotor(axisX2)->setUpperLimit(limit - x1pos);
 }
 
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-double Slit::getX1Limit()
-{
-  return x1Limit;
+double Slit::getSlitWidth() {
+  int x1pos = controllerX1->getMotor(axisX1)->getPosition();  
+  int x2pos = controllerX2->getMotor(axisX2)->getPosition();
+  return limit - x2pos - x1pos;
 }
 
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-double Slit::getX2Limit()
-{
-  return x2Limit;
+double Slit::getX1Center() {
+  int x1pos = controllerX1->getMotor(axisX1)->getPosition();  
+  int x2pos = controllerX2->getMotor(axisX2)->getPosition();
+  return (limit - x2pos + x1pos) / 2;
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void Slit::setX1pos(double newPosition)
-{
-  x1pos=newPosition;
-  x2Limit=Limit-x1pos;
-#ifdef VERY_VERBOSE
-  print();
-#endif
+void Slit::print() {
+  std::cout << "\tLimit: " << limit << ", Controllers: [" << controllerX1->getName() << ", " << controllerX2->getName() << ']' << std::endl;
 }
 
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void Slit::setX2pos(double newPosition)
-{
-  x2pos=newPosition;
-  x1Limit=Limit-x2pos;
-#ifdef VERY_VERBOSE
-  print();
-#endif
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void Slit::setBothpos(double newPosition1, double newPosition2)
-{
-  x1pos=newPosition1;
-  x2pos=newPosition2;
-  x1Limit=Limit-x2pos;
-  x2Limit=Limit-x1pos;
-#ifdef VERY_VERBOSE
-  print();
-#endif
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-int Slit::canX1Move(double newPosition)
-{
-  if(newPosition > x1Limit)  
-	return 1;
-  else if(newPosition < 0)
-	return -1;
-  //return 0 if it can move
-  else
-	return 0;
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-int Slit::canX2Move(double newPosition)
-{
-  if(newPosition >  x2Limit)
-	return 1;
-  else if (newPosition < 0)
-	return -1;
-  //return 0 if it can move  
-  else 
-	return 0;
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-int Slit::canBothSlitsMove(double newPosition1, double newPosition2)
-{
-  double newX1Limit = Limit - newPosition2;
-  double newX2Limit = Limit - newPosition1;
-
-  if(newPosition1 > newX1Limit)
-	return 1;
-  else if (newPosition1 < 0)
-	return -1;
-  else if(newPosition2 > newX2Limit)
-	return 1;
-  else if (newPosition2 < 0)
-	return -1;
-  //reutrn 0 of they can move
-  else 
-	return 0;
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-double Slit::getSlitWidth()
-{
-    return x1Limit - x1pos;
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-double Slit::getX1Center()
-{
-  return (x1Limit+x1pos)/2;
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void Slit::print()
-{
-  cout<<"\n\nSLITS:";
-  cout<<"\nSlit x1 position:"<<x1pos;
-  cout<<"\nSlit x2 position:"<<x2pos;
-  cout<<"\nSlit x1 Limit position:"<<x1Limit;
-  cout<<"\nSlit x2 Limit position:"<<x2Limit;
-  cout<<"\nX1 center pos:"<<getX1Center();
-  cout<<"\n";
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-#endif

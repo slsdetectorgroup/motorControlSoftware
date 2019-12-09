@@ -4,152 +4,115 @@
 #include "Interface.h"
 #include "Initialize.h"
 #include "commonDefs.h"
+
 #include <stdlib.h>
-#include <iostream>
 #include <sstream>
 #include <cstring>
 #include <stdio.h>
 #include <signal.h>
-using namespace std;
+#include <iterator>
+
+#define TIME_BUFFER_LENGTH	(30)
 
 
-int main(int argc, char *argv[])
-{
-cout<<"test"<<endl;
+int main(int argc, char *argv[]) {
 #ifdef XRAYBOX
-	cout << " This is XRay Box Server" << endl;
+	FILE_LOG(logINFOBLUE) << "XRay Box Server";
 #elif LASERBOX
-	cout << " This is Laser Box Server" << endl;
+	FILE_LOG(logINFOBLUE) << "Laser Box Server";
 #else
-	cout << " This is Vacuum Box Server" << endl;
+	FILE_LOG(logINFOBLUE) << "Vacuum Box Server";
 #endif
 
     // if socket crash, ignores SISPIPE, prevents global signal handler
     // subsequent read/write to socket gives error - must handle locally
     signal(SIGPIPE, SIG_IGN);
 
+	MySocketTCP *sock = new MySocketTCP(PORT_NO);
+	if (sock->getErrorStatus()) {
+		throw RuntimeError("Could not create server socket");
+	}
 
-	int  retval=OK,ret=0,n;
-	char mess[255],args[255],userName[255],pcName[255],pid[255],currTime[30];
-	char lockeduserName[255],lockedpcName[255],lockedpid[255],lockedcurrTime[30];
-	bool trueUser=true,lock=false,lastCmdUnlock=false;
-
-	char *command[15];
-	for(int i=0;i<15;i++)
-		command[i]=new char[1000];
+	Initialize init = Initialize();
+	FILE_LOG(logINFO) << "Ready for commands...";
 
 
-	// creates the socet from the server side
-	MySocketTCP *sock=new MySocketTCP(PORT_NO);
-	if ( sock->getErrorStatus())
-		return -1;
+	std::string lockedPid;
+	std::string lockedPcName;
+	std::string lockedUserName;
+	std::string lockedTimestamp;
+	bool locked = false;
+	bool proceed = true;
+	bool lastCmdUnlock = false;
 
 
-	// reads config file to create motor objects and store controller values
-#ifdef XRAYBOX
-	Initialize init=Initialize("config.txt", "Positions.txt","configNew.txt","warmupTimestamps.txt");
-#elif LASERBOX
-	Initialize init=Initialize("config.txt", "Positions.txt","configNew.txt");
-#else
-	Initialize init=Initialize("config.txt", "Positions.txt","configNew.txt","warmupTimestamps.txt");
-#endif
+	int ret = OK;
+	while (ret != GOODBYE) {
 
-
-	cout<<"\nReady for commands..."<<endl;
-
-	/* waits for connection */
-	while(retval!=GOODBYE) {
-
-		//connect socket
 		sock->Connect();
-#ifdef VERY_VERBOSE
-		cout<<"*** connected"<<endl;
-#endif	
-		// Receiving the number of arguments in command line
-		sock->ReceiveDataOnly(&argc,sizeof(argc));
-#ifdef VERY_VERBOSE
-		cout<<"*** r "<<argc<<endl;
-#endif
-		// Receiving arguments in command line
+
+		// get number of arguments
+		int nArg = 0;
+		sock->ReceiveDataOnly(&nArg, sizeof(nArg));
+
+		// get all arguments
+		char args[TCP_PACKET_LENGTH];
+		memset(args, 0, sizeof(args));
 		sock->ReceiveDataOnly(args, sizeof(args));
-		//#ifdef VERY_VERBOSE
-		cout<<"*** server received: "<<args<<"."<<endl;;
-		//#endif
+		std::cout << std::endl;
+		FILE_LOG(logINFO) << "Server Received: " << args;
 
+		// extract time
+		std::string timestamp(args + (strlen(args) - TIME_BUFFER_LENGTH), TIME_BUFFER_LENGTH - 1);
+		memset(args + strlen(args) - TIME_BUFFER_LENGTH, 0, TIME_BUFFER_LENGTH);
+		--nArg;
+		FILE_LOG(logDEBUG) << "timestamp:[" << timestamp << ']';
 
-		//to copy the time from args(fixed)
-		strncpy(currTime,args+(strlen(args)-30),29);
-		currTime[29] = '\0';
+		// scan arguments
+		istringstream iss(args);
+		std::vector<string> command = std::vector<std::string>(istream_iterator<std::string>(iss), istream_iterator<std::string>());
 
-		// place the commands in command[][]
-		istringstream sstr(args);
-		n=0;
-		while(sstr.good())
-		{
-			if(n==(argc-4))
-			{ //get the userDetails
-				sstr>>userName;
-				if(sstr.good())  sstr>>pcName;
-				if(sstr.good())  sstr>>pid;
-				argc-=4;
-				break;
-			}
-			else
-			{ //get the commands
-				sstr>>args;
-				strcpy(command[n],args);
-				n++;
+		// extract username, pcname, pid
+		std::string pid = command[command.size() - 1];
+		std::string pcName = command[command.size() - 2];
+		std::string userName = command[command.size() - 3];
+		command.erase(command.begin() + command.size() - 3, command.begin() + command.size() - 1);
+		nArg -= 3;
+		FILE_LOG(logDEBUG) << "pid:[" << pid << "], pcName" << pcName << "], userName" << userName << ']';
+
+		// parse commands
+		char mess[TCP_PACKET_LENGTH];
+		memset(mess, 0, sizeof(mess));
+
+		// unlock command
+		if (command[1] == "unlock") {
+			sprintf(mess,"You have successfully unlocked %s from the server.", lockedUserName.c_str());
+			locked = false;
+			proceed = false;
+			lastCmdUnlock = true;
+		} 
+		
+		// unlocked server (lock it by default and save username, pcname, pid etc)
+		else if (!locked)  {
+			lockedUserName = userName;
+			lockedPcName = pcName;
+			lockedPid = pid;
+			lockedTimestamp = timestamp;
+			locked = true;
+			lastCmdUnlock = false;
+			proceed = true;
+			// if the last command was unlock and its a gui command,
+			// the first command should be "list" 		
+			if (lastCmdUnlock && command[0] == "gui" && command[1] != "list") {
+				proceed = false;
+				strcpy(mess,"ERROR: Another user had updated the server. So, your GUI is not updated.\nInitiating Update..");
 			}
 		}
 
-		//  debug
-		//  for(int i=0;i<n;i++)
-		//      cout<<i<<":"<<command[i]<<endl;
-		//     cout<<"userName:"<<userName<<" pcName:"<<pcName<<" pid:"<<pid<<" time:"<<currTime<<"."<<endl;
-		//     cout<<"\nlockedcurrTime:"<<lockedcurrTime<<"."<<endl;
-
-
-		//if command is unlock
-		if(!strcasecmp(command[1],"unlock"))
-		{
-			sprintf(mess,"You have successfully unlocked %s from the server.",lockeduserName);
-			trueUser=false;
-			lock=false;
-			lastCmdUnlock=true;
-		}
-		//if not locked, then save userdetails and lock
-		else if(!lock)
-		{
-			strcpy(lockeduserName,userName);
-			strcpy(lockedpcName,pcName);
-			strcpy(lockedpid,pid);
-			strcpy(lockedcurrTime,currTime);
-			lock=true;
-			trueUser=true;
-			//if the last command was unlock and its a gui command,
-			//the first command should be "list" for new gui or "save" to close old gui
-			if((lastCmdUnlock)&&(!strcmp(command[0],"gui"))
-					&&(strcasecmp(command[1],"list"))
-#ifndef LASERBOX
-					&&(strcasecmp(command[1],"whichflist"))
-#endif
-					&&(strcasecmp(command[1],"save")))
-			{
-				trueUser=false;
-				strcpy(mess,"ERROR:Another user had updated the server. So, your GUI is not updated.\nInitiating Update..");
-			}
-
-			lastCmdUnlock=false;
-		}
-		else
-		{
-			//if locked, always check if it is the right user
-			if((strcmp(userName,lockeduserName))||(strcmp(pcName,lockedpcName)))
-			{
-				cout<<"userName:"<<userName<<":lockedUserNAme:"<<lockeduserName<<":pcName:"<<pcName<<":lockedpcName:"<<lockedpcName<<":"<<endl;
-				char tabspace[5] ="";
-				if(!strcmp(command[0],"gui"))
-					strcpy(tabspace,"\t");
+		// locked server (validate user)
+		else {
+			proceed = true;
+			if (userName != lockedUserName || pcName != lockedPcName) {
 				sprintf(mess,"ERROR:The "
 #ifdef XRAYBOX
 						"x-ray"
@@ -158,68 +121,45 @@ cout<<"test"<<endl;
 #else
 						"vacuum"
 #endif
-						" box is in use by \n\nUser Name\t%s: %s\nPC Name\t\t: %s\nLast Command at\t: ",tabspace,lockeduserName,lockedpcName);
-				strcat(mess,lockedcurrTime);
-				strcat(mess,"\n\nPlease check with this person before you use \"unlock\".\n");
-
-				trueUser=false;
+						" box is in use by \n\nUser Name\t%s: %s\nPC Name\t\t: %s\nLast Command at\t: %s\n\n"
+						"Please check with this person before you use \"unlock\".\n", 
+						(command[0] == "gui" ? "\t" : ""), 
+						lockedUserName.c_str(), lockedPcName.c_str(), lockedTimestamp.c_str());	
+				proceed = false;
 			}
-			else
-				trueUser=true;
 		}
 
-		//only execute commands if its a right user
-		if(trueUser)
-		{
-			// if no commands given
-			if (argc<2)
-				strcpy(mess,"No move commands given in the command line");
-			else
-			{
-				// if command is to close server, return 9 and break
-				if(strcasecmp(command[1],"close")==0)
-				{
-					ret=9;
+		// proceed to execute commands
+		if (proceed) {
+			// no commands
+			if (nArg <= 1) {
+				strcpy(mess,"No move commands given in the command line");	
+			} 
+			// execute command
+			else {
+				if (command[1] == "close") {
+					ret = GOODBYE;
 					strcpy(mess,"Closing server");
+				} else {
+					command.erase(command.begin());
+					ret = init.executeCommand(command, mess);
 				}
-				// call the executeCommand function
-				else
-					ret=init.executeCommand(argc-1,command+1,mess);
 			}
-			//save the last timestamp of true user
-			strncpy(lockedcurrTime,currTime,29);
-			lockedcurrTime[29] = '\0';
-
+			// update timestamp
+			lockedTimestamp = timestamp;
 		}
 
+		// send return value
+		sock->SendDataOnly(&ret, sizeof(ret));
 
+		// send message
+		sock->SendDataOnly(mess, sizeof(mess));
 
-		// sends ret back to client
-		sock->SendDataOnly(&ret,sizeof(ret));
-#ifdef VERY_VERBOSE
-		cout<<"*** s "<<ret<<endl;
-#endif
-
-		// sends message received back to client
-		sock->SendDataOnly(mess,sizeof(mess));
-		//#ifdef VERY_VERBOSE
-		cout<<"*** server sends: "<<mess<<endl;
-		strcpy(mess,"");
-		//#endif
-
-		//disconnect socket
 		sock->Disconnect();
-#ifdef VERY_VERBOSE
-		cout<<"*** disconnected"<<endl;
-#endif
-
-		if(ret==9)
-			break;
-
 	}
 
 	delete sock;
-	cout<<"Goodbye!"<<endl;
+	FILE_LOG(logINFO) << "Exiting Server!";
 
 	return 0;
 }

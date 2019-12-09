@@ -33,13 +33,8 @@ class Client
    */
   MySocketTCP *sock;
 
-  /**After executing command, 0 for success and -1 for failure
-   */
-  int ret;
 
-  /**After executing command,message received
-   */
-  char message[255];
+
 };
 
 
