@@ -11,23 +11,29 @@ class Fluorescence {
  public:
 
 
-  Fluorescence(int index, std::string name, Controller* controller);
+  Fluorescence(int index, std::string name, Controller* controller, int axis);
   std::string getName();
   bool isCircular();
   Controller* getController();
   int getNumTargetHolders();
   void setCurrentTargetHolder(int index);
   int getCurrentTargetHolder();
-  std::string getCurrentTargetName();
   void addTarget(std::string name, std::string energy);
   std::string getList();
+  std::string updateAndGetCurrentTargetName();
+  void moveToTarget(std::string target);
   void print();
 
  private:
+  void updateCurrentTarget();
+
   int index; 
   std::string name;
   bool circular;
   Controller* controller;
+  int axis;
+  int width;
+  int offset;
   std::vector<TargetHolder*> targetHolder;
   int currentTargetHolder; 
   int currentTarget;

@@ -19,22 +19,13 @@ class Interface {
   std::string ControllerSend(std::string command, bool readBack = false, bool validate = false);
 
 
-
   void TubeInterface();
+  std::string TubeSend(std::string command, bool readBack, bool validate = false);//, int &value, int &value2);
+
+ char* send_command_to_tube(char* c, int rb, int &value, int &value2);
   void PressureInterface();
   void FilterWheelInterface();
 
-
-  
-
- /**Sends the command to the XRayTube via interface
-   @param c the command to be sent to the tube
-   @param rb is passed as 1 if buffer needs to be read back from tube after sending command, else 0 is passed
-   @param value is a pointer which points to the integer value of the buffer
-   @param value2 is a pointer which points to the second integer value of the buffer. for cmd gn/ga
-   @returns the binary value of the buffer read from the controller.
- */
-  char* send_command_to_tube(char* c, int rb, int &value, int &value2);
 
 
   /**
@@ -70,6 +61,8 @@ class Interface {
 private:
   void ValidateController();
   std::string ControllerSendCommand(std::string command, bool readBack = false, bool verbose = true);
+
+  void ValidateTube();
 
   std::string serial;
   int serialfd;

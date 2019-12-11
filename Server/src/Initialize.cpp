@@ -30,21 +30,32 @@ using namespace std;
 #define CONFIG_CONTROLLER_NUM_ARGS  (3)
 #define CONFIG_MOTOR_NUM_ARGS       (6)
 
-void Initialize::OnlyFluorescenceCommand(std::string name) {
+void Initialize::OnlyFluorescenceCommand(string name) {
 	if ((strcasecmp(name.c_str(), "fluorescence")) && (strcasecmp(name.c_str(), "fluorescence_wheel"))) {
 		throw RuntimeError("Command not allowed for this motor " + name);
 	}
 }
 
-void Initialize::RestrictedForSlitAndFluorescence(std::string name) {
+void Initialize::RestrictedForSlitAndFluorescence(string name) {
 	if ((!strcasecmp(name.c_str(), "slit_x1")) || (!strcasecmp(name.c_str(), "slit_x2")) || (!strcasecmp(name.c_str(), "fluorescence")) || (!strcasecmp(name.c_str(), "fluorescence_wheel"))) {
 		throw RuntimeError("Command not allowed for this motor " + name);
 	}
 }
 
 void Initialize::UpdateSlitLimits(string name) {
-	if ((!strcasecmp(name.c_str(), "slit_x1")) || (!strcasecmp(name.c_str(), "slit_x2"))) {
-		slit->updateLimits();
+	// empty name (depos command)
+	if (name.empty()) {
+		if (slit != NULL) {
+			slit->updateLimits();
+		}
+	}  
+	// validate that slit object should exist when using it in the command
+	else if ((!strcasecmp(name.c_str(), "slit_x1")) || (!strcasecmp(name.c_str(), "slit_x2"))) {
+		if (slit == NULL) {
+			throw RuntimeError("No slit object created");
+		} else {
+			slit->updateLimits();
+		}
 	}
 }
 
@@ -76,7 +87,7 @@ int Initialize::GetControllerIndex(string name) {
 }
 
 string Initialize::executeCommand(vector<string> args) {
-	std::string command = args[0];
+	string command = args[0];
 	int nArg = (int)args.size();
 	ostringstream oss;
 
@@ -165,7 +176,7 @@ string Initialize::executeCommand(vector<string> args) {
 		string name = args[1];
 		int icontroller = GetControllerIndex(name);
 		controller[icontroller]->debugPositions();
-		UpdateSlitLimits(name);
+		UpdateSlitLimits("");
 		return "ok";
 	}
 	
@@ -187,7 +198,7 @@ string Initialize::executeCommand(vector<string> args) {
 		int imotor = GetMotorIndex(name);
 		RestrictedForSlitAndFluorescence(name);
 		double value = 0;
-		std::istringstream iss (args[2].c_str());
+		istringstream iss (args[2].c_str());
 		iss >> value;
 		if (iss.fail()) {
 			throw RuntimeError("Could not scan limit argument " + args[2]);
@@ -216,7 +227,7 @@ string Initialize::executeCommand(vector<string> args) {
 		int imotor = GetMotorIndex(name);
 		RestrictedForSlitAndFluorescence(name);
 		double value = 0;
-		std::istringstream iss (args[2].c_str());
+		istringstream iss (args[2].c_str());
 		iss >> value;
 		if (iss.fail()) {
 			throw RuntimeError("Could not scan limit argument " + args[2]);
@@ -247,6 +258,7 @@ string Initialize::executeCommand(vector<string> args) {
 		int imotor = GetMotorIndex(name);
 		RestrictedForSlitAndFluorescence(name);
 		controller[motor[imotor]->getController()]->rangeMeasure(motor[imotor]->getAxis());
+		UpdateSlitLimits(name);
 		oss << fixed << motor[imotor]->getPosition();
 		return oss.str();
 	}
@@ -258,7 +270,7 @@ string Initialize::executeCommand(vector<string> args) {
 		string name = args[1];
 		int imotor = GetMotorIndex(name);
 		double value = 0;
-		std::istringstream iss (args[2].c_str());
+		istringstream iss (args[2].c_str());
 		iss >> value;
 		if (iss.fail()) {
 			throw RuntimeError("Could not scan relative position argument " + args[2]);
@@ -279,7 +291,7 @@ string Initialize::executeCommand(vector<string> args) {
 		string name = args[1];
 		int imotor = GetMotorIndex(name);
 		double value = 0;
-		std::istringstream iss (args[2].c_str());
+		istringstream iss (args[2].c_str());
 		iss >> value;
 		if (iss.fail()) {
 			throw RuntimeError("Could not scan absolute position argument " + args[2]);
@@ -301,7 +313,7 @@ string Initialize::executeCommand(vector<string> args) {
 		int imotor = GetMotorIndex(name);
 		RestrictedForSlitAndFluorescence(name);
 		double value = 0;
-		std::istringstream iss (args[2].c_str());
+		istringstream iss (args[2].c_str());
 		iss >> value;
 		if (iss.fail()) {
 			throw RuntimeError("Could not scan position argument " + args[2]);
@@ -347,7 +359,7 @@ string Initialize::executeCommand(vector<string> args) {
 		OnlyFluorescenceCommand(name);
 		int ifluor = GetFluorescenceIndex(name);
 		int value = 0;
-		std::istringstream iss (args[2].c_str());
+		istringstream iss (args[2].c_str());
 		iss >> value;
 		if (iss.fail()) {
 			throw RuntimeError("Could not scan index argument " + args[2]);
@@ -374,428 +386,29 @@ string Initialize::executeCommand(vector<string> args) {
 		string name = args[1];
 		OnlyFluorescenceCommand(name);
 		int ifluor = GetFluorescenceIndex(name);
-		oss << fluorescence[ifluor]->getCurrentTargetName(); //debug, calculate again
+		oss << fluorescence[ifluor]->updateAndGetCurrentTargetName(); 
 		return oss.str();
 	}		
 
+	else if (!strcasecmp(command.c_str(), "movefl")) {
+		if (nArg != 3) {
+			throw RuntimeError("Requires 2 parameters: movefl [fluorescence motor] [target name]");
+		}
+		string name = args[1];
+		OnlyFluorescenceCommand(name);
+		int ifluor = GetFluorescenceIndex(name);
+		string target = args[2];
+		fluorescence[ifluor]->moveToTarget(target);
+		oss << fluorescence[ifluor]->updateAndGetCurrentTargetName(); 
+		return oss.str();
+	}
 /*
 
-	// --- if command is getfl'----------------
-	else if(command == "getfl")
-	{
-		// if number of parameters are wrong
-		if(nArg!=1)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 1");
-			return -1;
-		}
-
-		for(int i=0;i<motor.size();i++)
-		{
-			if("Fluorescence" == motor[i]->getName())
-			{
-				newPosition = motor[i]->getPosition();
-				cout << "new position: " << newPosition << endl;
-#ifdef XRAYBOX
-				// laser position
-				if(fabs(laserPosition - newPosition) < 0.0001 )
-				{
-					sprintf(mess,"Fl is %s and value:%f", FLUOR_LASERNAME, newPosition);
-					return 0;
-				}
-#endif
-				// out of limits
-				if (newPosition < fluoroffset || newPosition > (maxfluorvalues - 1) * fluorwidth) {
-					sprintf(mess,"ERROR: Fluroescence position %f is out of limits",newPosition);
-					return -1;
-				}
-
-				int ipos = round((newPosition - fluoroffset) / fluorwidth);
-				double calcPosition = fluoroffset + (ipos * fluorwidth);
-
-				// somewhere in between
-				if (fabs(calcPosition - newPosition) > 0.00001) {
-					cout << "Position is somewhere in between" << endl;
-					sprintf(mess,"ERROR: Fluroescence position %f is out of limits",newPosition);
-					return -1;
-				}
-
-				sprintf(mess,"Fl is %s and value:%f",fluorList[ipos][0].c_str(), newPosition);
-				return 0;
-			}
-		}
-		sprintf(mess,"ERROR: Fluroescence motor does not exist in config file");
-		return -1;
-	}
-
-
-
-	// --- if command is movefl'-------------------------------------------------------------------
-	else if(command == "movefl")
-	{
-		int found=0;
-		bool fluorNameFound = false;
-		// if number of parameters are wrong
-		if(nArg!=2)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 2");
-			return -1;
-		}
-
-		for(int i=0;i<motor.size();i++)
-		{
-			if("Fluorescence" == motor[i]->getName())
-			{
-				found=1;
-				// loops through to find fluor name
-				for(int j=0;j<maxfluorvalues;j++)
-				{
-					if(args[1] == fluorList[j][0].c_str())
-					{
-						fluorNameFound = true;
-						newPosition = fluoroffset + (j * fluorwidth);
-					}
-				}
-#ifdef XRAYBOX
-				// if not in list (check for laser)
-				if (!strcasecmp(FLUOR_LASERNAME, args[1]))
-				{
-					fluorNameFound = true;
-					newPosition = laserPosition;
-				}
-#endif
-
-				// if fluor name found (or laser)
-				if (fluorNameFound) {
-
-					if(!motor[i]->canMotorMove(newPosition))
-					{
-						sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[1],motor[i]->getLowerLimit(),motor[i]->getUpperLimit());
-						return -1;
-					}
-
-					motor[i]->moveAbs(newPosition,0,0,0);
-					//set position member of motor to the updated position
-					motor[i]->setPosition(newPosition);
-					sprintf(mess,"Moved to %s: Fl value:%f",args[1],newPosition);
-					return 0;
-				}
-			}
-		}
-
-		if(!found)
-		{
-			sprintf(mess,"ERROR: Fluroescence motor does not exist in config file");
-			return -1;
-		}
-		if (!fluorNameFound)
-		{
-			sprintf(mess,"ERROR: %s does not exist in fluorescence list in config file", args[1]);
-			return -1;
-		}
-
-		sprintf(mess,"ERROR: This fluroescence value does not exist in config file");
-		return -1;
-
-	}
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-	//------------------------------------------------- laser box specific list  ---------------------------------------------------------------------
-	// --- if command is checkref---------------------------------------
-	if(command == "checkref")
-	{
-		// if number of parameters are wrong
-		if(nArg!=1)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 1\nHelp: checkref");
-			return -1;
-		}
-
-		double x,y,z;
-		char *commands[15];
-		for(int j=0;j<15;j++)
-		    commands[j]=new char[1000];
-		strcpy(commands[0],"pos");
-		//gets the position of x
-		strcpy(commands[1],"detector_x");
-		//if it returns an error, return an error
-		if(executeCommand(2,commands,mess)==-1)
-			return -1;
-		else
-			x=atof(mess);
-		//gets the position of y
-		strcpy(commands[1],"detector_y");
-		//if it returns an error, return an error
-		if(executeCommand(2,commands,mess)==-1)
-			return -1;
-		else
-			y=atof(mess);
-		//gets the position of z
-		strcpy(commands[1],"detector_z");
-		//if it returns an error, return an error
-		if(executeCommand(2,commands,mess)==-1)
-			return -1;
-		else
-			z=atof(mess);
-
-
-		for(int i=0;i<referencePoints.size();i++)
-		{
-			bool bx=false,by=false,bz=false;
-			//if its -1, then you dont care bout that axis
-			if((atof(referencePoints[i][1].c_str())<0)||(x==atof(referencePoints[i][1].c_str())))
-					bx=true;
-			if((atof(referencePoints[i][2].c_str())<0)||(y==atof(referencePoints[i][2].c_str())))
-					by=true;
-			if((atof(referencePoints[i][3].c_str())<0)||(z==atof(referencePoints[i][3].c_str())))
-					bz=true;
-			if(bx&&by&&bz)
-			{
-				strcpy(mess,referencePoints[i][0].c_str());
-				return 0;
-			}
-		}
-		strcpy(mess,"None");
-		return 0;
-
-	}
-
-	// --- if command is fvals---------------------------------------
-	else if(command == "fvals")
-	{
-		//if it doesnt exist, the error message in the end
-		num=0;
-		// if number of parameters are wrong
-		if(nArg!=2)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 2\nHelp: fvals [filter_wheel_name]");
-			return -1;
-		}
-
-		strcpy(mess,"");
-		//find the fwheel and move it
-		for(int i=0;i<Fwheel::NumFwheels;i++)
-			if(!strcasecmp(args[1],fwheel[i]->getName()))
-			{
-				char cVal[20]="";
-				for(int j=0;j<Fwheel::NumSlotsInWheel;j++)
-				{
-					sprintf(cVal,"%f",fwheel[i]->ValueList[j]);
-					strcat(mess,cVal);
-					strcat(mess," ");
-				}
-				return 0;
-			}
-
-	}
-
-
-	// --- if command is refvals---------------------------------------
-	else if(command == "refvals")
-	{
-		//if it doesnt exist, the error message in the end
-		num=4;
-		// if number of parameters are wrong
-		if(nArg!=2)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 2\nHelp: refvals [reference_name]");
-			return -1;
-		}
-		strcpy(mess,"");
-		//find the refpoint
-		for(int i=0;i<referencePoints.size();i++)
-			if(!strcasecmp(args[1],referencePoints[i][0].c_str()))
-			{
-				for(int j=1;j<=3;j++)
-				{
-					strcat(mess,referencePoints[i][j].c_str());
-					strcat(mess," ");
-				}
-				return 0;
-			}
-
-	}
-
-
-	// --- if command is fwlist---------------------------------------
-	else if(command == "fwlist")
-	{
-		// if number of parameters are wrong
-		if(nArg!=1)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 1\nHelp: fwlist");
-			return -1;
-		}
-		//all the filter wheels
-		for(int i=0;i<fwheel.size();i++)
-		{
-			strcat(mess," ");
-			strcat(mess,fwheel[i]->getName());
-		}
-		return 0;
-
-	}
-
-
-	// --- if command is reflist---------------------------------------
-	else if(command == "reflist")
-	{
-		// if number of parameters are wrong
-		if(nArg!=1)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 1\nHelp: reflist");
-			return -1;
-		}
-		//all the filter wheels
-		for(int i=0;i<referencePoints.size();i++)
-		{
-			strcat(mess," ");
-			strcat(mess,referencePoints[i][0].c_str());
-		}
-		return 0;
-
-	}
-
-
-	// --- if command is ref---------------------------------------
-	else if(command == "ref")
-	{
-		num=4;
-		// if number of parameters are wrong
-		if(nArg!=2)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 2\nHelp: ref [reference_point_name]\n");
-			return -1;
-		}
-		//find the ref point
-		for(int i=0;i<referencePoints.size();i++)
-		{
-			if(!strcasecmp(args[1],referencePoints[i][0].c_str()))
-			{
-				double x,y,z;
-				char *commands[15];
-				for(int j=0;j<15;j++)
-				    commands[j]=new char[1000];
-				//get the positions from the vector(from file)
-				x= atof(referencePoints[i][1].c_str());
-				y= atof(referencePoints[i][2].c_str());
-				z= atof(referencePoints[i][3].c_str());
-				//detx
-				if(x>=0)
-				{	//form command
-					strcpy(commands[0],"moveabs");
-					strcpy(commands[1],"detector_x");
-					sprintf(commands[2],"%f",x);
-					cout<<"mess:"<<mess<<"."<<endl;
-					//if it returns an error, return an error
-					if(executeCommand(3,commands,mess)==-1)
-						return -1;
-				}
-				//dety
-				if(y>=0)
-				{	//form command
-					strcpy(commands[0],"moveabs");
-					strcpy(commands[1],"detector_y");
-					sprintf(commands[2],"%f",y);
-					//if it returns an error, return an error
-					if(executeCommand(3,commands,mess)==-1)
-						return -1;
-				}
-				//detz
-				if(z>=0)
-				{	//form command
-					strcpy(commands[0],"moveabs");
-					strcpy(commands[1],"detector_z");
-					sprintf(commands[2],"%f",z);
-					//if it returns an error, return an error
-					if(executeCommand(3,commands,mess)==-1)
-						return -1;
-				}
-				sprintf(mess,"Moved to reference point %s. (%f,%f,%f)",args[1],x,y,z);
-				return 0;
-			}
-		}
-	}
-
-
-	// --- if command is fsetval---------------------------------------
-	else if(command == "fsetval")
-	{
-		num=0;
-		// if number of parameters are wrong
-		if(nArg!=3)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 3\nHelp: fsetval [filter_wheel_name] [value]\n");
-			return -1;
-		}
-
-		// if value is not a number
-		temp.assign(args[2]);
-		if(temp.find_first_not_of("0123456789.-")!=string::npos)
-		{
-			sprintf(mess, "ERROR: %s for absorption value should be a number",args[2]);
-			return -1;
-		}
-
-		//find the fwheel and move it
-		for(int i=0;i<fwheel.size();i++)
-			if(!strcasecmp(args[1],fwheel[i]->getName()))
-			{
-				if(!fwheel[i]->setValue(atof(args[2])))
-				{
-					sprintf(mess,"ERROR: %s absorption value for %s is not defined. \nOptions(",args[2],args[1]);
-					char cVal[20]="";
-					for(int j=0;j<Fwheel::NumSlotsInWheel;j++)
-					{
-						sprintf(cVal,"%f",fwheel[i]->ValueList[j]);
-						strcat(mess,cVal);
-						strcat(mess,",");
-					}
-					strcat(mess,")");
-					return -1;
-				}
-				sprintf(mess,"%s set to %s value",args[1],args[2]);
-				return 0;
-			}
-	}
-
-
-
-	// --- if command is fgetval---------------------------------------
-	else if(command == "fgetval")
-	{
-		num=0;
-		// if number of parameters are wrong
-		if(nArg!=2)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 2\nHelp: fgetval [filter_wheel_name]\n");
-			return -1;
-		}
-
-		//find fwheel and value
-		for(int i=0;i<fwheel.size();i++)
-			if(!strcasecmp(args[1],fwheel[i]->getName()))
-			{
-				sprintf(mess,"%f",fwheel[i]->getValue());
-				return 0;
-			}
-	}
 
 
 
@@ -1780,6 +1393,335 @@ string Initialize::executeCommand(vector<string> args) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	//------------------------------------------------- laser box specific list  ---------------------------------------------------------------------
+	// --- if command is checkref---------------------------------------
+	if(command == "checkref")
+	{
+		// if number of parameters are wrong
+		if(nArg!=1)
+		{
+			strcpy(mess, "ERROR: Required number of parameters: 1\nHelp: checkref");
+			return -1;
+		}
+
+		double x,y,z;
+		char *commands[15];
+		for(int j=0;j<15;j++)
+		    commands[j]=new char[1000];
+		strcpy(commands[0],"pos");
+		//gets the position of x
+		strcpy(commands[1],"detector_x");
+		//if it returns an error, return an error
+		if(executeCommand(2,commands,mess)==-1)
+			return -1;
+		else
+			x=atof(mess);
+		//gets the position of y
+		strcpy(commands[1],"detector_y");
+		//if it returns an error, return an error
+		if(executeCommand(2,commands,mess)==-1)
+			return -1;
+		else
+			y=atof(mess);
+		//gets the position of z
+		strcpy(commands[1],"detector_z");
+		//if it returns an error, return an error
+		if(executeCommand(2,commands,mess)==-1)
+			return -1;
+		else
+			z=atof(mess);
+
+
+		for(int i=0;i<referencePoints.size();i++)
+		{
+			bool bx=false,by=false,bz=false;
+			//if its -1, then you dont care bout that axis
+			if((atof(referencePoints[i][1].c_str())<0)||(x==atof(referencePoints[i][1].c_str())))
+					bx=true;
+			if((atof(referencePoints[i][2].c_str())<0)||(y==atof(referencePoints[i][2].c_str())))
+					by=true;
+			if((atof(referencePoints[i][3].c_str())<0)||(z==atof(referencePoints[i][3].c_str())))
+					bz=true;
+			if(bx&&by&&bz)
+			{
+				strcpy(mess,referencePoints[i][0].c_str());
+				return 0;
+			}
+		}
+		strcpy(mess,"None");
+		return 0;
+
+	}
+
+	// --- if command is fvals---------------------------------------
+	else if(command == "fvals")
+	{
+		//if it doesnt exist, the error message in the end
+		num=0;
+		// if number of parameters are wrong
+		if(nArg!=2)
+		{
+			strcpy(mess, "ERROR: Required number of parameters: 2\nHelp: fvals [filter_wheel_name]");
+			return -1;
+		}
+
+		strcpy(mess,"");
+		//find the fwheel and move it
+		for(int i=0;i<Fwheel::NumFwheels;i++)
+			if(!strcasecmp(args[1],fwheel[i]->getName()))
+			{
+				char cVal[20]="";
+				for(int j=0;j<Fwheel::NumSlotsInWheel;j++)
+				{
+					sprintf(cVal,"%f",fwheel[i]->ValueList[j]);
+					strcat(mess,cVal);
+					strcat(mess," ");
+				}
+				return 0;
+			}
+
+	}
+
+
+	// --- if command is refvals---------------------------------------
+	else if(command == "refvals")
+	{
+		//if it doesnt exist, the error message in the end
+		num=4;
+		// if number of parameters are wrong
+		if(nArg!=2)
+		{
+			strcpy(mess, "ERROR: Required number of parameters: 2\nHelp: refvals [reference_name]");
+			return -1;
+		}
+		strcpy(mess,"");
+		//find the refpoint
+		for(int i=0;i<referencePoints.size();i++)
+			if(!strcasecmp(args[1],referencePoints[i][0].c_str()))
+			{
+				for(int j=1;j<=3;j++)
+				{
+					strcat(mess,referencePoints[i][j].c_str());
+					strcat(mess," ");
+				}
+				return 0;
+			}
+
+	}
+
+
+	// --- if command is fwlist---------------------------------------
+	else if(command == "fwlist")
+	{
+		// if number of parameters are wrong
+		if(nArg!=1)
+		{
+			strcpy(mess, "ERROR: Required number of parameters: 1\nHelp: fwlist");
+			return -1;
+		}
+		//all the filter wheels
+		for(int i=0;i<fwheel.size();i++)
+		{
+			strcat(mess," ");
+			strcat(mess,fwheel[i]->getName());
+		}
+		return 0;
+
+	}
+
+
+	// --- if command is reflist---------------------------------------
+	else if(command == "reflist")
+	{
+		// if number of parameters are wrong
+		if(nArg!=1)
+		{
+			strcpy(mess, "ERROR: Required number of parameters: 1\nHelp: reflist");
+			return -1;
+		}
+		//all the filter wheels
+		for(int i=0;i<referencePoints.size();i++)
+		{
+			strcat(mess," ");
+			strcat(mess,referencePoints[i][0].c_str());
+		}
+		return 0;
+
+	}
+
+
+	// --- if command is ref---------------------------------------
+	else if(command == "ref")
+	{
+		num=4;
+		// if number of parameters are wrong
+		if(nArg!=2)
+		{
+			strcpy(mess, "ERROR: Required number of parameters: 2\nHelp: ref [reference_point_name]\n");
+			return -1;
+		}
+		//find the ref point
+		for(int i=0;i<referencePoints.size();i++)
+		{
+			if(!strcasecmp(args[1],referencePoints[i][0].c_str()))
+			{
+				double x,y,z;
+				char *commands[15];
+				for(int j=0;j<15;j++)
+				    commands[j]=new char[1000];
+				//get the positions from the vector(from file)
+				x= atof(referencePoints[i][1].c_str());
+				y= atof(referencePoints[i][2].c_str());
+				z= atof(referencePoints[i][3].c_str());
+				//detx
+				if(x>=0)
+				{	//form command
+					strcpy(commands[0],"moveabs");
+					strcpy(commands[1],"detector_x");
+					sprintf(commands[2],"%f",x);
+					cout<<"mess:"<<mess<<"."<<endl;
+					//if it returns an error, return an error
+					if(executeCommand(3,commands,mess)==-1)
+						return -1;
+				}
+				//dety
+				if(y>=0)
+				{	//form command
+					strcpy(commands[0],"moveabs");
+					strcpy(commands[1],"detector_y");
+					sprintf(commands[2],"%f",y);
+					//if it returns an error, return an error
+					if(executeCommand(3,commands,mess)==-1)
+						return -1;
+				}
+				//detz
+				if(z>=0)
+				{	//form command
+					strcpy(commands[0],"moveabs");
+					strcpy(commands[1],"detector_z");
+					sprintf(commands[2],"%f",z);
+					//if it returns an error, return an error
+					if(executeCommand(3,commands,mess)==-1)
+						return -1;
+				}
+				sprintf(mess,"Moved to reference point %s. (%f,%f,%f)",args[1],x,y,z);
+				return 0;
+			}
+		}
+	}
+
+
+	// --- if command is fsetval---------------------------------------
+	else if(command == "fsetval")
+	{
+		num=0;
+		// if number of parameters are wrong
+		if(nArg!=3)
+		{
+			strcpy(mess, "ERROR: Required number of parameters: 3\nHelp: fsetval [filter_wheel_name] [value]\n");
+			return -1;
+		}
+
+		// if value is not a number
+		temp.assign(args[2]);
+		if(temp.find_first_not_of("0123456789.-")!=string::npos)
+		{
+			sprintf(mess, "ERROR: %s for absorption value should be a number",args[2]);
+			return -1;
+		}
+
+		//find the fwheel and move it
+		for(int i=0;i<fwheel.size();i++)
+			if(!strcasecmp(args[1],fwheel[i]->getName()))
+			{
+				if(!fwheel[i]->setValue(atof(args[2])))
+				{
+					sprintf(mess,"ERROR: %s absorption value for %s is not defined. \nOptions(",args[2],args[1]);
+					char cVal[20]="";
+					for(int j=0;j<Fwheel::NumSlotsInWheel;j++)
+					{
+						sprintf(cVal,"%f",fwheel[i]->ValueList[j]);
+						strcat(mess,cVal);
+						strcat(mess,",");
+					}
+					strcat(mess,")");
+					return -1;
+				}
+				sprintf(mess,"%s set to %s value",args[1],args[2]);
+				return 0;
+			}
+	}
+
+
+
+	// --- if command is fgetval---------------------------------------
+	else if(command == "fgetval")
+	{
+		num=0;
+		// if number of parameters are wrong
+		if(nArg!=2)
+		{
+			strcpy(mess, "ERROR: Required number of parameters: 2\nHelp: fgetval [filter_wheel_name]\n");
+			return -1;
+		}
+
+		//find fwheel and value
+		for(int i=0;i<fwheel.size();i++)
+			if(!strcasecmp(args[1],fwheel[i]->getName()))
+			{
+				sprintf(mess,"%f",fwheel[i]->getValue());
+				return 0;
+			}
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	// --- if command is getX1Limit---------------------------------------
 	else if(command == "getX1Limit")
 	{
@@ -2258,52 +2200,53 @@ Initialize::Initialize()
 
 
 	// Print
-	std::cout << "Motors: " << motor.size() << std::endl;
-	std::cout << "==========" << std::endl;
+	cout << "Motors: " << motor.size() << endl;
+	cout << "==========" << endl;
 	for (unsigned int i = 0; i < motor.size(); ++i) {
 		motor[i]->print();
 	}	
 	if (referencePoint.size() > 0) {
-		std::cout << "Reference Points: " << referencePoint.size() << std::endl;
-		std::cout << "===================" << std::endl;
+		cout << "Reference Points: " << referencePoint.size() << endl;
+		cout << "===================" << endl;
 		for (unsigned int i = 0; i < referencePoint.size(); ++i) {
 			referencePoint[i]->print();
 		}	
 	}
 	if (fluorescence.size() > 0) {
-		std::cout << "Fluorescence Motors: " << fluorescence.size() << std::endl;
-		std::cout << "======================" << std::endl;
+		cout << "Fluorescence Motors: " << fluorescence.size() << endl;
+		cout << "======================" << endl;
 		for (unsigned int i = 0; i < fluorescence.size(); ++i) {
 			fluorescence[i]->print();
 		}	
 	}
 	if (slit != NULL) {
-		std::cout << "Slit" << std::endl;
-		std::cout << "====" << std::endl;
+		cout << "Slit" << endl;
+		cout << "====" << endl;
 		slit->print();
 	}
 	if (fwheel.size() > 0) {
-		std::cout << "Filter Wheels: " << fwheel.size() << std::endl;
-		std::cout << "================" << std::endl;
+		cout << "Filter Wheels: " << fwheel.size() << endl;
+		cout << "================" << endl;
 		for (unsigned int i = 0; i < fwheel.size(); ++i) {
 			fwheel[i]->print();
 		}	
 	}	
-	std::cout << "Controllers: " << controller.size() << std::endl;
-	std::cout << "==============" << std::endl;
+	cout << "Controllers: " << controller.size() << endl;
+	cout << "==============" << endl;
 	for (unsigned int i = 0; i < controller.size(); ++i) {
 		controller[i]->print();
 	}	
 	if (xrayTube != NULL) {
-		std::cout<< "Xray Tube" << std::endl;
-		std::cout << "========" << std::endl;
-		std:: cout << "\tUsb port:" << xrayTube->getInterface()->getSerial() << std::endl;
+		cout << "Xray Tube" << endl;
+		cout << "=========" << endl;
+		cout << "\tUsb port:" << xrayTube->getInterface()->getSerial() << endl;
 	}
 	if (pgauge != NULL) {
-		std::cout<< "Pressure Gauge" << std::endl;
-		std::cout << "=============" << std::endl;
-		std:: cout << "\tUsb port:" << pgauge->getInterface()->getSerial() << std::endl;
+		cout << "Pressure Gauge" << endl;
+		cout << "==============" << endl;
+		cout << "\tUsb port:" << pgauge->getInterface()->getSerial() << endl;
 	}
+	cout << endl;
 }
 
 
@@ -2386,7 +2329,7 @@ int Initialize::WriteWarmupTimestamps(string const fName) {
 }
 
 void Initialize::ReadConfigFile() {
-	FILE_LOG(logINFO) << "Reading config file" << std::endl;
+	FILE_LOG(logINFO) << "Reading config file" << endl;
 	ifstream inFile;
 	inFile.open(CONFIG_FILE, ifstream::in);
 	if (!inFile.is_open()) {
@@ -2399,12 +2342,12 @@ void Initialize::ReadConfigFile() {
         if (sLine.find('#') != string::npos) {
             sLine.erase(sLine.find('#'));
         }
-		FILE_LOG(logDEBUG) << "line:"<< sLine << std::endl;
+		FILE_LOG(logDEBUG) << "line:"<< sLine << endl;
 		// scan arguments
 		istringstream iss(sLine);
 		vector<string> args = vector<string>(istream_iterator<string>(iss), istream_iterator<string>());
 		for (unsigned int i = 0; i < args.size(); ++i) {
-			FILE_LOG(logDEBUG) << i << ":[" << args[i] << "] length:" << args[i].length() << std::endl;
+			FILE_LOG(logDEBUG) << i << ":[" << args[i] << "] length:" << args[i].length() << endl;
 		}
 		// blank lines
 		if (args.size() == 0 || args[0].empty()) {
@@ -2458,7 +2401,7 @@ void Initialize::UpdateInterface(InterfaceIndex index) {
 		}
 		ostringstream oss;
 		oss << USB_PORT_PREFIX << i;
-		std::string usbport = oss.str();
+		string usbport = oss.str();
 
 		try {
 			Interface* interface = new Interface(usbport, index);
@@ -2491,7 +2434,25 @@ void Initialize::UpdateInterface(InterfaceIndex index) {
 			continue;
 		}
 	}
-	throw RuntimeError("Could not find usb serial port");
+	ostringstream oss;
+	oss << "Could not find usb serial port for ";
+	switch (index) {
+	case TUBE:
+		oss << "tube";
+		break;
+	case PRESSURE:
+		oss << "tube";
+		break;
+	case CONTROLLER:
+		oss << "tube";
+		break;
+	case FILTER_WHEEL:
+		oss << "tube";
+		break;
+	default:
+		break;
+	}
+	throw RuntimeError(oss.str());
 }
 
 
@@ -2504,7 +2465,7 @@ void Initialize::TubeMode(vector<string> args) {
 	}
 
 	// tube power
-	std::istringstream iss (args[1].c_str());
+	istringstream iss (args[1].c_str());
 	iss >> maxTubePower;
 	if (iss.fail()) {
 		throw RuntimeError("Could not scan power argument " + args[1]);
@@ -2526,7 +2487,7 @@ void Initialize::TubeMode(vector<string> args) {
 		warmupTimings[i].assign("unknown");
 	}
 	ReadWarmupTimestamps(WARMUP_FILE);
-	std::cout << std::endl;
+	cout << endl;
 }
 
 
@@ -2537,7 +2498,7 @@ void Initialize::PressureMode() {
 	} catch (RuntimeError &e) {
 		FILE_LOG(logWARNING) << "Pressure Gauge is probably switched off. Continuing.";
 	}	
-	std::cout << std::endl;
+	cout << endl;
 }
 
 
@@ -2553,7 +2514,7 @@ void Initialize::FwheelMode(vector<string> args) {
 	string serialNumber = args[2];
 	vector<double> values(CONFIG_FWHEEL_NUM_ARGS - 3);
 	for (unsigned int i = 0; i < values.size(); ++i) {
-		std::istringstream iss (args[3 + i].c_str());
+		istringstream iss (args[3 + i].c_str());
 		iss >> values[i];
 		if (iss.fail()) {
 			throw RuntimeError("Could not scan fwheel absorption values " + args[3 + i]);
@@ -2573,7 +2534,7 @@ void Initialize::FwheelMode(vector<string> args) {
 	// ensure they start at position 1
 	fwheel[fwheel.size() - 1]->setStartPosition();
 	fwheel[fwheel.size() - 1]->setStartPosition(); //the second time it works
-	std::cout << std::endl;
+	cout << endl;
  }
 
 
@@ -2588,7 +2549,7 @@ void Initialize::FwheelMode(vector<string> args) {
 	string name = args[1];
 	vector<double> positions(3);
 	for (unsigned int i = 0; i < 3; ++i) {
-		std::istringstream iss (args[2 + i].c_str());
+		istringstream iss (args[2 + i].c_str());
 		iss >> positions[i];
 		if (iss.fail()) {
 			throw RuntimeError("Could not scan refpoint positions for " + args[2 + i]);
@@ -2597,7 +2558,7 @@ void Initialize::FwheelMode(vector<string> args) {
 
 	// create referencepoints object
 	referencePoint.push_back(new ReferencePoint(referencePoint.size(), name, positions));
-	std::cout << std::endl;
+	cout << endl;
  }
 
 
@@ -2646,7 +2607,7 @@ void Initialize::FwheelMode(vector<string> args) {
 	} catch (RuntimeError& e) {
 		throw RuntimeError("Could not find usb serial port for controller " + args[1]);
 	}
-	std::cout << std::endl;
+	cout << endl;
  }
 
 
@@ -2661,7 +2622,7 @@ void Initialize::MotorMode(vector<string> args) {
 	string name = args[1];
 	int axis = -1; 
 	{
-		std::istringstream iss (args[2].c_str());
+		istringstream iss (args[2].c_str());
 		iss >> axis;
 		if (iss.fail()) {
 			throw RuntimeError("Could not scan axis for motor argument: " + args[2]);
@@ -2671,7 +2632,7 @@ void Initialize::MotorMode(vector<string> args) {
 	string controllerName = args[3];
 	double lowerLimit = -1;
 	{
-		std::istringstream iss (args[4].c_str());
+		istringstream iss (args[4].c_str());
 		iss >> lowerLimit;
 		if (iss.fail()) {
 			throw RuntimeError("Could not scan lowerLimit for motor argument: " + args[4]);
@@ -2679,7 +2640,7 @@ void Initialize::MotorMode(vector<string> args) {
 	}
 	double upperLimit = -1;
 	{
-		std::istringstream iss (args[5].c_str());
+		istringstream iss (args[5].c_str());
 		iss >> upperLimit;
 		if (iss.fail()) {
 			throw RuntimeError("Could not scan upperLimit for motor argument: " + args[5]);
@@ -2693,12 +2654,12 @@ void Initialize::MotorMode(vector<string> args) {
 		}
 	}
 	if (axis < 0 || axis >= MAX_NUM_MOTORS_PER_CONTROLLER) {
-		std::ostringstream oss; 
+		ostringstream oss; 
 		oss << "Invalid axis index " << axis << " to set motor " << name;
 		throw RuntimeError(oss.str());			
 	}
 	if (lowerLimit > upperLimit) {
-		std::ostringstream oss; 
+		ostringstream oss; 
 		oss << "Invalid limits to set motor " << name;
 		throw RuntimeError(oss.str());			
 	}
@@ -2715,12 +2676,12 @@ void Initialize::MotorMode(vector<string> args) {
 
 	// if fluorescence, create fluorescence object
 	if (name == "Fluorescence" || name == "Fluorescence_wheel") {
-		fluorescence.push_back(new Fluorescence(fluorescence.size(), name, controller[icontroller]));
+		fluorescence.push_back(new Fluorescence(fluorescence.size(), name, controller[icontroller], axis));
 	} else if (name == "Slit_x2") {
 		int imotorX1 = GetMotorIndex("Slit_x1");
 		Controller* controller_slitx1 = controller[motor[imotorX1]->getController()];
 		int iaxisX1 = motor[imotorX1]->getAxis();
 		slit = new Slit(controller_slitx1, controller[icontroller], iaxisX1, axis);
 	}
-	std::cout << std::endl;
+	cout << endl;
  }

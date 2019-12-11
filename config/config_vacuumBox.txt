@@ -49,6 +49,6 @@ fluorescence	Mo	    17.5
 fluorescence    Screen	0    
 fluorescence    Bla     -    
 
-#power 1900
+power 1900
 
 #pressure

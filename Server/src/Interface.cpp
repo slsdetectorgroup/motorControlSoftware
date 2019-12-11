@@ -12,13 +12,21 @@
 #include <termios.h>  /* POSIX terminal control definitions */
 #include <errno.h>
 
-/*	for serial programming see:  http://www.easysw.com/~mike/serial/serial.html */
+//O_NOCTTY flag tells UNIX that this program doesn't want to be the "controlling terminal" for that port.
+//O_NDELAY flag tells UNIX that this program doesn't care what state the DCD signal line is in - whether the other end of the port is up and running. If you do not specify this flag, your process will be put to sleep until the DCD signal line is the space voltage.
+//B9600	9600 baud
+//CS8	8 data bits
+//CSTOPB	2 stop bits (1 otherwise)
+//CLOCAL	Local line - do not change "owner" of port
+//CREAD	Enable receiver
+//IGNPAR	Ignore parity errors
 
 
 #define CONTROLLER_MAX_TX_ATTEMPTS		(5)
 #define CONTROLLER_MAX_RX_ATTEMPTS		(5)
 #define CONTROLLER_MAX_WAIT_ATTEMPTS	(1)
 #define CONTROLLER_READ_WAIT_US			(50000) // because of raspberry pi
+#define TUBE_READ_WAIT_US				(200000)
 
 
 Interface::Interface(std::string serial, InterfaceIndex index) {
@@ -51,9 +59,9 @@ void Interface::ControllerInterface() {
 	FILE_LOG(logINFO) << "\tMotorcontroller, checking:" << serial;
 	serialfd = open (serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
 	if (serialfd == -1) {
-		FILE_LOG(logWARNING) << "Unable to open port " << serial << ", check permissions to use it next time";
+		FILE_LOG(logWARNING) << "Unable to open port " << serial << " for controller";
 		FILE_LOG(logWARNING) << "Fail";
-		throw std::runtime_error("Fail to open port");
+		throw std::runtime_error("Failed to open port");
 	}
 
 	struct termios new_serial_conf;
@@ -61,12 +69,14 @@ void Interface::ControllerInterface() {
 	new_serial_conf.c_cflag = B57600 | CS8 | CREAD | CLOCAL; // control options
 	new_serial_conf.c_iflag = 0; // input options
 	new_serial_conf.c_oflag = 0; // output options
-	new_serial_conf.c_lflag = ICANON; // line options
-	//flush input
+	new_serial_conf.c_lflag = 0; // line options
+	// flush input
 	sleep(2);
 	tcflush(serialfd, TCIOFLUSH);
 	if (tcsetattr(serialfd, TCSANOW, &new_serial_conf) != 0) {
-    	FILE_LOG(logERROR) << errno << " from tcsetattr: " << strerror(errno);
+		std::ostringstream oss;
+		oss << errno << " from tcsetattr: " << strerror(errno);
+		throw std::runtime_error(oss.str());
 	}
 
 	ValidateController(); 
@@ -118,7 +128,7 @@ std::string Interface::ControllerSend(std::string command, bool readBack, bool v
 }
 
 std::string Interface::ControllerSendCommand(std::string command, bool readBack, bool verbose) {
-	if (command != "st " || command == "pos ") { // for debugging
+	if (command != "st " && command != "pos ") { // for debugging
 		FILE_LOG(logINFO) << "\tSending [" << command << "]   (port:" << serial << ", read:" << readBack << ')';
 	}
 
@@ -168,9 +178,8 @@ std::string Interface::ControllerSendCommand(std::string command, bool readBack,
 	if (attempt > 1) {
 		FILE_LOG(logDEBUG) << "receive attempt " << attempt;
 	}
-	if (command != "st ") {
-		FILE_LOG(logINFO) << "\tReceived [" << command << "]: " << result;
-	}
+
+	// throw error if read buffer empty
 	if (strlen(result) == 0) {
 		std::ostringstream oss;
 		oss << "Empty receive buffer to controller port " << serial;
@@ -178,140 +187,97 @@ std::string Interface::ControllerSendCommand(std::string command, bool readBack,
 		throw std::runtime_error(oss.str());		
 	}
 
+	if (command != "st ") {
+		FILE_LOG(logINFO) << "\tReceived [" << command << "]: " << result;
+	}
 	return std::string(result);
 }
 
 
 
 void Interface::TubeInterface() {
-	//O_NOCTTY flag tells UNIX that this program doesn't want to be the "controlling terminal" for that port.
-	//O_NDELAY flag tells UNIX that this program doesn't care what state the DCD signal line is in - whether the other end of the port is up and running. If you do not specify this flag, your process will be put to sleep until the DCD signal line is the space voltage.
-
-	FILE_LOG(logINFO) << "Xray tube, checking:" << serial;
-	serialfd= open (serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
-	if (serialfd==-1) {
-		FILE_LOG(logWARNING) << "Unable to open port " << serial << " for xray tube, check permissions to use it\n";
-        FILE_LOG(logWARNING) << "Fail" << std::endl;
-		throw std::runtime_error("Fail to open port");
-	}
-	struct termios new_serial_conf;
-	memset(&new_serial_conf, 0, sizeof(new_serial_conf));
-	/* control options */
-	//B9600	9600 baud
-	//CS8	8 data bits
-	//CSTOPB	2 stop bits (1 otherwise)
-	//CLOCAL	Local line - do not change "owner" of port
-	//CREAD	Enable receiver
-	new_serial_conf.c_cflag = B9600 | CS8 | CLOCAL | CREAD ;
-
-	/* input options */
-	//IGNPAR	Ignore parity errors
-	new_serial_conf.c_iflag = IGNPAR;
-
-	/* output options */
-	new_serial_conf.c_oflag = 0;
-
-	/* line options */
-	new_serial_conf.c_lflag = 0; // doesnt work with ICANON
-
-	/* flush input */
-	sleep(2);
-	tcflush(serialfd, TCIOFLUSH);
-	tcsetattr(serialfd, TCSANOW, &new_serial_conf);
-
-	int a,b;
-	send_command_to_tube((char*)"sr:12 ", 1, a,b);
-	send_command_to_tube((char*)"sr:12 ", 1, a,b);
-	if(a == -9999) {
-		FILE_LOG(logWARNING) << "Fail" << std::endl;
-		close(serialfd);
-		throw std::runtime_error("Fail to communicate with tube");
-	}
-    FILE_LOG(logINFO) << "Success" << std::endl;
-}
-
-
-
-void Interface::PressureInterface() {
-	FILE_LOG(logINFO) << "Pressure, checking:" << serial;
+	FILE_LOG(logINFO) << "\tXray tube, checking:" << serial;
 	serialfd = open (serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
 	if (serialfd == -1) {
-		FILE_LOG(logWARNING) << "Unable to open port " << serial << " for pressure, check permissions to use it\n";
-        FILE_LOG(logWARNING) << "Fail" << std::endl;
-		throw std::runtime_error("Fail to open port");
+		FILE_LOG(logWARNING) << "Unable to open port " << serial << " for xray tube\n";
+        FILE_LOG(logWARNING) << "Fail";
+		throw std::runtime_error("Failed to open port");
 	}
+
 	struct termios new_serial_conf;
 	memset(&new_serial_conf, 0, sizeof(new_serial_conf));
-	/* control options */
-	//B9600	9600 baud
-	//CS8	8 data bits
-	//CSTOPB	2 stop bits (1 otherwise)
-	//CLOCAL	Local line - do not change "owner" of port
-	//CREAD	Enable receiver
-	new_serial_conf.c_cflag = B9600 | CS8 | CLOCAL | CREAD ;
-
-	/* input options */
-	//IGNPAR	Ignore parity errors
-	new_serial_conf.c_iflag = IGNPAR;
-
-	/* output options */
-	new_serial_conf.c_oflag = 0;
-
-	/* line options */
-	new_serial_conf.c_lflag = 0; // doesnt work with ICANON
-
-	/* flush input */
+	new_serial_conf.c_cflag = B9600 | CS8 | CREAD | CLOCAL; // control options
+	new_serial_conf.c_iflag = IGNPAR; // input options
+	new_serial_conf.c_oflag = 0; // output options
+	new_serial_conf.c_lflag = 0; // line options
+	// flush input 
 	sleep(2);
 	tcflush(serialfd, TCIOFLUSH);
-	tcsetattr(serialfd, TCSANOW, &new_serial_conf);
-
-
-	if (!checkPressureGaugePort()) {
-		FILE_LOG(logWARNING) << "Fail" << std::endl;
-		close(serialfd);
-		throw std::runtime_error("Fail to communicate with pressure gauge");
+	if (tcsetattr(serialfd, TCSANOW, &new_serial_conf)!= 0) {
+		std::ostringstream oss;
+		oss << errno << " from tcsetattr: " << strerror(errno);
+		throw std::runtime_error(oss.str());
 	}
-    FILE_LOG(logINFO) << "Success" << std::endl;
+
+	ValidateTube();
 }
 
+void Interface::ValidateTube() {
+	FILE_LOG(logINFO) << "\tValidating Tube";
+	TubeSend("sr:12 ", true, true);
+	FILE_LOG(logINFO) << "\tSuccess";
+}
 
-void Interface::FilterWheelInterface() {
+std::string Interface::TubeSend(std::string command, bool readBack, bool validate) {
+	FILE_LOG(logINFO) << "\tSending [" << command << "]   (port:" << serial << ", read:" << readBack << ')';
+	
+	// send command
+	char buffer[COMMAND_BUFFER_LENGTH];
+	memset(buffer, 0, sizeof(buffer));
+	strcpy(buffer, command.c_str());	
 
-	//O_NOCTTY flag tells UNIX that this program doesn't want to be the "controlling terminal" for that port.
-	//O_NDELAY flag tells UNIX that this program doesn't care what state the DCD signal line is in - whether the other end of the port is up and running. If you do not specify this flag, your process will be put to sleep until the DCD signal line is the space voltage.
-	FILE_LOG(logINFO) << "Filter wheel, checking:" << serial;
-	serialfd= open (serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
-	if (serialfd == -1) {
-		FILE_LOG(logWARNING) << "Unable to open port " << serial << " for filter wheel, check permissions to use it\n";
-        FILE_LOG(logWARNING) << "Fail" << std::endl;
-		throw std::runtime_error("Fail to open port");
+	int ret = write (serialfd, buffer, sizeof(buffer));
+	if (ret == -1) {
+		std::ostringstream oss;
+		oss << "Could not write to tube";
+		if (validate) {
+			FILE_LOG(logWARNING) << "Fail";
+			close(serialfd);
+		}
+		throw std::runtime_error(oss.str());
 	}
-	struct termios new_serial_conf;
-	memset(&new_serial_conf, 0, sizeof(new_serial_conf));
-	/* control options */
-	//B9600	115200 baud
-	//CS8	8 data bits
-	//CSTOPB	2 stop bits (1 otherwise)
-	//CLOCAL	Local line - do not change "owner" of port
-	//CREAD	Enable receiver
-	new_serial_conf.c_cflag = B115200 | CS8 | CREAD | CLOCAL;
 
-	/* input options */
-	//IGNPAR	Ignore parity errors
-	new_serial_conf.c_iflag = IGNPAR;
+	// read back
+	if (!readBack) {
+		return command;
+	}
+	char result[COMMAND_BUFFER_LENGTH];
+	memset(result, 0, sizeof(result));	
+	usleep(TUBE_READ_WAIT_US);
+	ret = read (serialfd, result, sizeof(result));
+	if (ret == -1) {
+		std::ostringstream oss;
+		oss << "Could not read from tube";
+		if (validate) {
+			FILE_LOG(logWARNING) << "Fail";
+			close(serialfd);
+		}
+		throw std::runtime_error(oss.str());	
+	}
 
-	/* output options */
-	new_serial_conf.c_oflag = 0;
+	// throw error if read buffer empty
+	if (strlen(result) == 0) {
+		std::ostringstream oss;
+		oss << "Empty receive buffer from tube";
+		if (validate) {
+			FILE_LOG(logWARNING) << "Fail";
+			close(serialfd);
+		}		
+		throw std::runtime_error(oss.str());
+	}
 
-	/* line options */
-	new_serial_conf.c_lflag = 0;//ICANON;
-
-	/* flush input */
-	sleep(2);
-	tcflush(serialfd, TCIOFLUSH);
-	tcsetattr(serialfd, TCSANOW, &new_serial_conf);
-
-    FILE_LOG(logINFO) << "Success";
+	FILE_LOG(logINFO) << "\tReceived [" << command << "]: " << result;
+	return std::string(result);
 }
 
 
@@ -402,6 +368,91 @@ char* Interface::send_command_to_tube(char* c, int rb, int &value, int &value2) 
 #endif 
 	return p;
 }
+
+
+
+void Interface::PressureInterface() {
+	FILE_LOG(logINFO) << "Pressure, checking:" << serial;
+	serialfd = open (serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
+	if (serialfd == -1) {
+		FILE_LOG(logWARNING) << "Unable to open port " << serial << " for pressure, check permissions to use it\n";
+        FILE_LOG(logWARNING) << "Fail" << std::endl;
+		throw std::runtime_error("Fail to open port");
+	}
+	struct termios new_serial_conf;
+	memset(&new_serial_conf, 0, sizeof(new_serial_conf));
+	/* control options */
+	//B9600	9600 baud
+	//CS8	8 data bits
+	//CSTOPB	2 stop bits (1 otherwise)
+	//CLOCAL	Local line - do not change "owner" of port
+	//CREAD	Enable receiver
+	new_serial_conf.c_cflag = B9600 | CS8 | CLOCAL | CREAD ;
+
+	/* input options */
+	//IGNPAR	Ignore parity errors
+	new_serial_conf.c_iflag = IGNPAR;
+
+	/* output options */
+	new_serial_conf.c_oflag = 0;
+
+	/* line options */
+	new_serial_conf.c_lflag = 0; // doesnt work with ICANON
+
+	/* flush input */
+	sleep(2);
+	tcflush(serialfd, TCIOFLUSH);
+	tcsetattr(serialfd, TCSANOW, &new_serial_conf);
+
+
+	if (!checkPressureGaugePort()) {
+		FILE_LOG(logWARNING) << "Fail" << std::endl;
+		close(serialfd);
+		throw std::runtime_error("Fail to communicate with pressure gauge");
+	}
+    FILE_LOG(logINFO) << "Success" << std::endl;
+}
+
+
+void Interface::FilterWheelInterface() {
+
+	//O_NOCTTY flag tells UNIX that this program doesn't want to be the "controlling terminal" for that port.
+	//O_NDELAY flag tells UNIX that this program doesn't care what state the DCD signal line is in - whether the other end of the port is up and running. If you do not specify this flag, your process will be put to sleep until the DCD signal line is the space voltage.
+	FILE_LOG(logINFO) << "Filter wheel, checking:" << serial;
+	serialfd= open (serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
+	if (serialfd == -1) {
+		FILE_LOG(logWARNING) << "Unable to open port " << serial << " for filter wheel, check permissions to use it\n";
+        FILE_LOG(logWARNING) << "Fail" << std::endl;
+		throw std::runtime_error("Fail to open port");
+	}
+	struct termios new_serial_conf;
+	memset(&new_serial_conf, 0, sizeof(new_serial_conf));
+	/* control options */
+	//B9600	115200 baud
+	//CS8	8 data bits
+	//CSTOPB	2 stop bits (1 otherwise)
+	//CLOCAL	Local line - do not change "owner" of port
+	//CREAD	Enable receiver
+	new_serial_conf.c_cflag = B115200 | CS8 | CREAD | CLOCAL;
+
+	/* input options */
+	//IGNPAR	Ignore parity errors
+	new_serial_conf.c_iflag = IGNPAR;
+
+	/* output options */
+	new_serial_conf.c_oflag = 0;
+
+	/* line options */
+	new_serial_conf.c_lflag = 0;//ICANON;
+
+	/* flush input */
+	sleep(2);
+	tcflush(serialfd, TCIOFLUSH);
+	tcsetattr(serialfd, TCSANOW, &new_serial_conf);
+
+    FILE_LOG(logINFO) << "Success";
+}
+
 
 
 bool Interface::checkPressureGaugePort() {

@@ -80,16 +80,12 @@ void Controller::updateAxisEnabled() {
 }
 
 void Controller::debugPositions() {
-    std::string result;
-    while (result.empty()) {
-        try {
-            result = interface->ControllerSend("pos ", true);
-        } catch (...) {
-            result.assign("");
-        }
+    std::vector<double> pos;
+    while (pos.size() != 3) {
+        std::string result = interface->ControllerSend("pos ", true);
+        std::istringstream iss(result);
+        pos = std::vector<double>(std::istream_iterator<double>(iss), std::istream_iterator<double>());
     }
-    std::istringstream iss(result);
-    std::vector<double> pos = std::vector<double>(std::istream_iterator<double>(iss), std::istream_iterator<double>());
     for (unsigned int i = 0; i < pos.size(); ++i) {
         if (motor[i] != NULL) {
             motor[i]->setPosition(pos[i]);

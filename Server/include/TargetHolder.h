@@ -12,6 +12,7 @@ class TargetHolder {
   bool isFull();
   std::string getCurrentTargetName(int index);
   void addTarget(std::string name, std::string energy);
+  int getTargetIndex(std::string name);
   std::string getList();
   void print();
 

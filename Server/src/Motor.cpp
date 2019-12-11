@@ -72,7 +72,7 @@ void Motor::print() {
 bool Motor::canMotorMove(double position) {
   if (upperLimit == -1 && lowerLimit == -1)
 	  return true;
-  if (position <= upperLimit && position >= lowerLimit)
+  if (position >= lowerLimit && position <= upperLimit)
 	  return true;
   return false;
 }

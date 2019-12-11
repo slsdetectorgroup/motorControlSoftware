@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <cstring>
 
 #define MAX_FLUOR_VALUES        (8)
 
@@ -42,6 +43,16 @@ void TargetHolder::addTarget(std::string name, std::string energy) {
     FILE_LOG(logDEBUG) << "Target [" << index << "]: " << name;
     ++numTargets;
 }
+
+int TargetHolder::getTargetIndex(std::string name) {
+    for (int i = 0; i < numTargets; ++i) {
+        if (!strcasecmp(name.c_str(), targetName[i].c_str())) {
+            return i;
+        }
+    }
+    throw std::runtime_error("Unknown target " + name);
+}
+
 
 std::string TargetHolder::getList() {
     std::string result;
