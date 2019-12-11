@@ -49,7 +49,7 @@ std::string TargetHolder::getTargetEnergy(int index) {
 
 void TargetHolder::print() {
   for (unsigned int i = 0; i < numTargets; ++i) {
-    std::cout << "\t  Target [" << i << "] : " << targetName[i] << ", " <<  targetEnergy[i] << std::endl;
+    std::cout << "\t    Target [" << i << "] : " << targetName[i] << ", " <<  targetEnergy[i] << std::endl;
   }
 }
 

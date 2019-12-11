@@ -24,7 +24,9 @@ class Controller {
     void debugPositions();
     void moveRel(double position, int axis);
     void moveAbs(double position, int axis);
+    void resetPosition(double position, int axis);
     void calibrate(int axis);
+    void rangeMeasure(int axis);
 
     // advanced
     void sendCommand(std::string command);

@@ -1,5 +1,0 @@
-#Motor Name    Positions
-
-Detector_x     121.8165000000003
-Detector_y     88.71850000000012
-Detector_z     38.299999999999997

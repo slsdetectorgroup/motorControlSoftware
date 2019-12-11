@@ -13,45 +13,42 @@ class Motor;
 #include <vector>
 #include <string>
 #include "time.h"
-using namespace std;
 
 
 class Initialize {
  public:
   Initialize();
   ~Initialize();
-
-  /**executes commands from the command line through both server and local
-	 @param args array of command line arguments (not including the object name eg ./localClient
-	 @param mess message to be sent to client after executing the command
-	 @returns 0 for successful command execution,-1 for fail
-  */	
-  int executeCommand(std::vector<std::string> args, char mess[]);
+  std::string executeCommand(std::vector<std::string> args);
 
  private:
 
-  int ReadWarmupTimestamps(string const fName);
-  int WriteWarmupTimestamps(string const fName);
+  void RestrictedCommand(std::string name);
+  void UpdateSlitLimits(std::string name);
+  int GetMotorIndex(std::string name);
+  int GetControllerIndex(std::string name);
+  int ReadWarmupTimestamps(std::string const fName);
+  int WriteWarmupTimestamps(std::string const fName);
   void ReadConfigFile();
   void UpdateInterface(InterfaceIndex index);
-  void TubeMode(vector<string> args);
+  void TubeMode(std::vector<std::string> args);
   void PressureMode();
-  void FwheelMode(vector<string> args);
-  void ReferencePointMode(vector<string> args);
-  void FluorescenceMode(vector<string> args);
-  void ControllerMode(vector<string> args);
-  void MotorMode(vector<string> args);
+  void FwheelMode(std::vector<std::string> args);
+  void ReferencePointMode(std::vector<std::string> args);
+  void FluorescenceMode(std::vector<std::string> args);
+  void ControllerMode(std::vector<std::string> args);
+  void MotorMode(std::vector<std::string> args);
 
-  vector<bool> usbSerialPortsUsed;
+  std::vector<bool> usbSerialPortsUsed;
   Xray* xrayTube;
   int maxTubePower;
-  vector<string> warmupTimings;
+  std::vector<std::string> warmupTimings;
   Pgauge* pgauge;
-  vector<Fwheel*> fwheel;
-  vector<ReferencePoint*> referencePoint;
-  vector<Fluorescence*> fluorescence;
+  std::vector<Fwheel*> fwheel;
+  std::vector<ReferencePoint*> referencePoint;
+  std::vector<Fluorescence*> fluorescence;
   Slit* slit;
-  vector<Controller*> controller;
-  vector<Motor*> motor;
+  std::vector<Controller*> controller;
+  std::vector<Motor*> motor;
 };
 

@@ -57,34 +57,9 @@ std::string Fluorescence::getTargetEnergy(int listIndex, int targetIndex) {
 void Fluorescence::print() {
   std::cout << "\tFluorescence" << (circular ? "_wheel [" : " [") << index << ']' << std::endl;
   for (unsigned int i = 0; i < targetHolder.size(); ++i) {
-    std::cout << "\t Target Holder [" << i << ']' << std::endl;
+    std::cout << "\t  Target Holder [" << i << ']' << std::endl;
       targetHolder[i]->print();
   }
   std::cout << std::endl;
 }
-
-
-
-
-double Fluorescence::getLimit() {
-  return limit;
-}
-
-void Fluorescence::setPos(double newPosition) {
-  /// xxxx
-#ifdef VERY_VERBOSE
-  print();
-#endif
-}
-
-int Fluorescence::canMove(double newPosition) {
-  if(newPosition > limit)  
-	  return 1;
-  else if(newPosition < 0)
-	  return -1;
-  //return 0 if it can move
-  else
-	  return 0;
-}
-
 

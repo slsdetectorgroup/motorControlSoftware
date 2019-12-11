@@ -9,15 +9,22 @@ enum InterfaceIndex{CONTROLLER, TUBE, PRESSURE, FILTER_WHEEL};
 class Interface {
   public:
   Interface(std::string serial, InterfaceIndex index);
+  ~Interface();
+  std::string getSerial();
+
   void ControllerInterface();
+  void ControllerWaitForIdle();
+  /* Calls ControllerSendCommand
+  handles exceptions, if validate, then throws after fixed number of attempts */
+  std::string ControllerSend(std::string command, bool readBack = false, bool validate = false);
+
+
+
   void TubeInterface();
   void PressureInterface();
   void FilterWheelInterface();
 
-  std::string getSerial();
-  void controllerWaitForIdle(bool keepWaiting = false);
-  bool isControllerIdle(bool verbose = true);
-  std::string controllerSendCommand(std::string command, bool readBack = false, bool verbose = true);
+
   
 
  /**Sends the command to the XRayTube via interface
@@ -60,8 +67,10 @@ class Interface {
   */
    char* send_command_to_fw(char* c, int rb);
 
+private:
+  void ValidateController();
+  std::string ControllerSendCommand(std::string command, bool readBack = false, bool verbose = true);
 
-  private:
   std::string serial;
   int serialfd;
 };

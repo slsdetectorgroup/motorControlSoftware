@@ -22,6 +22,7 @@
 #include <iterator>
 using namespace std;
 
+
 #define CONFIG_POWER_NUM_ARGS       (2)
 #define CONFIG_FWHEEL_NUM_ARGS      (9)
 #define CONFIG_REF_POINT_NUM_ARGS	(5)
@@ -29,390 +30,315 @@ using namespace std;
 #define CONFIG_CONTROLLER_NUM_ARGS  (3)
 #define CONFIG_MOTOR_NUM_ARGS       (6)
 
+void Initialize::RestrictedCommand(std::string name) {
+	if ((!strcasecmp(name.c_str(), "slit_x1")) || (!strcasecmp(name.c_str(), "slit_x2")) || (!strcasecmp(name.c_str(), "fluorescence")) || (!strcasecmp(name.c_str(), "fluorescence_wheel"))) {
+		throw RuntimeError("Command not allowed for this motor " + name);
+	}
+}
 
+void Initialize::UpdateSlitLimits(string name) {
+	if ((!strcasecmp(name.c_str(), "slit_x1")) || (!strcasecmp(name.c_str(), "slit_x2"))) {
+		slit->updateLimits();
+	}
+}
 
+int Initialize::GetMotorIndex(string name) {
+	for (unsigned int i = 0; i < motor.size(); ++i) {
+		if (!strcasecmp(name.c_str(), motor[i]->getName().c_str())) {
+			return i;
+		}
+	}
+	throw RuntimeError("Unknown motor " + name);
+}
 
-int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
-	string temp;
-	int num=1;
-	double newPosition;
-	double newPosition2;
+int Initialize::GetControllerIndex(string name) {
+	for (unsigned int i = 0; i < controller.size(); ++i) {
+		if (!strcasecmp(name.c_str(), controller[i]->getName().c_str())) {
+			return i;
+		}
+	}
+	throw RuntimeError("Unknown controller " + name);
+}
+
+string Initialize::executeCommand(vector<string> args) {
+	std::string command = args[0];
+	int nArg = (int)args.size();
+	ostringstream oss;
 
 /*
-	//------------------------------------------------- laser box specific list  ---------------------------------------------------------------------
-	// --- if command is checkref---------------------------------------
-	if(args[0] == "checkref")
-	{
-		// if number of parameters are wrong
-		if(args.size()!=1)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 1\nHelp: checkref");
-			return -1;
+	for (int i = 0; i < nArg; ++i) {
+		FILE_LOG(logINFO) << i << ":" << args[i];
+	}
+*/
+
+	// ----- direct controller advanced --------------------------------------------------------
+
+	if (!strcasecmp(command.c_str(), "sendcontroller")) {
+		if (nArg < 3) {
+			throw RuntimeError("Requires 3 parameters: sendcontroller [corvus] [commands..]");
 		}
-
-		double x,y,z;
-		char *commands[15];
-		for(int j=0;j<15;j++)
-		    commands[j]=new char[1000];
-		strcpy(commands[0],"pos");
-		//gets the position of x
-		strcpy(commands[1],"detector_x");
-		//if it returns an error, return an error
-		if(executeCommand(2,commands,mess)==-1)
-			return -1;
-		else
-			x=atof(mess);
-		//gets the position of y
-		strcpy(commands[1],"detector_y");
-		//if it returns an error, return an error
-		if(executeCommand(2,commands,mess)==-1)
-			return -1;
-		else
-			y=atof(mess);
-		//gets the position of z
-		strcpy(commands[1],"detector_z");
-		//if it returns an error, return an error
-		if(executeCommand(2,commands,mess)==-1)
-			return -1;
-		else
-			z=atof(mess);
-
-
-		for(int i=0;i<referencePoints.size();i++)
-		{
-			bool bx=false,by=false,bz=false;
-			//if its -1, then you dont care bout that axis
-			if((atof(referencePoints[i][1].c_str())<0)||(x==atof(referencePoints[i][1].c_str())))
-					bx=true;
-			if((atof(referencePoints[i][2].c_str())<0)||(y==atof(referencePoints[i][2].c_str())))
-					by=true;
-			if((atof(referencePoints[i][3].c_str())<0)||(z==atof(referencePoints[i][3].c_str())))
-					bz=true;
-			if(bx&&by&&bz)
-			{
-				strcpy(mess,referencePoints[i][0].c_str());
-				return 0;
-			}
+		string name = args[1];
+		int icontroller = GetControllerIndex(name);
+		string advancedCommand;
+		for (int j = 2; j < nArg; ++j) {
+			advancedCommand += (args[j] + " ");
 		}
-		strcpy(mess,"None");
-		return 0;
-
+		controller[icontroller]->sendCommand(advancedCommand);
+		return "ok";
 	}
 
-	// --- if command is fvals---------------------------------------
-	else if(args[0] == "fvals")
-	{
-		//if it doesnt exist, the error message in the end
-		num=0;
-		// if number of parameters are wrong
-		if(args.size()!=2)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 2\nHelp: fvals [filter_wheel_name]");
-			return -1;
+	else if (!strcasecmp(command.c_str(), "readcontroller")) {
+		if (nArg < 3) {
+			throw RuntimeError("Requires 3 parameters: readcontroller [corvus] [commands..]");
 		}
-
-		strcpy(mess,"");
-		//find the fwheel and move it
-		for(int i=0;i<Fwheel::NumFwheels;i++)
-			if(!strcasecmp(args[1],fwheel[i]->getName()))
-			{
-				char cVal[20]="";
-				for(int j=0;j<Fwheel::NumSlotsInWheel;j++)
-				{
-					sprintf(cVal,"%f",fwheel[i]->ValueList[j]);
-					strcat(mess,cVal);
-					strcat(mess," ");
-				}
-				return 0;
-			}
-
+		string name = args[1];
+		int icontroller = GetControllerIndex(name);
+		string advancedCommand;
+		for (int j = 2; j < nArg; ++j) {
+			advancedCommand += (args[j] + " ");
+		}
+		return controller[icontroller]->sendCommandAndReadBack(advancedCommand);
 	}
 
 
-	// --- if command is refvals---------------------------------------
-	else if(args[0] == "refvals")
-	{
-		//if it doesnt exist, the error message in the end
-		num=4;
-		// if number of parameters are wrong
-		if(args.size()!=2)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 2\nHelp: refvals [reference_name]");
-			return -1;
-		}
-		strcpy(mess,"");
-		//find the refpoint
-		for(int i=0;i<referencePoints.size();i++)
-			if(!strcasecmp(args[1],referencePoints[i][0].c_str()))
-			{
-				for(int j=1;j<=3;j++)
-				{
-					strcat(mess,referencePoints[i][j].c_str());
-					strcat(mess," ");
-				}
-				return 0;
-			}
+	// ----- motor --------------------------------------------------------
 
+	else if (!strcasecmp(command.c_str(), "listmotors")) {
+		if (nArg != 1 ) {
+			throw RuntimeError("Requires 1 parameters: list");
+		}	
+		oss << motor.size() << ' ';
+		for(unsigned int i = 0; i < motor.size(); ++i) {
+			oss << motor[i]->getName() << ' ';
+		}
+		return oss.str();
 	}
 
-
-	// --- if command is fwlist---------------------------------------
-	else if(args[0] == "fwlist")
-	{
-		// if number of parameters are wrong
-		if(args.size()!=1)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 1\nHelp: fwlist");
-			return -1;
+	else if (!strcasecmp(command.c_str(), "getcontroller")) {
+		if (nArg != 2) {
+			throw RuntimeError("Requires 2 parameters: getcontroller [motor]");
 		}
-		//all the filter wheels
-		for(int i=0;i<fwheel.size();i++)
-		{
-			strcat(mess," ");
-			strcat(mess,fwheel[i]->getName());
-		}
-		return 0;
-
+		string name = args[1];
+		int imotor = GetMotorIndex(name);
+		return controller[motor[imotor]->getController()]->getName();
 	}
 
-
-	// --- if command is reflist---------------------------------------
-	else if(args[0] == "reflist")
-	{
-		// if number of parameters are wrong
-		if(args.size()!=1)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 1\nHelp: reflist");
-			return -1;
+	else if (!strcasecmp(command.c_str(), "getaxis")) {
+		if (nArg != 2) {
+			throw RuntimeError("Requires 2 parameters: getaxis [motor]");
 		}
-		//all the filter wheels
-		for(int i=0;i<referencePoints.size();i++)
-		{
-			strcat(mess," ");
-			strcat(mess,referencePoints[i][0].c_str());
-		}
-		return 0;
-
+		string name = args[1];
+		int imotor = GetMotorIndex(name);
+		oss << motor[imotor]->getAxis() + 1;
+		return oss.str();
 	}
 
-
-	// --- if command is ref---------------------------------------
-	else if(args[0] == "ref")
-	{
-		num=4;
-		// if number of parameters are wrong
-		if(args.size()!=2)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 2\nHelp: ref [reference_point_name]\n");
-			return -1;
+	else if (!strcasecmp(command.c_str(), "pos")) {
+		if (nArg != 2) {
+			throw RuntimeError("Requires 2 parameters: pos [motor]");
 		}
-		//find the ref point
-		for(int i=0;i<referencePoints.size();i++)
-		{
-			if(!strcasecmp(args[1],referencePoints[i][0].c_str()))
-			{
-				double x,y,z;
-				char *commands[15];
-				for(int j=0;j<15;j++)
-				    commands[j]=new char[1000];
-				//get the positions from the vector(from file)
-				x= atof(referencePoints[i][1].c_str());
-				y= atof(referencePoints[i][2].c_str());
-				z= atof(referencePoints[i][3].c_str());
-				//detx
-				if(x>=0)
-				{	//form command
-					strcpy(commands[0],"moveabs");
-					strcpy(commands[1],"detector_x");
-					sprintf(commands[2],"%f",x);
-					cout<<"mess:"<<mess<<"."<<endl;
-					//if it returns an error, return an error
-					if(executeCommand(3,commands,mess)==-1)
-						return -1;
-				}
-				//dety
-				if(y>=0)
-				{	//form command
-					strcpy(commands[0],"moveabs");
-					strcpy(commands[1],"detector_y");
-					sprintf(commands[2],"%f",y);
-					//if it returns an error, return an error
-					if(executeCommand(3,commands,mess)==-1)
-						return -1;
-				}
-				//detz
-				if(z>=0)
-				{	//form command
-					strcpy(commands[0],"moveabs");
-					strcpy(commands[1],"detector_z");
-					sprintf(commands[2],"%f",z);
-					//if it returns an error, return an error
-					if(executeCommand(3,commands,mess)==-1)
-						return -1;
-				}
-				sprintf(mess,"Moved to reference point %s. (%f,%f,%f)",args[1],x,y,z);
-				return 0;
-			}
-		}
+		string name = args[1];
+		int imotor = GetMotorIndex(name);
+		oss << fixed << motor[imotor]->getPosition();
+		return oss.str();
 	}
 
-
-	// --- if command is fsetval---------------------------------------
-	else if(args[0] == "fsetval")
-	{
-		num=0;
-		// if number of parameters are wrong
-		if(args.size()!=3)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 3\nHelp: fsetval [filter_wheel_name] [value]\n");
-			return -1;
+	else if (!strcasecmp(command.c_str(), "depos")) {
+		if (nArg != 2) {
+			throw RuntimeError("Requires 2 parameters: pos [controller]");
 		}
-
-		// if value is not a number
-		temp.assign(args[2]);
-		if(temp.find_first_not_of("0123456789.-")!=string::npos)
-		{
-			sprintf(mess, "ERROR: %s for absorption value should be a number",args[2]);
-			return -1;
+		string name = args[1];
+		int icontroller = GetControllerIndex(name);
+		controller[icontroller]->debugPositions();
+		UpdateSlitLimits(name);
+		return "ok";
+	}
+	
+	else if (!strcasecmp(command.c_str(), "getupper")) {
+		if (nArg != 2) {
+			throw RuntimeError("Requires 2 parameters: getUpper [motor]");
 		}
+		string name = args[1];
+		int imotor = GetMotorIndex(name);
+		oss << motor[imotor]->getUpperLimit();
+		return oss.str();
+	}
 
-		//find the fwheel and move it
-		for(int i=0;i<fwheel.size();i++)
-			if(!strcasecmp(args[1],fwheel[i]->getName()))
-			{
-				if(!fwheel[i]->setValue(atof(args[2])))
-				{
-					sprintf(mess,"ERROR: %s absorption value for %s is not defined. \nOptions(",args[2],args[1]);
-					char cVal[20]="";
-					for(int j=0;j<Fwheel::NumSlotsInWheel;j++)
-					{
-						sprintf(cVal,"%f",fwheel[i]->ValueList[j]);
-						strcat(mess,cVal);
-						strcat(mess,",");
-					}
-					strcat(mess,")");
-					return -1;
-				}
-				sprintf(mess,"%s set to %s value",args[1],args[2]);
-				return 0;
-			}
+	else if (!strcasecmp(command.c_str(), "setupper")) {
+		if (nArg != 3) {
+			throw RuntimeError("Requires 3 parameters: setUpper [motor] [limit]");
+		}
+		string name = args[1];
+		int imotor = GetMotorIndex(name);
+		RestrictedCommand(name);
+		double value = 0;
+		std::istringstream iss (args[2].c_str());
+		iss >> value;
+		if (iss.fail()) {
+			throw RuntimeError("Could not scan limit argument " + args[2]);
+		}		
+
+		motor[imotor]->setUpperLimit(value);
+		oss << value;
+		return oss.str();
+	}
+
+	else if (!strcasecmp(command.c_str(), "getLower")) {
+		if (nArg != 2) {
+			throw RuntimeError("Requires 2 parameters: getLower [motor]");
+		}
+		string name = args[1];
+		int imotor = GetMotorIndex(name);
+		oss << motor[imotor]->getLowerLimit();
+		return oss.str();
+	}
+
+	else if (!strcasecmp(command.c_str(), "setLower")) {
+		if (nArg != 3) {
+			throw RuntimeError("Requires 3 parameters: setLower [motor] [limit]");
+		}
+		string name = args[1];
+		int imotor = GetMotorIndex(name);
+		RestrictedCommand(name);
+		double value = 0;
+		std::istringstream iss (args[2].c_str());
+		iss >> value;
+		if (iss.fail()) {
+			throw RuntimeError("Could not scan limit argument " + args[2]);
+		}		
+
+		motor[imotor]->setLowerLimit(value);
+		oss << value;
+		return oss.str();
+	}
+
+	else if (!strcasecmp(command.c_str(), "cal")) {
+		if (nArg != 2) {
+			throw RuntimeError("Requires 2 parameters: cal [motor] ");
+		}
+		string name = args[1];
+		int imotor = GetMotorIndex(name);
+		controller[motor[imotor]->getController()]->calibrate(motor[imotor]->getAxis());
+		UpdateSlitLimits(name);
+		oss << fixed << motor[imotor]->getPosition();
+		return oss.str();
+	}
+
+	else if (!strcasecmp(command.c_str(), "rangemeasure")) {
+		if (nArg != 2) {
+			throw RuntimeError("Requires 2 parameters: rangemeasure [motor] ");
+		}
+		string name = args[1];
+		int imotor = GetMotorIndex(name);
+		RestrictedCommand(name);
+		controller[motor[imotor]->getController()]->rangeMeasure(motor[imotor]->getAxis());
+		oss << fixed << motor[imotor]->getPosition();
+		return oss.str();
+	}
+	
+	else if (!strcasecmp(command.c_str(), "moverel")) {
+		if (nArg != 3) {
+			throw RuntimeError("Requires 3 parameters: moverel [motor] [value]");
+		}
+		string name = args[1];
+		int imotor = GetMotorIndex(name);
+		double value = 0;
+		std::istringstream iss (args[2].c_str());
+		iss >> value;
+		if (iss.fail()) {
+			throw RuntimeError("Could not scan relative position argument " + args[2]);
+		}	
+
+		int icontroller = motor[imotor]->getController();
+		int iaxis = motor[imotor]->getAxis();
+		controller[icontroller]->moveRel(value, iaxis);
+		UpdateSlitLimits(name);
+		oss << fixed << motor[imotor]->getPosition();
+		return oss.str();
+	}
+
+	else if (!strcasecmp(command.c_str(), "moveabs")) {
+		if (nArg != 3) {
+			throw RuntimeError("Requires 3 parameters: moveabs [motor] [value]");
+		}
+		string name = args[1];
+		int imotor = GetMotorIndex(name);
+		double value = 0;
+		std::istringstream iss (args[2].c_str());
+		iss >> value;
+		if (iss.fail()) {
+			throw RuntimeError("Could not scan absolute position argument " + args[2]);
+		}	
+
+		int icontroller = motor[imotor]->getController();
+		int iaxis = motor[imotor]->getAxis();
+		controller[icontroller]->moveAbs(value, iaxis);
+		UpdateSlitLimits(name);
+		oss << fixed << motor[imotor]->getPosition();
+		return oss.str();
+	}
+
+	else if (!strcasecmp(command.c_str(), "setpos")) {
+		if (nArg != 3) {
+			throw RuntimeError("Requires 3 parameters: setpos [motor] [value]");
+		}
+		string name = args[1];
+		int imotor = GetMotorIndex(name);
+		RestrictedCommand(name);
+		double value = 0;
+		std::istringstream iss (args[2].c_str());
+		iss >> value;
+		if (iss.fail()) {
+			throw RuntimeError("Could not scan position argument " + args[2]);
+		}	
+
+		int icontroller = motor[imotor]->getController();
+		int iaxis = motor[imotor]->getAxis();
+		controller[icontroller]->resetPosition(value, iaxis);
+		oss << fixed << motor[imotor]->getPosition();
+		return oss.str();
 	}
 
 
 
-	// --- if command is fgetval---------------------------------------
-	else if(args[0] == "fgetval")
-	{
-		num=0;
-		// if number of parameters are wrong
-		if(args.size()!=2)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 2\nHelp: fgetval [filter_wheel_name]\n");
-			return -1;
-		}
+/*
 
-		//find fwheel and value
-		for(int i=0;i<fwheel.size();i++)
-			if(!strcasecmp(args[1],fwheel[i]->getName()))
-			{
-				sprintf(mess,"%f",fwheel[i]->getValue());
-				return 0;
-			}
-	}
-
-
-	int slitnum=0;
-	double midpos;
-
-
-	// --- if command is getpower----------------------------------------
-	if(args[0] == "getpower")
+	// --- if command is fllist---------------------------------------
+	else if(command == "fllist")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
 		}
-
-		sprintf(mess,"%d",maxTubePower);
-		return 0;
-	}
-
-	// --- if command is readwarmuptiming----------------only for gui----
-	else if(args[0] == "readwarmuptiming")
-	{
-		// if number of parameters are wrong
-		if(args.size()!=2)
+		if(!fluorListArray.size())
 		{
-			strcpy(mess, "ERROR: Required number of parameters: 2");
+			strcpy(mess, "ERROR: Fluorescence motor does not exist in the config file");
 			return -1;
 		}
 
-		// if voltage is not a number
-		temp.assign(args[1]);
-		if(temp.find_first_not_of("0123456789")!=string::npos)
+		strcpy(mess,"");
+		for(size_t i = 0; i < maxfluorvalues; ++i)
 		{
-			sprintf(mess, "ERROR: %s for voltage should be a positive number",args[1]);
-			return -1;
+			for(size_t j = 0; j < fluorList[i].size(); ++j)
+			{
+				strcat(mess,fluorList[i][j].c_str());
+				// space used in sstr.good()
+				if ((i == (maxfluorvalues - 1)) && (j == (fluorList[i].size() - 1)))
+					;
+				else
+					strcat(mess," ");
+			}
 		}
-		int voltage = atoi(args[1]);
-		if((voltage>60)||(voltage<2))
-		{
-			sprintf(mess, "ERROR: %skV should be greater than 1 and less than 60(kV)",args[1]);
-			return -1;
-		}
-
-
-		sprintf(mess,warmupTimings[voltage].c_str());
-		return 0;
-	}
-
-	// --- if command is writewarmuptiming----------------only for gui----
-	else if(args[0] == "writewarmuptiming")
-	{
-		string s_time;
-		time_t tdate;
-
-		// if number of parameters are wrong
-		if(args.size()!=2)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 2");
-			return -1;
-		}
-
-		// if voltage is not a number
-		temp.assign(args[1]);
-		if(temp.find_first_not_of("0123456789")!=string::npos)
-		{
-			sprintf(mess, "ERROR: %s for voltage should be a positive number",args[1]);
-			return -1;
-		}
-		int voltage = atoi(args[1]);
-		if((voltage>60)||(voltage<2))
-		{
-			sprintf(mess, "ERROR: %skV should be greater than 1 and less than 60(kV)",args[1]);
-			return -1;
-		}
-
-		//getting the current time stamp
-		time(&tdate);
-		s_time = ctime(&tdate);
-		s_time.erase(s_time.begin()+24,s_time.end());
-		for(int i=voltage;i>=0;i--)
-			warmupTimings[i].assign(s_time);
-		cout<<"\n timestamp for voltage "<<voltage<<" is :"<<warmupTimings[voltage]<<endl;
-
-
-		sprintf(mess,warmupTimings[voltage].c_str());
 		return 0;
 	}
 
 	// --- if command is numflist----------------
-	else if(args[0] == "numflist")
+	else if(command == "numflist")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -423,10 +349,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 	}
 
 	// --- if command is whichflist----------------
-	else if(args[0] == "whichflist")
+	else if(command == "whichflist")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -455,10 +381,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 	}
 
 	// --- if command is loadflist'----------------
-	else if(args[0] == "loadflist")
+	else if(command == "loadflist")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=2)
+		if(nArg!=2)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 2");
 			return -1;
@@ -484,16 +410,16 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is getfl'----------------
-	else if(args[0] == "getfl")
+	else if(command == "getfl")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
 		}
 
-		for(int i=0;i<Motor::NumMotors;i++)
+		for(int i=0;i<motor.size();i++)
 		{
 			if("Fluorescence" == motor[i]->getName())
 			{
@@ -534,18 +460,18 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is movefl'-------------------------------------------------------------------
-	else if(args[0] == "movefl")
+	else if(command == "movefl")
 	{
 		int found=0;
 		bool fluorNameFound = false;
 		// if number of parameters are wrong
-		if(args.size()!=2)
+		if(nArg!=2)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 2");
 			return -1;
 		}
 
-		for(int i=0;i<Motor::NumMotors;i++)
+		for(int i=0;i<motor.size();i++)
 		{
 			if("Fluorescence" == motor[i]->getName())
 			{
@@ -604,12 +530,408 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	//------------------------------------------------- laser box specific list  ---------------------------------------------------------------------
+	// --- if command is checkref---------------------------------------
+	if(command == "checkref")
+	{
+		// if number of parameters are wrong
+		if(nArg!=1)
+		{
+			strcpy(mess, "ERROR: Required number of parameters: 1\nHelp: checkref");
+			return -1;
+		}
+
+		double x,y,z;
+		char *commands[15];
+		for(int j=0;j<15;j++)
+		    commands[j]=new char[1000];
+		strcpy(commands[0],"pos");
+		//gets the position of x
+		strcpy(commands[1],"detector_x");
+		//if it returns an error, return an error
+		if(executeCommand(2,commands,mess)==-1)
+			return -1;
+		else
+			x=atof(mess);
+		//gets the position of y
+		strcpy(commands[1],"detector_y");
+		//if it returns an error, return an error
+		if(executeCommand(2,commands,mess)==-1)
+			return -1;
+		else
+			y=atof(mess);
+		//gets the position of z
+		strcpy(commands[1],"detector_z");
+		//if it returns an error, return an error
+		if(executeCommand(2,commands,mess)==-1)
+			return -1;
+		else
+			z=atof(mess);
+
+
+		for(int i=0;i<referencePoints.size();i++)
+		{
+			bool bx=false,by=false,bz=false;
+			//if its -1, then you dont care bout that axis
+			if((atof(referencePoints[i][1].c_str())<0)||(x==atof(referencePoints[i][1].c_str())))
+					bx=true;
+			if((atof(referencePoints[i][2].c_str())<0)||(y==atof(referencePoints[i][2].c_str())))
+					by=true;
+			if((atof(referencePoints[i][3].c_str())<0)||(z==atof(referencePoints[i][3].c_str())))
+					bz=true;
+			if(bx&&by&&bz)
+			{
+				strcpy(mess,referencePoints[i][0].c_str());
+				return 0;
+			}
+		}
+		strcpy(mess,"None");
+		return 0;
+
+	}
+
+	// --- if command is fvals---------------------------------------
+	else if(command == "fvals")
+	{
+		//if it doesnt exist, the error message in the end
+		num=0;
+		// if number of parameters are wrong
+		if(nArg!=2)
+		{
+			strcpy(mess, "ERROR: Required number of parameters: 2\nHelp: fvals [filter_wheel_name]");
+			return -1;
+		}
+
+		strcpy(mess,"");
+		//find the fwheel and move it
+		for(int i=0;i<Fwheel::NumFwheels;i++)
+			if(!strcasecmp(args[1],fwheel[i]->getName()))
+			{
+				char cVal[20]="";
+				for(int j=0;j<Fwheel::NumSlotsInWheel;j++)
+				{
+					sprintf(cVal,"%f",fwheel[i]->ValueList[j]);
+					strcat(mess,cVal);
+					strcat(mess," ");
+				}
+				return 0;
+			}
+
+	}
+
+
+	// --- if command is refvals---------------------------------------
+	else if(command == "refvals")
+	{
+		//if it doesnt exist, the error message in the end
+		num=4;
+		// if number of parameters are wrong
+		if(nArg!=2)
+		{
+			strcpy(mess, "ERROR: Required number of parameters: 2\nHelp: refvals [reference_name]");
+			return -1;
+		}
+		strcpy(mess,"");
+		//find the refpoint
+		for(int i=0;i<referencePoints.size();i++)
+			if(!strcasecmp(args[1],referencePoints[i][0].c_str()))
+			{
+				for(int j=1;j<=3;j++)
+				{
+					strcat(mess,referencePoints[i][j].c_str());
+					strcat(mess," ");
+				}
+				return 0;
+			}
+
+	}
+
+
+	// --- if command is fwlist---------------------------------------
+	else if(command == "fwlist")
+	{
+		// if number of parameters are wrong
+		if(nArg!=1)
+		{
+			strcpy(mess, "ERROR: Required number of parameters: 1\nHelp: fwlist");
+			return -1;
+		}
+		//all the filter wheels
+		for(int i=0;i<fwheel.size();i++)
+		{
+			strcat(mess," ");
+			strcat(mess,fwheel[i]->getName());
+		}
+		return 0;
+
+	}
+
+
+	// --- if command is reflist---------------------------------------
+	else if(command == "reflist")
+	{
+		// if number of parameters are wrong
+		if(nArg!=1)
+		{
+			strcpy(mess, "ERROR: Required number of parameters: 1\nHelp: reflist");
+			return -1;
+		}
+		//all the filter wheels
+		for(int i=0;i<referencePoints.size();i++)
+		{
+			strcat(mess," ");
+			strcat(mess,referencePoints[i][0].c_str());
+		}
+		return 0;
+
+	}
+
+
+	// --- if command is ref---------------------------------------
+	else if(command == "ref")
+	{
+		num=4;
+		// if number of parameters are wrong
+		if(nArg!=2)
+		{
+			strcpy(mess, "ERROR: Required number of parameters: 2\nHelp: ref [reference_point_name]\n");
+			return -1;
+		}
+		//find the ref point
+		for(int i=0;i<referencePoints.size();i++)
+		{
+			if(!strcasecmp(args[1],referencePoints[i][0].c_str()))
+			{
+				double x,y,z;
+				char *commands[15];
+				for(int j=0;j<15;j++)
+				    commands[j]=new char[1000];
+				//get the positions from the vector(from file)
+				x= atof(referencePoints[i][1].c_str());
+				y= atof(referencePoints[i][2].c_str());
+				z= atof(referencePoints[i][3].c_str());
+				//detx
+				if(x>=0)
+				{	//form command
+					strcpy(commands[0],"moveabs");
+					strcpy(commands[1],"detector_x");
+					sprintf(commands[2],"%f",x);
+					cout<<"mess:"<<mess<<"."<<endl;
+					//if it returns an error, return an error
+					if(executeCommand(3,commands,mess)==-1)
+						return -1;
+				}
+				//dety
+				if(y>=0)
+				{	//form command
+					strcpy(commands[0],"moveabs");
+					strcpy(commands[1],"detector_y");
+					sprintf(commands[2],"%f",y);
+					//if it returns an error, return an error
+					if(executeCommand(3,commands,mess)==-1)
+						return -1;
+				}
+				//detz
+				if(z>=0)
+				{	//form command
+					strcpy(commands[0],"moveabs");
+					strcpy(commands[1],"detector_z");
+					sprintf(commands[2],"%f",z);
+					//if it returns an error, return an error
+					if(executeCommand(3,commands,mess)==-1)
+						return -1;
+				}
+				sprintf(mess,"Moved to reference point %s. (%f,%f,%f)",args[1],x,y,z);
+				return 0;
+			}
+		}
+	}
+
+
+	// --- if command is fsetval---------------------------------------
+	else if(command == "fsetval")
+	{
+		num=0;
+		// if number of parameters are wrong
+		if(nArg!=3)
+		{
+			strcpy(mess, "ERROR: Required number of parameters: 3\nHelp: fsetval [filter_wheel_name] [value]\n");
+			return -1;
+		}
+
+		// if value is not a number
+		temp.assign(args[2]);
+		if(temp.find_first_not_of("0123456789.-")!=string::npos)
+		{
+			sprintf(mess, "ERROR: %s for absorption value should be a number",args[2]);
+			return -1;
+		}
+
+		//find the fwheel and move it
+		for(int i=0;i<fwheel.size();i++)
+			if(!strcasecmp(args[1],fwheel[i]->getName()))
+			{
+				if(!fwheel[i]->setValue(atof(args[2])))
+				{
+					sprintf(mess,"ERROR: %s absorption value for %s is not defined. \nOptions(",args[2],args[1]);
+					char cVal[20]="";
+					for(int j=0;j<Fwheel::NumSlotsInWheel;j++)
+					{
+						sprintf(cVal,"%f",fwheel[i]->ValueList[j]);
+						strcat(mess,cVal);
+						strcat(mess,",");
+					}
+					strcat(mess,")");
+					return -1;
+				}
+				sprintf(mess,"%s set to %s value",args[1],args[2]);
+				return 0;
+			}
+	}
+
+
+
+	// --- if command is fgetval---------------------------------------
+	else if(command == "fgetval")
+	{
+		num=0;
+		// if number of parameters are wrong
+		if(nArg!=2)
+		{
+			strcpy(mess, "ERROR: Required number of parameters: 2\nHelp: fgetval [filter_wheel_name]\n");
+			return -1;
+		}
+
+		//find fwheel and value
+		for(int i=0;i<fwheel.size();i++)
+			if(!strcasecmp(args[1],fwheel[i]->getName()))
+			{
+				sprintf(mess,"%f",fwheel[i]->getValue());
+				return 0;
+			}
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+	int slitnum=0;
+	double midpos;
+
+
+	// --- if command is getpower----------------------------------------
+	if(command == "getpower")
+	{
+		// if number of parameters are wrong
+		if(nArg!=1)
+		{
+			strcpy(mess, "ERROR: Required number of parameters: 1");
+			return -1;
+		}
+
+		sprintf(mess,"%d",maxTubePower);
+		return 0;
+	}
+
+	// --- if command is readwarmuptiming----------------only for gui----
+	else if(command == "readwarmuptiming")
+	{
+		// if number of parameters are wrong
+		if(nArg!=2)
+		{
+			strcpy(mess, "ERROR: Required number of parameters: 2");
+			return -1;
+		}
+
+		// if voltage is not a number
+		temp.assign(args[1]);
+		if(temp.find_first_not_of("0123456789")!=string::npos)
+		{
+			sprintf(mess, "ERROR: %s for voltage should be a positive number",args[1]);
+			return -1;
+		}
+		int voltage = atoi(args[1]);
+		if((voltage>60)||(voltage<2))
+		{
+			sprintf(mess, "ERROR: %skV should be greater than 1 and less than 60(kV)",args[1]);
+			return -1;
+		}
+
+
+		sprintf(mess,warmupTimings[voltage].c_str());
+		return 0;
+	}
+
+	// --- if command is writewarmuptiming----------------only for gui----
+	else if(command == "writewarmuptiming")
+	{
+		string s_time;
+		time_t tdate;
+
+		// if number of parameters are wrong
+		if(nArg!=2)
+		{
+			strcpy(mess, "ERROR: Required number of parameters: 2");
+			return -1;
+		}
+
+		// if voltage is not a number
+		temp.assign(args[1]);
+		if(temp.find_first_not_of("0123456789")!=string::npos)
+		{
+			sprintf(mess, "ERROR: %s for voltage should be a positive number",args[1]);
+			return -1;
+		}
+		int voltage = atoi(args[1]);
+		if((voltage>60)||(voltage<2))
+		{
+			sprintf(mess, "ERROR: %skV should be greater than 1 and less than 60(kV)",args[1]);
+			return -1;
+		}
+
+		//getting the current time stamp
+		time(&tdate);
+		s_time = ctime(&tdate);
+		s_time.erase(s_time.begin()+24,s_time.end());
+		for(int i=voltage;i>=0;i--)
+			warmupTimings[i].assign(s_time);
+		cout<<"\n timestamp for voltage "<<voltage<<" is :"<<warmupTimings[voltage]<<endl;
+
+
+		sprintf(mess,warmupTimings[voltage].c_str());
+		return 0;
+	}
+
+
 	// --- if command is createxrayport------------------creates xray port and class-------------------------
-	else if(args[0] == "createxrayport")
+	else if(command == "createxrayport")
 	{
 
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -670,11 +992,11 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
     // --- if command is pressure------------------creates pgauge if doesnt exist, gets pressure-------------------------
-    else if(args[0] == "pressure")
+    else if(command == "pressure")
     {
 
         // if number of parameters are wrong
-        if(args.size()!=1)
+        if(nArg!=1)
         {
             strcpy(mess, "ERROR: Required number of parameters: 1");
             return -1;
@@ -734,12 +1056,14 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
         return 0;
     }
 
+
+
 	// --- if command is geterr-----------------------------------------------
-	else if(args[0] == "geterr")
+	else if(command == "geterr")
 	{
 
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -756,11 +1080,11 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 	}
 
 	// --- if command is getemess-----------------------------------------------
-	else if(args[0] == "getemess")
+	else if(command == "getemess")
 	{
 
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -778,11 +1102,11 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is clear----------------------------------------------
-	else if(args[0] == "clear")
+	else if(command == "clear")
 	{
 
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -802,11 +1126,11 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is xrayStatus-------this si to check if xray class has been created or not------------
-	else if(args[0] == "xrayStatus")
+	else if(command == "xrayStatus")
 	{
 
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -820,10 +1144,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is isStandby--------------------------------------------------------------------------------
-	else if(args[0] == "isStandby")
+	else if(command == "isStandby")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -848,10 +1172,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is getHV-------------------------------------------------------------------------------
-	else if(args[0] == "getHV")
+	else if(command == "getHV")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -873,10 +1197,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is getV---------------------------------------------------------------------------------
-	else if(args[0] == "getV")
+	else if(command == "getV")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -895,10 +1219,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is getActualV---------------------------------------------------------------------------------
-	else if(args[0] == "getActualV")
+	else if(command == "getActualV")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -918,10 +1242,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is getC---------------------------------------------------------------------------------
-	else if(args[0] == "getC")
+	else if(command == "getC")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -940,10 +1264,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is getActualC---------------------------------------------------------------------------------
-	else if(args[0] == "getActualC")
+	else if(command == "getActualC")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -963,10 +1287,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is getVandC---------------------------------------------------------------------------------
-	else if(args[0] == "getVandC")
+	else if(command == "getVandC")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -987,10 +1311,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is getActualVandC---------------------------------------------------------------------------------
-	else if(args[0] == "getActualVandC")
+	else if(command == "getActualVandC")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -1011,10 +1335,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is getshutter1---------------------------------------------------------------------------------
-	else if(args[0] == "getshutter1")
+	else if(command == "getshutter1")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -1032,10 +1356,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is getshutter2---------------------------------------------------------------------------------
-	else if(args[0] == "getshutter2")
+	else if(command == "getshutter2")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -1054,10 +1378,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is getshutter3---------------------------------------------------------------------------------
-	else if(args[0] == "getshutter3")
+	else if(command == "getshutter3")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -1075,10 +1399,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is getshutter4---------------------------------------------------------------------------------
-	else if(args[0] == "getshutter4")
+	else if(command == "getshutter4")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -1097,10 +1421,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is getshutters---------------------------------------------------------------------------------
-	else if(args[0] == "getshutters")
+	else if(command == "getshutters")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -1124,10 +1448,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is HV---------------------------------------------------------------------------------
-	else if(args[0] == "HV")
+	else if(command == "HV")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=2)
+		if(nArg!=2)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 2");
 			return -1;
@@ -1158,10 +1482,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is shutter---------------------------------------------------------------------------------
-	else if(args[0] == "shutter")
+	else if(command == "shutter")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=3)
+		if(nArg!=3)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 3");
 			return -1;
@@ -1198,10 +1522,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is setv---------------------------------------------------------------------------------
-	else if(args[0] == "setv")
+	else if(command == "setv")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=2)
+		if(nArg!=2)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 2");
 			return -1;
@@ -1239,10 +1563,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is setc---------------------------------------------------------------------------------
-	else if(args[0] == "setc")
+	else if(command == "setc")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=2)
+		if(nArg!=2)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 2");
 			return -1;
@@ -1283,10 +1607,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is setvc---------------------------------------------------------------------------------
-	else if(args[0] == "setvc")
+	else if(command == "setvc")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=3)
+		if(nArg!=3)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 3");
 			return -1;
@@ -1349,10 +1673,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is warmup---------------------------------------------------------------------------------
-	else if(args[0] == "warmup")
+	else if(command == "warmup")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=2)
+		if(nArg!=2)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 2");
 			return -1;
@@ -1399,10 +1723,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is getwtime---------------------------------------------------------------------------------
-	else if(args[0] == "getwtime")
+	else if(command == "getwtime")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -1421,10 +1745,10 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is issafe---------------------------------------------------------------------------------
-	else if(args[0] == "issafe")
+	else if(command == "issafe")
 	{
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -1447,179 +1771,50 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 
-	// --- if command is setPos---------------------------------------
-	else if(args[0] == "setPos")
-	{
-		char positions[3][200],command[200];
-		for(int i=0;i<3;i++) strcpy(positions[i],"0");
-
-		// if number of parameters are wrong
-		if(args.size()!=3)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 3");
-			return -1;
-		}
-
-#ifndef LASERBOX
-		//should not be able to set positions for slits or for fluorescence
-		if((strcasestr(args[1],"slit")!=NULL) ||(strcasestr(args[1],"fluorescence")))
-		{
-			sprintf(mess, "ERROR: Position for %s cannot be set to a different value",args[1]);
-			return -1;
-		}
-#endif
-		// if position is not a number
-		temp.assign(args[2]);
-		if(temp.find_first_not_of("0123456789.-")!=string::npos)
-		{
-			sprintf(mess, "ERROR: %s for position should be a number",args[2]);
-			return -1;
-		}
-
-		for(int i=0;i<Motor::NumMotors;i++)
-			if(!strcasecmp(args[1],motor[i]->getName()))
-			{
-				sprintf(positions[motor[i]->getAxis()-1],"%f",0 - atof(args[2]));
-
-				for(int j=0;j<Motor::NumMotors;j++)
-					if((!strcmp(motor[i]->getController(),motor[j]->getController())) && (motor[i]->getAxis()!=motor[j]->getAxis()))
-						sprintf(positions[motor[j]->getAxis()-1],"%f",0 - motor[j]->getPosition());
-
-				sprintf(command,"%s %s %s setpos ",positions[0],positions[1],positions[2]);
-				motor[i]->getInterface()->send_command(command,0);
-				motor[i]->setPosition(atof(args[2]));
-				sprintf(mess,"The cuurent position for motor %s has been set to %s",args[1],args[2]);
-				return 0;
-			}
-	}
-
-
-
-	// --- if command is setLower---------------------------------------
-	else if(args[0] == "setLower")
-	{
-		// if number of parameters are wrong
-		if(args.size()!=3)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 3");
-			return -1;
-		}
-
-		// if limit is not a number
-		temp.assign(args[2]);
-		if(temp.find_first_not_of("0123456789.-")!=string::npos)
-		{
-			sprintf(mess, "ERROR: %s for lower limit should be a number",args[2]);
-			return -1;
-		}
-
-		for(int i=0;i<Motor::NumMotors;i++)
-			if(!strcasecmp(args[1],motor[i]->getName()))
-			{
-				if(atof(args[2])>motor[i]->getUpperLimit())
-				{
-					sprintf(mess, "ERROR: %s for lower limit should not be greater than the motor's upper limit of %f",args[2],motor[i]->getUpperLimit());
-					return -1;
-				}
-				motor[i]->setLowerLimit(atof(args[2]));
-				sprintf(mess,"The Lower Limit for motor %s has been changed to %s",args[1],args[2]);
-				return 0;
-			}
-	}
 
 
 
 
-	// --- if command is setUpper---------------------------------------
-	else if(args[0] == "setUpper")
-	{
-		// if number of parameters are wrong
-		if(args.size()!=3)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 3");
-			return -1;
-		}
-
-		// if limit is not a number
-		temp.assign(args[2]);
-		if(temp.find_first_not_of("0123456789.-")!=string::npos)
-		{
-			sprintf(mess, "ERROR: %s for upper limit should be a number",args[2]);
-			return -1;
-		}
-
-		for(int i=0;i<Motor::NumMotors;i++)
-			if(!strcasecmp(args[1],motor[i]->getName()))
-			{
-				if(atof(args[2])<motor[i]->getLowerLimit())
-				{
-					sprintf(mess, "ERROR: %s for upper limit should not be less than the motor's lower limit of %f",args[2],motor[i]->getLowerLimit());
-					return -1;
-				}
-				motor[i]->setUpperLimit(atof(args[2]));
-				sprintf(mess,"The Upper Limit for motor %s has been changed to %s",args[1],args[2]);
-				return 0;
-			}
-	}
 
 
 
 
-	// --- if command is getSpeed---------------------------------------
-	else if(args[0] == "getSpeed")
-	{
-		// if number of parameters are wrong
-		if(args.size()!=2)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 2");
-			return -1;
-		}
-
-		for(int i=0;i<Motor::NumMotors;i++)
-			if(!strcasecmp(args[1],motor[i]->getName()))
-			{
-				sprintf(mess,"The Speed for motor %s is %f",args[1],motor[i]->getSpeed());
-				return 0;
-			}
-	}
 
 
 
 
-	// --- if command is setSpeed---------------------------------------
-	else if(args[0] == "setSpeed")
-	{
-		// if number of parameters are wrong
-		if(args.size()!=3)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 3");
-			return -1;
-		}
 
-		// if speed is not a number
-		temp.assign(args[2]);
-		if(temp.find_first_not_of("0123456789.")!=string::npos)
-		{
-			sprintf(mess, "ERROR: %s for speed should be a positive number",args[2]);
-			return -1;
-		}
 
-		for(int i=0;i<Motor::NumMotors;i++)
-			if(!strcasecmp(args[1],motor[i]->getName()))
-			{
-				motor[i]->setSpeed(atof(args[2]));
-				sprintf(mess,"The Speed for motor %s has been changed to %s",args[1],args[2]);
-				return 0;
-			}
-	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 	// --- if command is getX1Limit---------------------------------------
-	else if(args[0] == "getX1Limit")
+	else if(command == "getX1Limit")
 	{
 
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -1640,11 +1835,11 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is getX2Limit---------------------------------------
-	else if(args[0] == "getX2Limit")
+	else if(command == "getX2Limit")
 	{
 
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -1663,169 +1858,8 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 	}
 
 
-
-	// --- if command is getUpperLimit---------------------------------------
-	else if(args[0] == "getUpperLimit")
-	{
-
-		// if number of parameters are wrong
-		if(args.size()!=2)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 2");
-			return -1;
-		}
-		for(int i=0;i<Motor::NumMotors;i++)
-			if(!strcasecmp(args[1],motor[i]->getName()))
-			{
-				sprintf(mess,"%f",motor[i]->getUpperLimit());
-				return 0;
-			}
-	}
-
-
-
-	// --- if command is getLowerLimit---------------------------------------
-	else if(args[0] == "getLowerLimit")
-	{
-
-		// if number of parameters are wrong
-		if(args.size()!=2)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 2");
-			return -1;
-		}
-		for(int i=0;i<Motor::NumMotors;i++)
-			if(!strcasecmp(args[1],motor[i]->getName()))
-			{
-				sprintf(mess,"%f",motor[i]->getLowerLimit());
-				return 0;
-			}
-	}
-
-
-	// --- if command is cal---------------------------------------
-	else if(args[0] == "cal")
-	{
-		// if number of parameters are wrong
-		if(args.size()!=2)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 2");
-			return -1;
-		}
-		for(int i=0;i<Motor::NumMotors;i++)
-			if(!strcasecmp(args[1],motor[i]->getName()))
-			{
-				motor[i]->calibrate();
-				motor[i]->setPosition(0);
-				sprintf(mess,"Motor %s has been calibrated and moved to position %f",args[1],motor[i]->getPosition());
-				return 0;
-			}
-	}
-
-
-
-	// --- if command is list---------------------------------------
-	else if(args[0] == "list")
-	{
-		char *p= new char[1];
-		// if number of parameters are wrong
-		if(args.size()!=1)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 1");
-			return -1;
-		}
-		sprintf(mess,"%d ",Motor::NumMotors);
-
-		// find motor name (case insensitive) and execute cmd
-		for(int i=0;i<Motor::NumMotors;i++)
-		{
-			p = motor[i]->getController();
-			//to get the last digit of the controller name
-			strcat(mess,p+strlen(motor[i]->getController())-1);
-			strcat(mess," ");
-			strcat(mess,motor[i]->getName());
-			strcat(mess," ");
-		}
-		return 0;
-
-	}
-
-	// --- if command is fllist---------------------------------------
-	else if(args[0] == "fllist")
-	{
-		// if number of parameters are wrong
-		if(args.size()!=1)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 1");
-			return -1;
-		}
-		if(!fluorListArray.size())
-		{
-			strcpy(mess, "ERROR: Fluorescence motor does not exist in the config file");
-			return -1;
-		}
-
-		strcpy(mess,"");
-		for(size_t i = 0; i < maxfluorvalues; ++i)
-		{
-			for(size_t j = 0; j < fluorList[i].size(); ++j)
-			{
-				strcat(mess,fluorList[i][j].c_str());
-				// space used in sstr.good()
-				if ((i == (maxfluorvalues - 1)) && (j == (fluorList[i].size() - 1)))
-					;
-				else
-					strcat(mess," ");
-			}
-		}
-		return 0;
-	}
-
-
-	// --- if command is pos---------------------------------------
-	else if(args[0] == "pos")
-	{
-		// if number of parameters are wrong
-		if(args.size()!=2)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 2");
-			return -1;
-		}
-		// find motor name (case insensitive) and execute cmd
-		for(int i=0;i<Motor::NumMotors;i++)
-			if(args[1] == motor[i]->getName())
-			{
-				sprintf(mess,"%f",motor[i]->getPosition());
-				return 0;
-			}
-
-	}
-
-
-
-
-	// --- if command is depos for debugging---------------------------
-	else if(args[0] == "depos")
-	{
-		// if number of parameters are wrong
-		if(args.size()!=2)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 2");
-			return -1;
-		}
-		// find motor name (case insensitive) and execute cmd
-		for(int i=0;i<Motor::NumMotors;i++)
-			if(args[1] ==motor[i]->getName())
-			{
-				sprintf(mess,"%f",motor[i]->debugPosition());
-				return 0;
-			}
-	}
-
-
-
 	// --- if command is getcenter---------------------------------------
-	else if(args[0] == "getcenter")
+	else if(command == "getcenter")
 	{
 		//if slits are not included in config file
 		if(slit == NULL)
@@ -1834,7 +1868,7 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 			return -1;
 		}
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -1847,7 +1881,7 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is getslitwidth---------------------------------------
-	else if(args[0] == "getslitwidth")
+	else if(command == "getslitwidth")
 	{
 		//if slits are not included in config file
 		if(slit == NULL)
@@ -1856,7 +1890,7 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 			return -1;
 		}
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -1872,7 +1906,7 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is widthrel---------------------------------------
-	else if(args[0] == "widthrel")
+	else if(command == "widthrel")
 	{
 		//if slits are not included in config file
 		if(slit == NULL)
@@ -1883,7 +1917,7 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 		double halfWidth;
 		// if number of parameters are wrong
-		if(args.size()!=2)
+		if(nArg!=2)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 2");
 			return -1;
@@ -1925,7 +1959,7 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is widthabs---------------------------------------
-	else if(args[0] == "widthabs")
+	else if(command == "widthabs")
 	{
 		//if slits are not included in config file
 		if(slit == NULL)
@@ -1935,7 +1969,7 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 		}
 
 		// if number of parameters are wrong
-		if(args.size()!=2)
+		if(nArg!=2)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 2");
 			return -1;
@@ -1979,7 +2013,7 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is centerrel---------------------------------------
-	else if(args[0] == "centerrel")
+	else if(command == "centerrel")
 	{
 		//if slits are not included in config file
 		if(slit == NULL)
@@ -1989,7 +2023,7 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 		}
 
 		// if number of parameters are wrong
-		if(args.size()!=2)
+		if(nArg!=2)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 2");
 			return -1;
@@ -2027,7 +2061,7 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is centerabs---------------------------------------
-	else if(args[0] == "centerabs")
+	else if(command == "centerabs")
 	{
 		//if slits are not included in config file
 		if(slit == NULL)
@@ -2037,7 +2071,7 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 		}
 
 		// if number of parameters are wrong
-		if(args.size()!=2)
+		if(nArg!=2)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 2");
 			return -1;
@@ -2082,7 +2116,7 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is 'exactcenter' to move one of the slits right next to the other----------------
-	else if(args[0] == "exactcenter")
+	else if(command == "exactcenter")
 	{
 		//if slits are not included in config file
 		if(slit == NULL)
@@ -2092,7 +2126,7 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 		}
 
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -2112,7 +2146,7 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 	// --- if command is 'x1zerowidth' to move slit_x2 towards slit_x1 with width 0----------------
-	else if(args[0] == "x1zerowidth")
+	else if(command == "x1zerowidth")
 	{
 		//if slits are not included in config file
 		if(slit == NULL)
@@ -2122,7 +2156,7 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 		}
 
 		// if number of parameters are wrong
-		if(args.size()!=1)
+		if(nArg!=1)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 1");
 			return -1;
@@ -2142,7 +2176,7 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 	// --- if command is 'zerowidth' to move both slits simultaneously
      //right next to each other to an absolute position of the slit specified--------------------------
-	else if(args[0] == "zerowidth")
+	else if(command == "zerowidth")
 	{
 		//if slits are not included in config file
 		if(slit == NULL)
@@ -2152,7 +2186,7 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 		}
 
 		// if number of parameters are wrong
-		if(args.size()!=2)
+		if(nArg!=2)
 		{
 			strcpy(mess, "ERROR: Required number of parameters: 2");
 			return -1;
@@ -2189,629 +2223,24 @@ int Initialize::executeCommand(std::vector<std::string> args, char mess[]) {
 
 
 
-	// --- if command is moverel------------------------------------
-	else if(args[0] == "moverel")
-	{
 
-		// if number of parameters are wrong
-		if(args.size()!=3)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 3");
-			return -1;
-		}
 
-		// if position is not a number
-		temp.assign(args[2]);
-		if(temp.find_first_not_of("0123456789.-")!=string::npos)
-		{
-			sprintf(mess, "ERROR: %s for position is not a number",args[2]);
-			return -1;
-		}
 
-
-		// find motor name  and execute cmd
-		for(int i=0;i<Motor::NumMotors;i++)
-			if(args[1] == motor[i]->getName())
-			{
-				newPosition=motor[i]->getPosition()+atof(args[2]);
-
-				// if its a slit motor, checks if the slit motor can move to the new position without crashin into other one
-				if(args[1] == "slit_x1")
-				{
-					slitnum=1;
-					int move = slit->canX1Move(newPosition);
-					if(move==1)
-					{
-						sprintf(mess, "ERROR: If slit_x1 moves to that position, it will crash into slit_x2");
-						return -1;
-					}
-					else if(move==-1)
-					{
-						sprintf(mess, "ERROR: The slit_x1 cannot move to a negative position");
-						return -1;
-					}
-				}
-				else if(args[1] == "slit_x2")
-				{
-					slitnum=2;
-					int move = slit->canX2Move(newPosition);
-					if(move==1)
-					{
-						sprintf(mess, "ERROR: If slit_x2 moves to that position, it will crash into slit_x1");
-						return -1;
-					}
-					else if(move==-1)
-					{
-						sprintf(mess, "ERROR: The slit_x2 cannot move to a negative position");
-						return -1;
-					}
-				}
-
-				if(!motor[i]->canMotorMove(newPosition))
-				{
-					sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[1],motor[i]->getLowerLimit(),motor[i]->getUpperLimit());
-					return -1;
-				}
-
-				motor[i]->moveRel(atof(args[2]),0,0);
-
-				//set position member of motor to the updated position
-				motor[i]->setPosition(newPosition);
-				//set slit positions and limits in slit class
-				if(slitnum==1)
-					slit->setX1pos(newPosition);
-				else if(slitnum==2)
-					slit->setX2pos(newPosition);
-				sprintf(mess,"Moved %s by %s position",args[1],args[2]);
-				return 0;
-			}
-	}
-
-
-
-
-
-
-	// --- if command is simmoverel for simultaneous movt-----------------------------
-	else if(args[0] == "simmoverel")
-	{
-		num=2;
-		// if number of parameters are wrong
-		if(args.size()!=5)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 5");
-			return -1;
-		}
-
-		// if position is not a number
-		temp.assign(args[2]);
-		if(temp.find_first_not_of("0123456789.-")!=string::npos)
-		{
-			sprintf(mess, "ERROR: %s for position is not a number",args[2]);
-			return -1;
-		}
-		temp.assign(args[4]);
-		if(temp.find_first_not_of("0123456789.-")!=string::npos)
-		{
-			sprintf(mess, "ERROR: %s for position is not a number",args[4]);
-			return -1;
-		}
-
-		// find motor name (case insensitive) and execute cmd
-		for(int i=0;i<Motor::NumMotors;i++)
-			if(args[1] == motor[i]->getName())
-				// find second motor to move simultaneously
-				for(int j=0;j<Motor::NumMotors;j++)
-					if(args[3]  == motor[j]->getName())
-					{
-						// if both motors are the same, print error and exit
-						if(args[1] == args[3])
-						{
-							strcpy(mess,"ERROR: Both the motors to be moved simultaneously are the same");
-							return -1;
-						}
-
-						//if they have the same controller, only then move
-						if(motor[i]->getController() == motor[j]->getController())
-						{
-							newPosition=motor[i]->getPosition()+atof(args[2]);
-							newPosition2=motor[j]->getPosition()+atof(args[4]);
-
-
-							// if motor to be moved is a slit
-							if(strcasestr(args[1],"slit")!=NULL)
-							{
-								//checks if the second motor is not a slit
-								if(strcasestr(args[3],"slit")==NULL)
-								{
-									sprintf(mess, "ERROR: Either both the motors to be moved simulataneously should be slits or neither");
-									return -1;
-								}
-								//checking if both slits can be moved to new position without crashing
-								else
-								{
-									//depending on the first motor being slit_X1/slit_x2, the parameters for canbothslitsmove(x1,x2) change
-									int move=0;
-									if(args[1] == "slit_x1")
-									{
-										slitnum=1;
-										move=slit->canBothSlitsMove(newPosition,newPosition2);
-									}
-									else
-									{
-										slitnum=2;
-										move=slit->canBothSlitsMove(newPosition2,newPosition);
-									}
-
-									if(move==1)
-									{
-										sprintf(mess, "ERROR: Either one of the positions given will crash slits into each other");
-										return -1;
-									}
-									else if(move==-1)
-									{
-										sprintf(mess, "ERROR: Either of the slits cannot be moved to negative positions");
-										return -1;
-									}
-
-								}
-							}
-
-							//checks if the motor is going to move within its limits
-							if(!motor[i]->canMotorMove(newPosition))
-							{
-								sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[1],motor[i]->getLowerLimit(),motor[i]->getUpperLimit());
-								return -1;
-							}
-							if(!motor[j]->canMotorMove(newPosition2))
-							{
-								sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[3],motor[j]->getLowerLimit(),motor[j]->getUpperLimit());
-								return -1;
-							}
-
-							if(  (!strcasecmp(args[1],"Huber")) ||(!strcasecmp(args[3],"Huber")) )
-							{
-								motor[i]->moveRel(atof(args[2]),0,0);
-								motor[j]->moveRel(atof(args[4]),0,0);
-							}
-							else
-
-								motor[i]->moveRel(atof(args[2]),motor[j]->getAxis(),atof(args[4]));
-							//set position member of motors to the updated position
-							motor[i]->setPosition(newPosition);
-							motor[j]->setPosition(newPosition2);
-
-							//setting both the positions and limits of the slit object if its the slit motors which moved
-							if (slitnum==1)
-								slit->setBothpos(newPosition,newPosition2);
-							else if (slitnum==2)
-								slit->setBothpos(newPosition2,newPosition);
-
-							sprintf(mess,"Moved simultaneously %s by %s position and %s by %s position",args[1],args[2],args[3],args[4]);
-							return 0;
-						}
-						//if they dont have the same controller, print error
-						else
-						{
-							strcpy(mess,"ERROR: Cannot move motors of different controllers simultaneously");
-							return -1;
-						}
-					}
-	}
-
-
-
-
-
-	//--- if command is moveabs--------------------------------------
-	else if(args[0] == "moveabs")
-	{
-		// if number of parameters are wrong
-		if(args.size()!=3)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 3");
-			return -1;
-		}
-
-		// if position is not a number
-		temp.assign(args[2]);
-		if(temp.find_first_not_of("0123456789.-")!=string::npos)
-		{
-			sprintf(mess, "ERROR: %s for position should be a number for %s",args[2], args[1]);
-			return -1;
-		}
-
-		// find motor name  and execute cmd
-		for(int i=0;i<Motor::NumMotors;i++)
-			if(args[1] == motor[i]->getName())
-			{
-
-				// if its a slit motor, checks if the slit motor can move to the new position without crashin into other one
-				if((args[1] == "slit_x1")
-				{
-					slitnum=1;
-					if(slit->canX1Move(atof(args[2]))>0)
-					{
-						sprintf(mess, "ERROR: If slit_x1 moves to that position, it will crash into slit_x2");
-						return -1;
-					}
-					else if(slit->canX1Move(atof(args[2]))<0)
-					{
-						sprintf(mess, "ERROR: Slit_x1 cannot move to a negative position");
-						return -1;
-					}
-				}
-				else if(args[1] == "slit_x2")
-				{
-					slitnum=2;
-					if(slit->canX2Move(atof(args[2]))>0)
-					{
-						sprintf(mess, "ERROR: If slit_x2 moves to that position, it will crash into slit_x1");
-						return -1;
-					}
-					else if(slit->canX1Move(atof(args[2]))<0)
-					{
-						sprintf(mess, "ERROR: Slit_x2 cannot move to a negative position");
-						return -1;
-					}
-				}
-
-
-				if(!motor[i]->canMotorMove(atof(args[2])))
-				{
-					sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[1],motor[i]->getLowerLimit(),motor[i]->getUpperLimit());
-					return -1;
-				}
-
-				motor[i]->moveAbs(atof(args[2]),0,0,0);
-				//set position member of motor to the updated position
-				motor[i]->setPosition(atof(args[2]));
-
-				//set slit positions and limits in slit class
-				if(slitnum==1)
-					slit->setX1pos(atof(args[2]));
-				else if(slitnum==2)
-					slit->setX2pos(atof(args[2]));
-
-
-				sprintf(mess,"Moved %s to %s position",args[1],args[2]);
-				return 0;
-			}
-	}
-
-
-
-
-
-	// --- if command is sim2moveabs for simultaneous movt of 2 motors-----------------------------
-	else if(args[0] == "sim2moveabs")
-	{
-		num=2;
-		// if number of parameters are wrong
-		if(args.size()!=5)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 5");
-			return -1;
-		}
-
-		// if position is a number
-		temp.assign(args[2]);
-		if(temp.find_first_not_of("0123456789.-")!=string::npos)
-		{
-			sprintf(mess, "ERROR: %s for position should be a number for %s",args[2], args[1]);
-			return -1;
-		}
-		temp.assign(args[4]);
-		if(temp.find_first_not_of("0123456789.-")!=string::npos)
-		{
-			sprintf(mess, "ERROR: %s for position should be a  number for %s",args[4], args[3]);
-			return -1;
-		}
-
-		// find motor name (case insensitive) and execute cmd
-		for(int i=0;i<Motor::NumMotors;i++)
-			if(args[1] == motor[i]->getName()
-				// find second motor to move simultaneously
-				for(int j=0;j<Motor::NumMotors;j++)
-					if(args[3] == motor[j]->getName())
-					{
-						// if both motors are the same, print error and exit
-						if((args[1] == args[3])
-						{
-							strcpy(mess,"ERROR: Both the motors to be moved simultaneously are the same");
-							return -1;
-						}
-						//if they have the same controller, move
-						if(motor[i]->getController() == motor[j]->getController())
-						{
-
-
-							// if motors to be moved are slits
-							if(strcasestr(args[1],"slit")!=NULL)
-							{
-								//checks if the second motor is not a slit
-								if(strcasestr(args[3],"slit")==NULL)
-								{
-									sprintf(mess, "ERROR: Either both the motors to be moved simulataneously should be slits or neither");
-									return -1;
-								}
-								//checking if both slits can be moved to new position without crashing
-								else
-								{
-									//depending on the first motor being slit_X1/slit_x2, the parameters for canbothslitsmove(x1,x2) change
-									int move=0;
-									if(args[1] == "slit_x1")
-									{
-										slitnum=1;
-										move=slit->canBothSlitsMove(atof(args[2]),atof(args[4]));
-									}
-									else
-									{
-										slitnum=2;
-										move=slit->canBothSlitsMove(atof(args[4]),atof(args[2]));
-									}
-
-									if(move>0)
-									{
-										sprintf(mess, "ERROR: If slits move to these positions, they will crash into each other");
-										return -1;
-									}
-									else if(move<0)
-									{
-										sprintf(mess, "ERROR: Either of the slits cannot be moved to a negative position");
-										return -1;
-									}
-								}
-							}
-
-
-							if(!motor[i]->canMotorMove(atof(args[2])))
-							{
-								sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[1],motor[i]->getLowerLimit(),motor[i]->getUpperLimit());
-								return -1;
-							}
-							if(!motor[j]->canMotorMove(atof(args[4])))
-							{
-								sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[3],motor[j]->getLowerLimit(),motor[j]->getUpperLimit());
-								return -1;
-							}
-
-							if(  (!strcasecmp(args[1],"Huber")) ||(!strcasecmp(args[3],"Huber")) )
-							{
-								motor[i]->moveAbs(atof(args[2]),0,0,0);
-								motor[j]->moveAbs(atof(args[4]),0,0,0);
-							}
-							else
-
-								motor[i]->moveAbs(atof(args[2]),motor[j]->getAxis(),atof(args[4]), motor[j]->getPosition());
-
-							//set position member of motors to the updated position
-							motor[i]->setPosition(atof(args[2]));
-							motor[j]->setPosition(atof(args[4]));
-
-
-							//setting both the positions and limits of the slit object if the motors to be moved were slits
-							if(slitnum==1)
-								slit->setBothpos(atof(args[2]),atof(args[4]));
-							else if(slitnum==2)
-								slit->setBothpos(atof(args[4]),atof(args[2]));
-
-
-							sprintf(mess,"Moved simultaneously %s to %s position and %s to %s position",args[1],args[2],args[3],args[4]);
-							return 0;
-						}
-						//if they dont have the same controller, print error
-						else
-						{
-							strcpy(mess,"ERROR: Cannot move motors of different controllers simultaneously");
-							return -1;
-						}
-					}
-
-
-	}
-	// --- if command is sim3moveabs for simultaneous movt of all 3  motors-----------------------------
-	else if(args[0] == "sim3moveabs")
-	{
-		num=3;
-		int x1=0,x2=0;
-		double pos1,pos2,pos3;
-		// if number of parameters are wrong
-		if(args.size()!=7)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 7");
-			return -1;
-		}
-
-		// if position is a positive number
-		temp.assign(args[2]);
-		if(temp.find_first_not_of("0123456789.-")!=string::npos)
-		{
-			sprintf(mess, "ERROR: %s for position should be a number for %s",args[2], args[1]);
-			return -1;
-		}
-		temp.assign(args[4]);
-		if(temp.find_first_not_of("0123456789.-")!=string::npos)
-		{
-			sprintf(mess, "ERROR: %s for position should be a number for %s",args[4], args[3]);
-			return -1;
-		}
-		temp.assign(args[6]);
-		if(temp.find_first_not_of("0123456789.-")!=string::npos)
-		{
-			sprintf(mess, "ERROR: %s for position should be a number for %s",args[6], args[5]);
-			return -1;
-		}
-
-		// find motor name (case insensitive)
-		for(int i=0;i<Motor::NumMotors;i++)
-			if((args[1] == motor[i]->getName())
-				// find second motor
-				for(int j=0;j<Motor::NumMotors;j++)
-					if((args[3] == motor[j]->getName())
-						//find third motor
-						for(int k=0;k<Motor::NumMotors;k++)
-							if((args[5] == motor[k]->getName())
-							{
-								// if two motors are the same, print error and exit
-								if( (!strcasecmp(args[1],args[3])) ||(!strcasecmp(args[2],args[3])) || (!strcasecmp(args[1],args[2])) )
-								{
-									strcpy(mess,"ERROR: Two of the motors to be moved simultaneously are the same");
-									return -1;
-								}
-								//if they all have the same controller, move
-								if(  (!strcmp(motor[i]->getController(),motor[j]->getController())) &&
-										(!strcmp(motor[j]->getController(),motor[k]->getController())) )
-								{
-
-
-									// if any of the motors to be moved are slits
-									if(  (strcasestr(args[1],"slit")!=NULL) ||(strcasestr(args[3],"slit")!=NULL) || (strcasestr(args[5],"slit")!=NULL) )
-									{
-										slitnum=1;
-										// finding which argument is slitx1 and which one is slitx2
-										for(int loop=1;loop<=5;loop=loop+2)
-										{
-											if(!strcasecmp(args[loop],"slit_x1"))
-												x1=loop;
-											else if(!strcasecmp(args[loop],"slit_x2"))
-												x2=loop;
-										}
-
-										//depending on the first motor being slit_X1/slit_x2, the parameters for canbothslitsmove(x1,x2) change
-										if(slit->canBothSlitsMove(atof(args[x1+1]),atof(args[x2+1]))>0)
-										{
-											sprintf(mess, "ERROR: If slits move to these positions, they will crash into each other");
-											return -1;
-										}
-										else if(slit->canBothSlitsMove(atof(args[x1+1]),atof(args[x2+1]))<0)
-										{
-											sprintf(mess, "ERROR: Either of the slits cannot be moved to a negative position");
-											return -1;
-										}
-
-									}
-
-
-									if(!motor[i]->canMotorMove(atof(args[2])))
-									{
-										sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[1],motor[i]->getLowerLimit(),motor[i]->getUpperLimit());
-										return -1;
-									}
-									if(!motor[j]->canMotorMove(atof(args[4])))
-									{
-										sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[3],motor[j]->getLowerLimit(),motor[j]->getUpperLimit());
-										return -1;
-									}
-									if(!motor[k]->canMotorMove(atof(args[6])))
-									{
-										sprintf(mess, "ERROR: Position given to move motor %s is beyond its limits: %f and %f",args[5],motor[k]->getLowerLimit(),motor[k]->getUpperLimit());
-										return -1;
-									}
-
-
-									if(  (!strcasecmp(args[1],"Huber")) ||(!strcasecmp(args[3],"Huber")) || (!strcasecmp(args[5],"Huber")) )
-									{
-										motor[i]->moveAbs(atof(args[2]),0,0,0);
-										motor[j]->moveAbs(atof(args[4]),0,0,0);
-										motor[k]->moveAbs(atof(args[6]),0,0,0);
-									}
-									else
-									{
-
-										int axis = motor[i]->getAxis();
-										int p =2;
-										for(int repeat=0;repeat<3;repeat++)
-										{
-
-											if(axis==1)
-												pos1 = atof(args[p]);
-											else if(axis==2)
-												pos2 = atof(args[p]);
-											else
-												pos3 = atof(args[p]);
-
-											if(repeat==2) break;
-											else if(!repeat)
-											{
-												axis = motor[j]->getAxis();
-												p=4;
-											}
-											else
-											{
-												axis = motor[k]->getAxis();
-												p=6;
-											}
-										}
-
-
-										motor[i]->moveAllAbs(pos1,pos2,pos3);
-
-									}
-
-									//set position member of motors to the updated position
-									motor[i]->setPosition(atof(args[2]));
-									motor[j]->setPosition(atof(args[4]));
-									motor[k]->setPosition(atof(args[6]));
-
-
-									//setting both the positions and limits of the slit object if the motors to be moved were slits
-									if(slitnum)
-										slit->setBothpos(atof(args[x1+1]),atof(args[x2+1]));
-
-									sprintf(mess,"Moved simultaneously %s to %s position,%s to %s and %s to %s position",
-											args[1],args[2],args[3],args[4],args[5],args[6]);
-									return 0;
-								}
-								//if they dont have the same controller, print error
-								else
-								{
-									strcpy(mess,"ERROR: Cannot move motors of different controllers simultaneously");
-									return -1;
-								}
-							}
-	}*/
-	if(args[0] == "blla") {
-		
-	}
-	// for wrong commands-----------------------------------------
-	else
-	{
-		sprintf(mess,"ERROR: %s is not a Command",args[0].c_str());
-		return -1;
-	}
-
-	switch(num) {
-	case 1:
-		sprintf(mess,"ERROR:%s is not listed in the config file.",args[1].c_str());
-		break;
-	case 2:
-		sprintf(mess,"ERROR: Either this motor %s or this motor %s is not listed in the config file.",args[1].c_str(),args[3].c_str());
-		break;
-	default:
-		sprintf(mess,"ERROR: Either this motor %s, this motor %s or this motor %s is not listed in the config file.",args[1].c_str(),args[3].c_str(),args[5].c_str());
-		break;
-	}
-	return -1;
+*/
+	// unknown command
+	throw RuntimeError("Unknown command " + command);
 }
 
 Initialize::~Initialize() {
-	if (xrayTube != NULL)
+	if (xrayTube != NULL) {
 		delete xrayTube;
+	}
 	if (pgauge != NULL) {
 		delete pgauge;
 	}
 	if (slit != NULL) {
 		delete slit;
 	}
-
-	/* for(int i=0;i<controller.size();i++)
-		interface[i]->close_serialfd();
-	if(xrayTube!=NULL)
-		xrayTube->getInterface()->close_serialfd();
-	if(pgauge!=NULL)
-		pgauge->getInterface()->close_serialfd();
-		*/
 }
 
 
@@ -2850,8 +2279,6 @@ Initialize::Initialize()
 		controller[i]->updateAxisEnabled();
 		controller[i]->debugPositions();
 	}
-
-	//setOrigPositions(POSITIONS_FILE); TODO
 
 	// update limits now that the positions have been debugged
 	if (slit != NULL) {
@@ -3296,7 +2723,7 @@ void Initialize::MotorMode(vector<string> args) {
 	}
 	double upperLimit = -1;
 	{
-		std::istringstream iss (args[4].c_str());
+		std::istringstream iss (args[5].c_str());
 		iss >> upperLimit;
 		if (iss.fail()) {
 			throw RuntimeError("Could not scan upperLimit for motor argument: " + args[5]);

@@ -1,161 +1,95 @@
-/********************************************//**
- * @file main.cpp
- * @short Calls myClient to connect to server if remote, else executes command
- * @author Dhanya
- ***********************************************/
-
 #include "Client.h"
 #include "commonDefs.h"
 
-#include <iostream>
 #include <string>
 #include <sstream>
-#include <fstream>
-#include <unistd.h>
+#include <vector>
 #include <cstring>
-using namespace std;
+#include <iterator>
 
-//using systemcommand to get pcname,username etc
-char* useSystemCommand(char* systemCommand);
+std::string useSystemCommand(std::string command) {
+    FILE* sysFile = popen(command.c_str(), "r");
+	  char output[COMMAND_BUFFER_LENGTH];
+	  memset(output, 0, sizeof(output));
+	  fgets(output, sizeof(output), sysFile);
+	  pclose(sysFile);
 
-//read server.txt file if it exists to read the default server(eg.beamline server)
-string getServerHostname(string const fName);  
+    std::istringstream iss(output);
+		std::vector<std::string> result = std::vector<std::string>(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>());
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
- /**the main function
-   @param argc number of command line arguments
-   @param argv array of command line arguments
-   @returns 0 to OS
- */
-int main(int argc, char* argv[])
-{
+    if (command == "date") {
+        std::string result(output, TIME_BUFFER_LENGTH);
+        FILE_LOG(logDEBUG) << "Date:[" << result << ']';
+        return result;
+    }
+    return result[0];
+}
 
+
+int main(int argc, char* argv[]) {
 #ifdef XRAYBOX
-	cout << " This is XRay Box Client" << endl;
+	  std::cout << "XRay Box Client" << std::endl;
 #elif LASERBOX
-	cout << " This is Laser Box Client" << endl;
+	  std::cout << "Laser Box Client" << std::endl;
 #else
-	cout << " This is Vacuum Box Client" << endl;
+	  std::cout << "Vacuum Box Client" << std::endl;
 #endif
 
+    char args[TCP_PACKET_LENGTH];
+    memset(args, 0, sizeof(args));
+    std::string serverHostname(DEFAULT_SERVER_HOSTNAME);
 
-  char args[255], serverHostname[1000],userName[255], currTime[255], pcName[255];
-  int serverOptions=0;
-  bool serverOption=false;
-
-  //read server.txt file if it exists to read the default server(eg.beamline server)
-  strcpy(serverHostname,getServerHostname("init.txt").c_str());
-  strcpy(serverHostname,getServerHostname("init.txt").c_str()); 
-  //cout<<"serverHostname:"<<serverHostname<<"."<<endl;
-
-  //include first argument for server to differentiate between gui and socketclient
-  strcpy(args,argv[0]); strcat(args," ");
-
-  //loop through each command line argument
-  for(int i=1;i<argc;i++)
-    {
-      //to skip the value of Server option
-      if(serverOption)
-	{
-	  serverOption=false;
-	  continue;
-	}
-       //check if a server options exist
-      if(!strcasecmp(argv[i],"-server"))
-	{
-	  serverOptions++;
-	  serverOption=true;  
-	  strcpy(serverHostname,argv[i+1]);
-	}
-      //concatenates all the commands (if not server option) into a string args
-      else
-	{
-	  strcat(args, argv[i]);
-	  strcat(args, " ");
-	}
+	// scan arguments
+    strcat(args, "client ");
+    int nArg = 1;
+    for (int i = 1; i < argc; ++i) {
+        if (argv[i] == "-server") {
+            if (i + 1 == argc) {
+                throw RuntimeError("Cannot scan server hostname option");    
+            }
+            serverHostname.assign(argv[i + 1]);
+            ++i;
+            continue;
+        }
+        strcat(args, argv[i]);
+        strcat(args, " ");
+        ++nArg;
     }
 
-  //getting username,pcname,pid for each command to send to server
-  strcpy(userName,useSystemCommand((char*)"whoami"));
-  strcpy(pcName,useSystemCommand((char*)"uname -n"));
-  strcpy(currTime,useSystemCommand((char*)"date"));
-  sprintf(args,"%s %s %s %d %s ",args,userName,pcName,getpid(),currTime);
-  argc+=4;
-  /*DEBUGGING
-  cout<<"hostname:"<<serverHostname<<" argc:"<<argc-serverOptions*2<<" args:"<<args<<"."<<endl;
-  */
-  cout<<"serverHostname:"<<serverHostname<<"."<<endl;
-  //connect socket and send command
-  Client client = Client();
-  if(client.Connect(serverHostname))
+    // add other parameters
+    strcat(args, useSystemCommand("whoami").c_str());
+    strcat(args, " ");
+    ++nArg;
+    strcat(args, useSystemCommand("uname -n").c_str());
+    strcat(args, " ");
+    ++nArg;
+    // get pid
     {
-      cout<<"\n--- Rxd data:"<<client.SendCommand(argc-serverOptions*2,args);
-      cout<<"\n---------------------------------------------------------------------------------\n";
-      client.Disconnect();
+        std::stringstream oss;
+        oss << getpid();
+        std::string pid = oss.str();
+        strcat(args, pid.c_str());
+        strcat(args, " ");
+        ++nArg;
     }
-  else
-    cout<<"\n ERROR: Could not connect to server\n\n";
-  return 0;
+    strcat(args, useSystemCommand("date").c_str());
+    ++nArg;
+
+
+    std::cout << "serverHostname: [" << serverHostname << ']' << std::endl;
+    FILE_LOG(logDEBUG) << "Sending Command: " << nArg << " [" << args << ']';
+
+    Client client = Client();
+    client.Connect(serverHostname);
+    try {
+        std::string result = client.SendCommand(nArg, args);
+        std::cout << result << std::endl;
+    } catch (const std::exception &e) {
+        FILE_LOG(logERROR) << e.what();
+    }
+    client.Disconnect();
+
+    return 0;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
-char* useSystemCommand(char* systemCommand)
-{
-  const char *WHITESPACE=" \t\n\r";
-  char *result;
-  char output[255];
-
-  //using sys cmds to get output or str
-  FILE* sysFile = popen(systemCommand, "r");
-  fgets(output, sizeof(output), sysFile);
-  pclose(sysFile);
-  
-  if(!strcmp(systemCommand,"date"))
-    {
-      result = output + 0;
-      result[29]=0;
-    }
-  else
-    {
-      //remove trailing spaces
-      int spacesAtStart = strspn(output, WHITESPACE);//length of initial portion of str1 which matches str2 ,here 0
-      result = output + spacesAtStart;
-      int lengthOfNonSpace = strcspn(result, WHITESPACE);//position of where str1 does not match str2
-      result[lengthOfNonSpace] = 0;
-    }
-  //  cout<<endl;
-  return result;
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-string getServerHostname(string const fName)
-{
-  //default server hostname
-  strcpy(output,Server_Hostname);
-
-  ifstream inFile;
-  inFile.open(fName.c_str(), ifstream::in);                             
-  if(inFile.is_open()) {
-    while(inFile.good()) {
-      string sLine;
-      getline(inFile,sLine);
-      // delete lines after comments
-      if (sLine.find('#') != string::npos) {
-          sLine.erase(sLine.find('#'));
-      }
-      // scan arguments
-      istringstream iss(sLine);
-      vector<string> args = vector<string>(istream_iterator<string>(iss), istream_iterator<string>());
-      // blank lines
-      if (args.size() < 2 || args[0] != "server") {
-        continue;
-      }
-      inFile.close();
-      return args[1];
-    }
-  }
-  return string(Server_Hostname);
-}
-//-------------------------------------------------------------------------------------------------------------------------------------------------

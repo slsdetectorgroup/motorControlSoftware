@@ -26,6 +26,11 @@ int Motor::getController() {
 }
 
 void Motor::setLowerLimit(double lowerLimit) {
+	if (lowerLimit > upperLimit) {
+		std::ostringstream oss;
+		oss << "Could not set lower limit " << lowerLimit << ". Must be less than upper limit " << upperLimit;
+		throw RuntimeError(oss.str());
+	}
 	this->lowerLimit = lowerLimit;
 }
 
@@ -34,6 +39,11 @@ double Motor::getLowerLimit() {
 }
 
 void Motor::setUpperLimit(double upperLimit) {
+	if (upperLimit < lowerLimit) {
+		std::ostringstream oss;
+		oss << "Could not set upper limit " << upperLimit << ". Must be greater than lower limit " << lowerLimit;
+		throw RuntimeError(oss.str());
+	}
 	this->upperLimit = upperLimit;
 }
 
@@ -42,7 +52,7 @@ double Motor::getUpperLimit() {
 }
 
 void Motor::setPosition(double position) {
-  this->position = position;
+	this->position = position;
 }
 
 double Motor::getPosition() {
@@ -50,12 +60,12 @@ double Motor::getPosition() {
 }
 
 void Motor::print() {
-  std::cout << "\tMotor [" << index << "]\n\t "
-  			<< "Name        : " << name << "\n\t "
-  			<< "Axis        : " << axis << "\n\t "
-			<< "iController : " << controller << "\n\t "
- 	 		<< "LowerLimit  : " << lowerLimit << "\n\t "
-			<< "Upper Limit : " << upperLimit << "\n\t "
+  std::cout << "\tMotor [" << index << "]\n\t  "
+  			<< "Name        : " << name << "\n\t  "
+  			<< "Axis        : " << axis << "\n\t  "
+			<< "iController : " << controller << "\n\t  "
+ 	 		<< "LowerLimit  : " << lowerLimit << "\n\t  "
+			<< "Upper Limit : " << upperLimit << "\n\t  "
 			<< "Position    : " << position << "\n\n";
 }
 

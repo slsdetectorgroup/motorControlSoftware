@@ -10,14 +10,16 @@
 #include <unistd.h> //usleep in raspberrypi
 #include <stdio.h>
 #include <termios.h>  /* POSIX terminal control definitions */
+#include <errno.h>
 
 /*	for serial programming see:  http://www.easysw.com/~mike/serial/serial.html */
 
 
-#define CONTROLLER_MAX_TX_ATTEMPTS		(10)
-#define CONTROLLER_MAX_RX_ATTEMPTS		(10)
-#define CONTROLLER_MAX_WAIT_ATTEMPTS	(10)
+#define CONTROLLER_MAX_TX_ATTEMPTS		(5)
+#define CONTROLLER_MAX_RX_ATTEMPTS		(5)
+#define CONTROLLER_MAX_WAIT_ATTEMPTS	(1)
 #define CONTROLLER_READ_WAIT_US			(50000) // because of raspberry pi
+
 
 Interface::Interface(std::string serial, InterfaceIndex index) {
 	this->serial = serial;
@@ -37,6 +39,13 @@ Interface::Interface(std::string serial, InterfaceIndex index) {
 	}
 }
 
+Interface::~Interface() {
+	close(serialfd);
+}
+
+std::string Interface::getSerial() {
+	return serial;
+}
 
 void Interface::ControllerInterface() {
 	FILE_LOG(logINFO) << "\tMotorcontroller, checking:" << serial;
@@ -56,19 +65,126 @@ void Interface::ControllerInterface() {
 	//flush input
 	sleep(2);
 	tcflush(serialfd, TCIOFLUSH);
-	tcsetattr(serialfd, TCSANOW, &new_serial_conf);
-
-	// validate controller 
-	try {
-		isControllerIdle(false);
-	} catch (...) {
-		close(serialfd);
-		FILE_LOG(logWARNING) << "Fail";
-		throw;
+	if (tcsetattr(serialfd, TCSANOW, &new_serial_conf) != 0) {
+    	FILE_LOG(logERROR) << errno << " from tcsetattr: " << strerror(errno);
 	}
 
-    FILE_LOG(logINFO) << "\tSuccess";
+	ValidateController(); 
 }
+
+
+void Interface::ValidateController() {
+	FILE_LOG(logINFO) << "\tValidating Controller";
+	ControllerSend("st ", true, true);
+	FILE_LOG(logINFO) << "\tSuccess";
+	ControllerWaitForIdle();
+}
+
+
+void Interface::ControllerWaitForIdle() {
+	for (;;) {
+		std::string result = ControllerSend("st ", true, false);
+		int status = atoi(result.c_str());
+		if (status == 0) {
+			FILE_LOG(logDEBUG) << "Controller Idle";
+			break;
+		}
+		FILE_LOG(logDEBUG) << "Controller Busy";
+	}
+}
+
+
+std::string Interface::ControllerSend(std::string command, bool readBack, bool validate) {
+	int waitAttempts = 0;
+	bool verbose =  false; //validate ? false : true; // for debuggign
+	for (;;) {
+        try {
+            std::string result = ControllerSendCommand(command, readBack, verbose);
+			return result;
+        } catch (...) {
+			if (validate) {
+				++waitAttempts;
+				if (waitAttempts == CONTROLLER_MAX_WAIT_ATTEMPTS) {
+					std::ostringstream oss;
+					oss << "Wait attempt number " << CONTROLLER_MAX_WAIT_ATTEMPTS << " for idle at port " << serial << ". Aborting wait.";			
+					close(serialfd);
+					FILE_LOG(logWARNING) << "Fail";
+					throw std::runtime_error(oss.str());
+				}
+			} 
+        }	
+		usleep(CONTROLLER_READ_WAIT_US);	
+	}
+}
+
+std::string Interface::ControllerSendCommand(std::string command, bool readBack, bool verbose) {
+	if (command != "st " || command == "pos ") { // for debugging
+		FILE_LOG(logINFO) << "\tSending [" << command << "]   (port:" << serial << ", read:" << readBack << ')';
+	}
+
+	// send command to controller
+	char buffer[COMMAND_BUFFER_LENGTH];
+	memset(buffer, 0, sizeof(buffer));
+	strcpy(buffer, command.c_str());
+	int ret = -1;
+	int attempt = 0;
+	while (ret == -1) {
+		ret = write (serialfd, buffer, sizeof(buffer));
+		++attempt;
+		if (attempt == CONTROLLER_MAX_TX_ATTEMPTS) {
+			std::ostringstream oss;
+			oss << "Send attempt number " << CONTROLLER_MAX_TX_ATTEMPTS << " for [" << buffer << "] to port " << serial << ". Aborting command.";
+			if (verbose) {
+				FILE_LOG(logERROR) << oss.str();
+			}
+			throw std::runtime_error(oss.str());
+		}
+	}
+	if (attempt > 1) {
+		FILE_LOG(logDEBUG) << "Send attempt " << attempt;
+	}
+	// no read back
+	if (!readBack) {
+		return command;
+	} 
+	// read back
+	char result[COMMAND_BUFFER_LENGTH];
+	ret = -1;
+	attempt = 0;
+	while (ret == -1) {
+		memset(result, 0, sizeof(result));	
+		usleep(CONTROLLER_READ_WAIT_US);
+		ret = read (serialfd, result, sizeof(result));
+		// st will not read if busy
+		//if (ret == -1 && command == "st ") {
+		//	return std::string("1");
+		//}
+		++attempt;
+		if (attempt == CONTROLLER_MAX_RX_ATTEMPTS) {
+			std::ostringstream oss;
+			oss << "Receive attempt number " << CONTROLLER_MAX_RX_ATTEMPTS << " for [" << buffer << "] to port " << serial << ". Aborting read.";
+			if (verbose) {
+				FILE_LOG(logERROR) << oss.str();
+			}
+			throw std::runtime_error(oss.str());
+		}		
+	}
+	if (attempt > 1) {
+		FILE_LOG(logDEBUG) << "receive attempt " << attempt;
+	}
+	if (command != "st ") {
+		FILE_LOG(logINFO) << "\tReceived [" << command << "]: " << result;
+	}
+	if (strlen(result) == 0) {
+		std::ostringstream oss;
+		oss << "Empty receive buffer to controller port " << serial;
+		//FILE_LOG(logERROR) << oss.str();
+		throw std::runtime_error(oss.str());		
+	}
+
+	return std::string(result);
+}
+
 
 
 void Interface::TubeInterface() {
@@ -202,122 +318,6 @@ void Interface::FilterWheelInterface() {
     FILE_LOG(logINFO) << "Success";
 }
 
-
-std::string Interface::getSerial() {
-	return serial;
-}
-
-void Interface::controllerWaitForIdle(bool keepWaiting) {
-	int waitAttempts = 0;
-	while (!isControllerIdle()) {
-		++waitAttempts;
-		usleep(CONTROLLER_READ_WAIT_US);
-		if (!keepWaiting) {
-			if (waitAttempts == CONTROLLER_MAX_WAIT_ATTEMPTS) {
-				std::ostringstream oss;
-				oss << "Attempt number " << CONTROLLER_MAX_WAIT_ATTEMPTS << " in waiting for idle at port " << serial << ". Aborting wait. Check if joystick connected.";
-				throw RuntimeError(oss.str());
-			}	
-		}		
-	}	
-}
-
-bool Interface::isControllerIdle(bool verbose) {
-	// send st to controller
-	int ret = -1;
-	int attempt = 0;
-	while (ret == -1) {
-		ret = write (serialfd, "st ", strlen("st "));
-		++attempt;
-		if (attempt == CONTROLLER_MAX_TX_ATTEMPTS) {
-			if (verbose) {
-				std::ostringstream oss;
-				oss << "Attempt number " << CONTROLLER_MAX_TX_ATTEMPTS << " in sending command [st] to port " << serial << ". Aborting command.";
-				FILE_LOG(logERROR) << oss.str();
-			}
-			throw std::runtime_error("Failed");
-		}
-	}
-	// read back 0
-	char result[COMMAND_BUFFER_LENGTH];
-	ret = -1;
-	attempt = 0;
-	while (ret == -1) {
-		memset(result, 0, sizeof(result));	
-		usleep(CONTROLLER_READ_WAIT_US);
-		ret = read (serialfd, result, sizeof(result));
-		++attempt;
-		if (attempt == CONTROLLER_MAX_RX_ATTEMPTS) {
-			if (verbose) {
-				std::ostringstream oss;
-				oss << "Attempt number " << CONTROLLER_MAX_RX_ATTEMPTS << " in receiving result for [st] to port " << serial << ". Aborting read.";
-				FILE_LOG(logERROR) << oss.str();
-			}
-			throw std::runtime_error("Failed");
-		}		
-	}
-	// parse result
-	int status = atoi(result);
-	if (status == 0) {
-		FILE_LOG(logDEBUG) << "Controller Idle";
-		return true;
-	}
-	FILE_LOG(logDEBUG) << "Controller Busy";
-	return false;
-}
-
-
-
-
-std::string Interface::controllerSendCommand(std::string command, bool readBack, bool verbose) {
-	FILE_LOG(logINFO) << "\tSending Command [" << command << "] to port " << serial << ", readBack: " << readBack;
-
-	// wait for idle (should not take long)
-	controllerWaitForIdle();
-
-	// send command to controller
-	char buffer[COMMAND_BUFFER_LENGTH];
-	memset(buffer, 0, sizeof(buffer));
-	strcpy(buffer, command.c_str());
-	int ret = -1;
-	int attempt = 0;
-	while (ret == -1) {
-		ret = write (serialfd, buffer, sizeof(buffer));
-		++attempt;
-		if (attempt == CONTROLLER_MAX_TX_ATTEMPTS) {
-			if (verbose) {
-				std::ostringstream oss;
-				oss << "Attempt number " << CONTROLLER_MAX_TX_ATTEMPTS << " in sending command [" << buffer << "] to port " << serial << ". Aborting command.";
-				FILE_LOG(logERROR) << oss.str();
-			}
-			throw std::runtime_error("Failed");
-		}
-	}
-	// no read back
-	if (!readBack) {
-		return command;
-	} 
-	// read back
-	char result[COMMAND_BUFFER_LENGTH];
-	ret = -1;
-	attempt = 0;
-	while (ret == -1) {
-		memset(result, 0, sizeof(result));	
-		usleep(CONTROLLER_READ_WAIT_US);
-		ret = read (serialfd, result, sizeof(result));
-		++attempt;
-		if (attempt == CONTROLLER_MAX_RX_ATTEMPTS) {
-			if (verbose) {
-				std::ostringstream oss;
-				oss << "Attempt number " << CONTROLLER_MAX_RX_ATTEMPTS << " in receiving result for [" << buffer << "] to port " << serial << ". Aborting read.";
-				FILE_LOG(logERROR) << oss.str();
-			}
-			throw std::runtime_error("Failed");
-
-		}		
-	}
-	return std::string(result);
-}
 
 char* Interface::send_command_to_tube(char* c, int rb, int &value, int &value2)  {
 	//for safety,if a usb serial port calls this function, it exits
