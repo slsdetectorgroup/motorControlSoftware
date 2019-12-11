@@ -22,9 +22,10 @@ class Initialize {
   std::string executeCommand(std::vector<std::string> args);
 
  private:
-
-  void RestrictedCommand(std::string name);
+  void OnlyFluorescenceCommand(std::string name);
+  void RestrictedForSlitAndFluorescence(std::string name);
   void UpdateSlitLimits(std::string name);
+  int GetFluorescenceIndex(std::string name);
   int GetMotorIndex(std::string name);
   int GetControllerIndex(std::string name);
   int ReadWarmupTimestamps(std::string const fName);

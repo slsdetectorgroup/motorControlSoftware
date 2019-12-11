@@ -17,39 +17,46 @@ TargetHolder::TargetHolder(int index)
       targetEnergy[i] = '-';
     }
     FILE_LOG(logDEBUG) << "Target Holder [" << index << "] added";
-  }
+}
 
 int TargetHolder::getNumTargets() {
-  return numTargets;
+    return numTargets;
 }
 
 bool TargetHolder::isFull() {
-  return (numTargets == MAX_FLUOR_VALUES);
+    return (numTargets == MAX_FLUOR_VALUES);
+}
+
+std::string TargetHolder::getCurrentTargetName(int index) {
+    return targetName[index];
 }
 
 void TargetHolder::addTarget(std::string name, std::string energy) {
-  if (numTargets == MAX_FLUOR_VALUES) {
-    std::ostringstream oss;
-    oss << "Exceeded max fluorescence targets " << MAX_FLUOR_VALUES << ". Cannot add " << name;
-    throw RuntimeError(oss.str());
-  }
-  targetName[numTargets] = name;
-  targetEnergy[numTargets] = energy;
-  FILE_LOG(logDEBUG) << "Target [" << index << "]: " << name;
-  ++numTargets;
+    if (numTargets == MAX_FLUOR_VALUES) {
+        std::ostringstream oss;
+        oss << "Exceeded max fluorescence targets " << MAX_FLUOR_VALUES << ". Cannot add " << name;
+        throw RuntimeError(oss.str());
+    }
+    targetName[numTargets] = name;
+    targetEnergy[numTargets] = energy;
+    FILE_LOG(logDEBUG) << "Target [" << index << "]: " << name;
+    ++numTargets;
 }
 
-std::string TargetHolder::getTargetName(int index) {
-  return targetName[index];
-}
-
-std::string TargetHolder::getTargetEnergy(int index) {
-  return targetEnergy[index];
+std::string TargetHolder::getList() {
+    std::string result;
+    for (int i = 0; i < numTargets; ++i) {
+        result += (targetName[i] + ' ' + targetEnergy[i]);
+        if (i < numTargets - 1) {
+            result += ' ';
+        }
+    }    
+    return result;
 }
 
 void TargetHolder::print() {
-  for (unsigned int i = 0; i < numTargets; ++i) {
-    std::cout << "\t    Target [" << i << "] : " << targetName[i] << ", " <<  targetEnergy[i] << std::endl;
-  }
+    for (int i = 0; i < numTargets; ++i) {
+        std::cout << "\t    Target [" << i << "] : " << targetName[i] << ", " <<  targetEnergy[i] << std::endl;
+    }
 }
 

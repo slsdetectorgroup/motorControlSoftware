@@ -30,7 +30,13 @@ using namespace std;
 #define CONFIG_CONTROLLER_NUM_ARGS  (3)
 #define CONFIG_MOTOR_NUM_ARGS       (6)
 
-void Initialize::RestrictedCommand(std::string name) {
+void Initialize::OnlyFluorescenceCommand(std::string name) {
+	if ((strcasecmp(name.c_str(), "fluorescence")) && (strcasecmp(name.c_str(), "fluorescence_wheel"))) {
+		throw RuntimeError("Command not allowed for this motor " + name);
+	}
+}
+
+void Initialize::RestrictedForSlitAndFluorescence(std::string name) {
 	if ((!strcasecmp(name.c_str(), "slit_x1")) || (!strcasecmp(name.c_str(), "slit_x2")) || (!strcasecmp(name.c_str(), "fluorescence")) || (!strcasecmp(name.c_str(), "fluorescence_wheel"))) {
 		throw RuntimeError("Command not allowed for this motor " + name);
 	}
@@ -40,6 +46,15 @@ void Initialize::UpdateSlitLimits(string name) {
 	if ((!strcasecmp(name.c_str(), "slit_x1")) || (!strcasecmp(name.c_str(), "slit_x2"))) {
 		slit->updateLimits();
 	}
+}
+
+int Initialize::GetFluorescenceIndex(string name) {
+	for (unsigned int i = 0; i < fluorescence.size(); ++i) {
+		if (!strcasecmp(name.c_str(), fluorescence[i]->getName().c_str())) {
+			return i;
+		}
+	}
+	throw RuntimeError("Unknown fluorescence motor " + name);
 }
 
 int Initialize::GetMotorIndex(string name) {
@@ -170,7 +185,7 @@ string Initialize::executeCommand(vector<string> args) {
 		}
 		string name = args[1];
 		int imotor = GetMotorIndex(name);
-		RestrictedCommand(name);
+		RestrictedForSlitAndFluorescence(name);
 		double value = 0;
 		std::istringstream iss (args[2].c_str());
 		iss >> value;
@@ -199,7 +214,7 @@ string Initialize::executeCommand(vector<string> args) {
 		}
 		string name = args[1];
 		int imotor = GetMotorIndex(name);
-		RestrictedCommand(name);
+		RestrictedForSlitAndFluorescence(name);
 		double value = 0;
 		std::istringstream iss (args[2].c_str());
 		iss >> value;
@@ -230,7 +245,7 @@ string Initialize::executeCommand(vector<string> args) {
 		}
 		string name = args[1];
 		int imotor = GetMotorIndex(name);
-		RestrictedCommand(name);
+		RestrictedForSlitAndFluorescence(name);
 		controller[motor[imotor]->getController()]->rangeMeasure(motor[imotor]->getAxis());
 		oss << fixed << motor[imotor]->getPosition();
 		return oss.str();
@@ -284,7 +299,7 @@ string Initialize::executeCommand(vector<string> args) {
 		}
 		string name = args[1];
 		int imotor = GetMotorIndex(name);
-		RestrictedCommand(name);
+		RestrictedForSlitAndFluorescence(name);
 		double value = 0;
 		std::istringstream iss (args[2].c_str());
 		iss >> value;
@@ -300,114 +315,70 @@ string Initialize::executeCommand(vector<string> args) {
 	}
 
 
+	// ----- flourescence -------------------------------------------------
+
+	else if (!strcasecmp(command.c_str(), "numflist")) {
+		if (nArg != 2) {
+			throw RuntimeError("Requires 2 parameters: numflist [fluorescence motor]");
+		}
+		string name = args[1];
+		OnlyFluorescenceCommand(name);
+		int ifluor = GetFluorescenceIndex(name);
+		oss << fluorescence[ifluor]->getNumTargetHolders();
+		return oss.str();
+	}
+
+	else if (!strcasecmp(command.c_str(), "whichflist")) {
+		if (nArg != 2) {
+			throw RuntimeError("Requires 2 parameters: whichflist [fluorescence motor]");
+		}
+		string name = args[1];
+		OnlyFluorescenceCommand(name);
+		int ifluor = GetFluorescenceIndex(name);
+		oss << fluorescence[ifluor]->getCurrentTargetHolder();
+		return oss.str();
+	}
+
+	else if (!strcasecmp(command.c_str(), "loadflist")) {
+		if (nArg != 3) {
+			throw RuntimeError("Requires 3 parameters: loadflist [fluorescence motor] [index]");
+		}
+		string name = args[1];
+		OnlyFluorescenceCommand(name);
+		int ifluor = GetFluorescenceIndex(name);
+		int value = 0;
+		std::istringstream iss (args[2].c_str());
+		iss >> value;
+		if (iss.fail()) {
+			throw RuntimeError("Could not scan index argument " + args[2]);
+		}		
+		fluorescence[ifluor]->setCurrentTargetHolder(value);
+		oss << value;
+		return oss.str();
+	}
+
+	else if (!strcasecmp(command.c_str(), "fllist")) {
+		if (nArg != 2) {
+			throw RuntimeError("Requires 2 parameters: fllist [fluorescence motor]");
+		}
+		string name = args[1];
+		OnlyFluorescenceCommand(name);
+		int ifluor = GetFluorescenceIndex(name);
+		return fluorescence[ifluor]->getList();
+	}	
+
+	else if (!strcasecmp(command.c_str(), "getfl")) {
+		if (nArg != 2) {
+			throw RuntimeError("Requires 2 parameters: getfl [fluorescence motor]");
+		}
+		string name = args[1];
+		OnlyFluorescenceCommand(name);
+		int ifluor = GetFluorescenceIndex(name);
+		oss << fluorescence[ifluor]->getCurrentTargetName(); //debug, calculate again
+		return oss.str();
+	}		
 
 /*
-
-	// --- if command is fllist---------------------------------------
-	else if(command == "fllist")
-	{
-		// if number of parameters are wrong
-		if(nArg!=1)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 1");
-			return -1;
-		}
-		if(!fluorListArray.size())
-		{
-			strcpy(mess, "ERROR: Fluorescence motor does not exist in the config file");
-			return -1;
-		}
-
-		strcpy(mess,"");
-		for(size_t i = 0; i < maxfluorvalues; ++i)
-		{
-			for(size_t j = 0; j < fluorList[i].size(); ++j)
-			{
-				strcat(mess,fluorList[i][j].c_str());
-				// space used in sstr.good()
-				if ((i == (maxfluorvalues - 1)) && (j == (fluorList[i].size() - 1)))
-					;
-				else
-					strcat(mess," ");
-			}
-		}
-		return 0;
-	}
-
-	// --- if command is numflist----------------
-	else if(command == "numflist")
-	{
-		// if number of parameters are wrong
-		if(nArg!=1)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 1");
-			return -1;
-		}
-
-		sprintf(mess, "%d", (int)fluorListArray.size());
-		return 0;
-	}
-
-	// --- if command is whichflist----------------
-	else if(command == "whichflist")
-	{
-		// if number of parameters are wrong
-		if(nArg!=1)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 1");
-			return -1;
-		}
-
-		if(!fluorListArray.size())
-		{
-			strcpy(mess, "ERROR: Fluroescence motor does not exist in config file");
-			cout<<"\nin here\n";
-			return -1;
-		}
-
-		// loop through each target holder
-		for (size_t i = 0; i < fluorListArray.size(); ++i)
-		{
-			if (fluorList == fluorListArray[i]) {
-				sprintf(mess,"%d", (int)i +1);
-				return 0;
-			}
-
-		}
-
-		// not in any list
-		strcpy(mess, "ERROR: Fluroescence list have inconsistent values");
-		return -1;
-	}
-
-	// --- if command is loadflist'----------------
-	else if(command == "loadflist")
-	{
-		// if number of parameters are wrong
-		if(nArg!=2)
-		{
-			strcpy(mess, "ERROR: Required number of parameters: 2");
-			return -1;
-		}
-
-		if(!fluorListArray.size())
-		{
-			strcpy(mess, "ERROR: Fluroescence motor does not exist in config file");
-			return -1;
-		}
-
-		int val = atoi(args[1]);
-
-		if (val > 0 && (size_t)val <= fluorListArray.size()) {
-			fluorList = fluorListArray[val - 1];
-			sprintf(mess,"The fl list has been updated to %d", val);
-			return 0;
-		}
-
-		sprintf(mess, "ERROR: Fl list %d doesnt exist in the config file", val);
-		return -1;
-	}
-
 
 	// --- if command is getfl'----------------
 	else if(command == "getfl")
@@ -2269,8 +2240,8 @@ Initialize::Initialize()
 	}	
 	// min 1 target (1 target list) for each fluorescence motor
 	for (unsigned int i = 0; i < fluorescence.size(); ++i) {
-		if (fluorescence[i]->getNumTargetLists() == 0) {
-			throw RuntimeError("No targets added to fluorescence" + fluorescence[i]->isCircular() ? "_wheel" : "");
+		if (fluorescence[i]->getNumTargetHolders() == 0) {
+			throw RuntimeError("No targets added to " + fluorescence[i]->getName());
 		}
 	}
 
@@ -2642,24 +2613,9 @@ void Initialize::FwheelMode(vector<string> args) {
 	string targetName = args[1];
 	string targetEnergy = args[2];
 
-	// find index in fluorescence list (using circular or linear)
-	bool circular = false;
-	if (name == "fluorescence_wheel") {
-		circular = true;
-	}
-	int index = -1;
-	for (unsigned int i = 0; i < fluorescence.size(); ++i) {
-		if (fluorescence[i]->isCircular() == circular) {
-			index = i;
-			break;
-		}
-	}
-	if (index == -1) {
-		throw RuntimeError("Did not find " + name  + " in the motor list.");
-	}
-
-	// add targets
-	fluorescence[index]->addTarget(targetName, targetEnergy);
+	// add targets 
+	int ifluor = GetFluorescenceIndex(name);
+	fluorescence[ifluor]->addTarget(targetName, targetEnergy);
  }
 
 
@@ -2748,16 +2704,7 @@ void Initialize::MotorMode(vector<string> args) {
 	}
 
 	// find controller index by name
-	int icontroller = -1;
-	for (unsigned int i = 0; i < controller.size(); ++i) {
-		if (controller[i]->getName() == controllerName) {
-			icontroller = (int)i;
-			break;
-		}
-	}
-	if (icontroller == -1) {
-		throw RuntimeError("Motor" + name + " has unknown controller " + controllerName);
-	}
+	int icontroller = GetControllerIndex(controllerName);
 
 	// create motor object
 	motor.push_back(new Motor(motor.size(), name, axis, icontroller, lowerLimit, upperLimit));
@@ -2767,24 +2714,12 @@ void Initialize::MotorMode(vector<string> args) {
 	// if slit_x2, create slit object
 
 	// if fluorescence, create fluorescence object
-	if (name == "Fluorescence") {
-		fluorescence.push_back(new Fluorescence(fluorescence.size(), false, controller[icontroller]));
-	}
-	else if (name == "Fluorescence_wheel") {
-		fluorescence.push_back(new Fluorescence(fluorescence.size(), true, controller[icontroller]));
+	if (name == "Fluorescence" || name == "Fluorescence_wheel") {
+		fluorescence.push_back(new Fluorescence(fluorescence.size(), name, controller[icontroller]));
 	} else if (name == "Slit_x2") {
-		Controller* controller_slitx1 = NULL;
-		int iaxisX1 = -1;
-		for (unsigned int i = 0; i < motor.size(); ++i) {
-			if (motor[i]->getName() == "Slit_x1") {
-				controller_slitx1 = controller[motor[i]->getController()];
-				iaxisX1 = motor[i]->getAxis();
-				break;
-			}
-		}
-		if (controller_slitx1 == NULL) {
-			throw RuntimeError("Could not find slit_x1 before slit_x2 in config file.");
-		}
+		int imotorX1 = GetMotorIndex("Slit_x1");
+		Controller* controller_slitx1 = controller[motor[imotorX1]->getController()];
+		int iaxisX1 = motor[imotorX1]->getAxis();
 		slit = new Slit(controller_slitx1, controller[icontroller], iaxisX1, axis);
 	}
 	std::cout << std::endl;

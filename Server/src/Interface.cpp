@@ -155,10 +155,6 @@ std::string Interface::ControllerSendCommand(std::string command, bool readBack,
 		memset(result, 0, sizeof(result));	
 		usleep(CONTROLLER_READ_WAIT_US);
 		ret = read (serialfd, result, sizeof(result));
-		// st will not read if busy
-		//if (ret == -1 && command == "st ") {
-		//	return std::string("1");
-		//}
 		++attempt;
 		if (attempt == CONTROLLER_MAX_RX_ATTEMPTS) {
 			std::ostringstream oss;
