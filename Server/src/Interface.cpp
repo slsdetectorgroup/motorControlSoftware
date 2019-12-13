@@ -24,13 +24,14 @@
 
 #define CONTROLLER_MAX_TX_ATTEMPTS		(5)
 #define CONTROLLER_MAX_RX_ATTEMPTS		(5)
-#define CONTROLLER_MAX_WAIT_ATTEMPTS	(1)
 #define CONTROLLER_READ_WAIT_US			(50000) // because of raspberry pi
+#define TUBE_MAX_RX_ATTEMPTS			(5)
+#define TUBE_MAX_REPEAT_ATTEMPTS		(5)
 #define TUBE_READ_WAIT_US				(200000)
 
 
-Interface::Interface(std::string serial, InterfaceIndex index) {
-	this->serial = serial;
+Interface::Interface(std::string serial, int serialPortNumber, InterfaceIndex index) 
+	: serial(serial), serialPortNumber(serialPortNumber), serialfd(-1) {
 	switch	(index) {
 		case TUBE:
 			TubeInterface();
@@ -53,6 +54,10 @@ Interface::~Interface() {
 
 std::string Interface::getSerial() {
 	return serial;
+}
+
+int Interface::getSerialPortNumber() {
+	return serialPortNumber;
 }
 
 void Interface::ControllerInterface() {
@@ -82,20 +87,48 @@ void Interface::ControllerInterface() {
 	ValidateController(); 
 }
 
-
 void Interface::ValidateController() {
 	FILE_LOG(logINFO) << "\tValidating Controller";
-	ControllerSend("st ", true, true);
-	FILE_LOG(logINFO) << "\tSuccess";
+	try {
+		// will throw for ports that cant communicate
+		std::string result = ControllerSendCommand("st ", true);
+		// will throw for ports (tube) that can communciate, but wrong port (strange answer)
+		ControllerIsIdle(result, true);
+	} catch (...) {
+		close(serialfd);
+		FILE_LOG(logWARNING) << "Fail";
+		throw;
+	}
+
+	FILE_LOG(logINFOGREEN) << "\tSuccess";
 	ControllerWaitForIdle();
 }
 
+bool Interface::ControllerIsIdle(std::string result, bool validate) {
+	std::istringstream iss(result);
+	int status = 1;
+	iss >> status;
+	if (iss.fail()) {
+		std::ostringstream oss;
+		oss << "Unknown controller status " + result;
+		if (validate) {
+			throw std::runtime_error(oss.str());
+		}
+		FILE_LOG(logDEBUG) << oss.str();
+		return false;
+	}
+	if (status == 0) {
+		FILE_LOG(logDEBUG) << "Controller Idle";
+		return true;
+	}
+	FILE_LOG(logDEBUG) << "Controller Busy";
+	return false;
+}
 
 void Interface::ControllerWaitForIdle() {
 	for (;;) {
-		std::string result = ControllerSend("st ", true, false);
-		int status = atoi(result.c_str());
-		if (status == 0) {
+		std::string result = ControllerSend("st ", true);
+		if (ControllerIsIdle(result)) {
 			FILE_LOG(logDEBUG) << "Controller Idle";
 			break;
 		}
@@ -103,34 +136,23 @@ void Interface::ControllerWaitForIdle() {
 	}
 }
 
-
-std::string Interface::ControllerSend(std::string command, bool readBack, bool validate) {
-	int waitAttempts = 0;
-	bool verbose =  false; //validate ? false : true; // for debuggign
+std::string Interface::ControllerSend(std::string command, bool readBack) {
 	for (;;) {
         try {
-            std::string result = ControllerSendCommand(command, readBack, verbose);
+            std::string result = ControllerSendCommand(command, readBack);
 			return result;
         } catch (...) {
-			if (validate) {
-				++waitAttempts;
-				if (waitAttempts == CONTROLLER_MAX_WAIT_ATTEMPTS) {
-					std::ostringstream oss;
-					oss << "Wait attempt number " << CONTROLLER_MAX_WAIT_ATTEMPTS << " for idle at port " << serial << ". Aborting wait.";			
-					close(serialfd);
-					FILE_LOG(logWARNING) << "Fail";
-					throw std::runtime_error(oss.str());
-				}
-			} 
+			;
         }	
 		usleep(CONTROLLER_READ_WAIT_US);	
 	}
 }
 
-std::string Interface::ControllerSendCommand(std::string command, bool readBack, bool verbose) {
+std::string Interface::ControllerSendCommand(std::string command, bool readBack) {
 	if (command != "st " && command != "pos ") { // for debugging
 		FILE_LOG(logINFO) << "\tSending [" << command << "]   (port:" << serial << ", read:" << readBack << ')';
 	}
+	bool verbose = true;
 
 	// send command to controller
 	char buffer[COMMAND_BUFFER_LENGTH];
@@ -224,25 +246,63 @@ void Interface::TubeInterface() {
 
 void Interface::ValidateTube() {
 	FILE_LOG(logINFO) << "\tValidating Tube";
-	TubeSend("sr:12 ", true, true);
-	FILE_LOG(logINFO) << "\tSuccess";
+		try {
+			std::string result = TubeSend("sr:12 ", true);
+		} catch (...) {
+				close(serialfd);
+				FILE_LOG(logWARNING) << "Fail";
+				throw;
+		}
+	FILE_LOG(logINFOGREEN) << "\tSuccess";
 }
 
-std::string Interface::TubeSend(std::string command, bool readBack, bool validate) {
-	FILE_LOG(logINFO) << "\tSending [" << command << "]   (port:" << serial << ", read:" << readBack << ')';
+std::string Interface::TubeSend(std::string command, bool readBack) {
+	int attempts = 0;
+	for (;;) {
+        try {
+            std::string result = TubeSendCommand(command, readBack);
+			// ensure valid data as well for error code
+			if (command == "sr:12 ") {
+				result.erase(result.begin());
+				std::istringstream iss(result);
+				int status = 1;
+				iss >> status;
+				if (iss.fail()) {
+					std::ostringstream oss;
+					oss << "Unknown tube status " + result;
+					FILE_LOG(logERROR) << oss.str();
+					throw std::runtime_error(oss.str());
+				}
+			}
+			return result;
+        } catch (const std::exception& e) {
+			++attempts;
+			if (attempts == TUBE_MAX_REPEAT_ATTEMPTS) {
+				std::ostringstream oss;
+				oss << "Tube is probably switched off. " << e.what();
+				throw TubeOffError(oss.str());
+			}
+        }	
+		usleep(TUBE_READ_WAIT_US);	
+	}
+}
+
+std::string Interface::TubeSendCommand(std::string command, bool readBack) {
+	FILE_LOG(logINFO) << "\tSend [" << command << "]:\t(port:" << serial << ", read:" << readBack << ')';
 	
+	bool verbose = false;
+
 	// send command
 	char buffer[COMMAND_BUFFER_LENGTH];
 	memset(buffer, 0, sizeof(buffer));
 	strcpy(buffer, command.c_str());	
 
-	int ret = write (serialfd, buffer, sizeof(buffer));
+	int ret = write (serialfd, buffer, strlen(buffer));
 	if (ret == -1) {
 		std::ostringstream oss;
 		oss << "Could not write to tube";
-		if (validate) {
-			FILE_LOG(logWARNING) << "Fail";
-			close(serialfd);
+		if (verbose) {
+			FILE_LOG(logERROR) << oss.str();
 		}
 		throw std::runtime_error(oss.str());
 	}
@@ -252,123 +312,39 @@ std::string Interface::TubeSend(std::string command, bool readBack, bool validat
 		return command;
 	}
 	char result[COMMAND_BUFFER_LENGTH];
-	memset(result, 0, sizeof(result));	
-	usleep(TUBE_READ_WAIT_US);
-	ret = read (serialfd, result, sizeof(result));
-	if (ret == -1) {
-		std::ostringstream oss;
-		oss << "Could not read from tube";
-		if (validate) {
-			FILE_LOG(logWARNING) << "Fail";
-			close(serialfd);
+	ret = -1;
+	int attempt = 0;
+	while (ret == -1) {
+		memset(result, 0, sizeof(result));	
+		usleep(TUBE_READ_WAIT_US);
+		ret = read (serialfd, result, sizeof(result));
+		++attempt;
+		if (attempt == TUBE_MAX_RX_ATTEMPTS) {
+			std::ostringstream oss;
+			oss << "Receive attempt number " << TUBE_MAX_RX_ATTEMPTS << " for [" << buffer << "] to tube " << serial << ". Aborting read.";
+			if (verbose) {
+				FILE_LOG(logERROR) << oss.str();
+			}
+			throw std::runtime_error(oss.str());
 		}
-		throw std::runtime_error(oss.str());	
 	}
+	if (attempt > 1) {
+		FILE_LOG(logINFO) << "receive attempt " << attempt;
+	}			
 
 	// throw error if read buffer empty
 	if (strlen(result) == 0) {
 		std::ostringstream oss;
 		oss << "Empty receive buffer from tube";
-		if (validate) {
-			FILE_LOG(logWARNING) << "Fail";
-			close(serialfd);
-		}		
+		if (verbose) {
+			FILE_LOG(logERROR) << oss.str();
+		}
 		throw std::runtime_error(oss.str());
 	}
 
-	FILE_LOG(logINFO) << "\tReceived [" << command << "]: " << result;
+	FILE_LOG(logINFO) << "\tRead [" << command << "]:\t" << result;
 	return std::string(result);
 }
-
-
-char* Interface::send_command_to_tube(char* c, int rb, int &value, int &value2)  {
-	//for safety,if a usb serial port calls this function, it exits
-	//if(strstr (serial,"USB")!=NULL) exit(-1);
-
-
-	char buffer[255]="", command[200]="", binaryNumber[9]="00000000";
-	char* p = binaryNumber;
-	int temp;
-
-	strcpy(command,c);
-
-#ifdef VERBOSE_MOTOR
-	std::cout<<"Tube Sending command:"<<command<<std::endl;
-#endif
-
-	if (write (serialfd,command,strlen(command))==-1)
-		std::cout<<"error sending the command \n";
-
-	if (rb)
-	{
-		buffer[0]='\0';
-		int count = 0;
-		while(!strcmp(buffer,""))
-		{
-			usleep(200000);
-
-			if ( read (serialfd, buffer, 255)==-1)
-				std::cout<<"error receiving data back \n";
-			count++;
-			if(count==5)//if((count==5)&&(!strcmp(c,"sr:12 ")))
-			{
-				std::cout<<"ERROR:The tube is probably switched off. Received no output from Tube for command:"<<c<<std::endl;
-				value=-9999;
-				value2=-9999;
-				strcpy(binaryNumber,"99999999");
-				return p;
-			}
-		}
-		//gets rid of asterix in front
-		strncpy (buffer,buffer+1,strlen(buffer)-1);
-
-		if(!strcmp(c,"er "))
-		{
-			p=buffer;
-			return p;
-		}
-
-		//lookin for a colon in btw, means theres 2 numbers..for eg.  gn = voltage:current
-		char* pch;
-		pch = strchr(buffer,':');
-		if (pch!=NULL)
-		{
-			char ctemp1[200],ctemp2[200];
-			strncpy(ctemp1,buffer,pch-buffer);
-			value = atoi(ctemp1);
-			strncpy(ctemp2,pch+1,11);
-			value2 = atoi(ctemp2);
-		}
-		else
-		{
-			temp=atoi(buffer);
-			value = temp;
-
-			//converts the data received to the binary form
-			if(temp<0)
-			{
-				std::cout<<"ERROR: the data received for command '"<<command<<"' is :"<<temp<<std::endl;
-				exit(-1);
-			}
-			else if (temp>0)
-			{
-				for(int i=7;i>=0;i--)
-				{
-					if(temp<1)
-						break;
-					binaryNumber[i]='0'+(temp%2);
-					temp/=2;
-				}
-			}
-		}
-
-	}
-#ifdef VERBOSE_MOTOR
-	std::cout<<"Interface: Command:"<<c<<"  Received value:"<<p<<" : value:"<<value<<std::endl;
-#endif 
-	return p;
-}
-
 
 
 void Interface::PressureInterface() {
@@ -410,7 +386,7 @@ void Interface::PressureInterface() {
 		close(serialfd);
 		throw std::runtime_error("Fail to communicate with pressure gauge");
 	}
-    FILE_LOG(logINFO) << "Success" << std::endl;
+    FILE_LOG(logINFOGREEN) << "Success" << std::endl;
 }
 
 
@@ -450,7 +426,7 @@ void Interface::FilterWheelInterface() {
 	tcflush(serialfd, TCIOFLUSH);
 	tcsetattr(serialfd, TCSANOW, &new_serial_conf);
 
-    FILE_LOG(logINFO) << "Success";
+    FILE_LOG(logINFOGREEN) << "Success";
 }
 
 

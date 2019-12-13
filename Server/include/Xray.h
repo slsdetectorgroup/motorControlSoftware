@@ -1,40 +1,59 @@
 #pragma once
 
 #include "Interface.h"
+
+#include <vector>
+#include <utility>
+
 class Xray {
- public:
-  Xray(Interface* interface);
-  Interface* getInterface();
-  /**checks if the xray tube is on standby
-     @return 1 if it is on standby,-9999 if its switched off, else 0
-  */
-  int isOnStandby();
-  void setHVSwitch(int HVSwitch);	
-  int getHVSwitch();
-  void setVoltage(int Voltage);	
-  void setCurrent(int Current);	
-  void setVoltageAndCurrent(int Voltage, int Current);
-  int getVoltage();
-  int getVoltageActual();
-  int getCurrent();
-  int getCurrentActual();
-  void getVoltageAndCurrent(int &voltage, int &current);
-  void getVoltageAndCurrentActual(int &voltage, int &current);
-  void setShutter(int Shutter, bool on);	
-  int getShutter1();
-  int getShutter2();
-  int getShutter3();
-  int getShutter4();
-  void getShutters(int &s1,int &s2,int &s3,int &s4);
-  void startWarmup(int warmupVoltage);
-  int getWarmupTimeRemaining();
-  bool isAccessPossible();
-  int getErrorCode();
-  std::string getErrorMessage();
-  void clearErrorCode();
-  void print();
+   public:
+   Xray(Interface* interface);
+   ~Xray();
+   Interface* getInterface();
+   int setMaxPower(int power);
+   int getMaxPower();
+   int getErrorCode();
+   std::string getErrorMessage();
+   void clearErrorCode();
+   bool isOnStandby();
+   void setHVSwitch(bool on);	
+   bool getHVSwitch();
+   void setVoltage(int value);	
+   int getVoltage();
+   void setCurrent(int value);	
+   int getCurrent();
+   void setVoltageAndCurrent(int v, int c);
+   std::pair <int, int> getVoltageAndCurrent();
+   int getActualVoltage();
+   int getActualCurrent();
+   std::pair <int, int> getActualVoltageAndCurrent();
+   bool isShutterConnected(int index);
+   void setShutter(int index, bool on);	
+   bool getShutter(int index);
+   void startWarmup(int voltage);
+   int getWarmupTimeRemaining();
+   bool isAccessPossible();
+   void writeAllWarmupTimestamps();
+   std::string getWarmupTimestamp(int voltage);
+
+   // advanced
+   void sendCommand(std::string command);
+   std::string sendCommandAndReadBack(std::string command);
+   void print();
   
- private:
-  Interface* interface;
+   private:
+   int getInteger(std::string result);
+   std::pair<int, int> getTwoIntegers(std::string result);
+   void validatePower(int voltage, int current);
+   void validateVoltage(int voltage);
+   void validateCurrent(int current);
+   int getShutterStatus(int index);
+   void readAllWarmupTimestamps();
+   void setWarmupTimestamp(int voltage);
+
+   Interface* interface;
+   int maxTubePower;
+   std::vector <std::string> warmupTimings;
+
 }; 
 

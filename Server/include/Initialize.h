@@ -22,14 +22,13 @@ class Initialize {
   std::string executeCommand(std::vector<std::string> args);
 
  private:
+  void OnlyTubeCommand();
   void OnlyFluorescenceCommand(std::string name);
   void RestrictedForSlitAndFluorescence(std::string name);
   void UpdateSlitLimits(std::string name);
   int GetFluorescenceIndex(std::string name);
   int GetMotorIndex(std::string name);
   int GetControllerIndex(std::string name);
-  int ReadWarmupTimestamps(std::string const fName);
-  int WriteWarmupTimestamps(std::string const fName);
   void ReadConfigFile();
   void UpdateInterface(InterfaceIndex index);
   void TubeMode(std::vector<std::string> args);
@@ -42,8 +41,6 @@ class Initialize {
 
   std::vector<bool> usbSerialPortsUsed;
   Xray* xrayTube;
-  int maxTubePower;
-  std::vector<std::string> warmupTimings;
   Pgauge* pgauge;
   std::vector<Fwheel*> fwheel;
   std::vector<ReferencePoint*> referencePoint;
@@ -51,5 +48,6 @@ class Initialize {
   Slit* slit;
   std::vector<Controller*> controller;
   std::vector<Motor*> motor;
+  int maxTubePower;
 };
 

@@ -10,6 +10,12 @@
 
 Motor::Motor(int index, std::string name, int axis, int controller, double lowerLimit, double upperLimit)
   : index(index),name(name),axis(axis),controller(controller), lowerLimit(lowerLimit),upperLimit(upperLimit),position(0.0) {
+	// validations
+	if (lowerLimit > upperLimit) {
+		std::ostringstream oss; 
+		oss << "Invalid limits to set motor " << name;
+		throw RuntimeError(oss.str());			
+	}
 	FILE_LOG(logINFO) << "Motor [" << index << "]: [name:" << name << ", axis:" << axis <<  ", iController:" << controller << "]";
   }
 

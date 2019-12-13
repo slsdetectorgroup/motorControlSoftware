@@ -8,6 +8,8 @@
 #include <cstring>
 #include <iterator>
 
+#define MAX_NUM_MOTORS_PER_CONTROLLER 	(3)
+
 Controller::Controller(const int index, const std::string name, const std::string serialNumber)
 : index(index), name(name), serialNumber(serialNumber), interface(NULL) {
     motor.resize(MAX_NUM_MOTORS_PER_CONTROLLER);
@@ -182,7 +184,7 @@ std::string Controller::sendCommandAndReadBack(std::string command) {
 }
 
 void Controller::print() {
-  std::cout << "\tController [" << index << "]\n\t  "
+    std::cout << "\tController [" << index << "]\n\t  "
   			<< "Name         : " << name << "\n\t  "
   			<< "SerialNumber : " << serialNumber << "\n\t  "
 			<< "UsbPort      : " << interface->getSerial() << "\n\t  "

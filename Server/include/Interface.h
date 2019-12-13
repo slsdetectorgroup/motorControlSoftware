@@ -8,21 +8,22 @@ enum InterfaceIndex{CONTROLLER, TUBE, PRESSURE, FILTER_WHEEL};
 
 class Interface {
   public:
-  Interface(std::string serial, InterfaceIndex index);
+  Interface(std::string serial, int serialPortNumber, InterfaceIndex index);
   ~Interface();
   std::string getSerial();
+  int getSerialPortNumber();
 
   void ControllerInterface();
   void ControllerWaitForIdle();
   /* Calls ControllerSendCommand
   handles exceptions, if validate, then throws after fixed number of attempts */
-  std::string ControllerSend(std::string command, bool readBack = false, bool validate = false);
-
+  std::string ControllerSend(std::string command, bool readBack = false);
 
   void TubeInterface();
-  std::string TubeSend(std::string command, bool readBack, bool validate = false);//, int &value, int &value2);
+  /* Calls TubeSendCommand
+  handles exceptions, if validate, then throws after fixed number of attempts */
+  std::string TubeSend(std::string command, bool readBack = false);
 
- char* send_command_to_tube(char* c, int rb, int &value, int &value2);
   void PressureInterface();
   void FilterWheelInterface();
 
@@ -60,10 +61,13 @@ class Interface {
 
 private:
   void ValidateController();
-  std::string ControllerSendCommand(std::string command, bool readBack = false, bool verbose = true);
+  bool ControllerIsIdle(std::string result, bool validate = false);
+  std::string ControllerSendCommand(std::string command, bool readBack = false);
 
   void ValidateTube();
+  std::string TubeSendCommand(std::string command, bool readBack = false);
 
   std::string serial;
+  int serialPortNumber;
   int serialfd;
 };
