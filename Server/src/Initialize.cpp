@@ -34,10 +34,18 @@ using namespace std;
 #define USB_PORT_PREFIX					("/dev/ttyUSB")
 
 
+void Initialize::OnlyPressureGaugeCommand() {
+	if (pgauge == NULL) {
+		try {
+			UpdateInterface(PRESSURE);
+		} catch (RuntimeError &e) {
+			throw;
+		}	
+	}
+}
+
 void Initialize::OnlyTubeCommand() {
 	if (xrayTube == NULL) {
-		//create xray port
-		// get tube interface
 		try {
 			UpdateInterface(TUBE);
 		} catch (RuntimeError &e) {
@@ -757,196 +765,22 @@ string Initialize::executeCommand(vector<string> args) {
 			xrayTube->writeAllWarmupTimestamps();
 			return "ok";
 		}
+
+		else if (!strcasecmp(command.c_str(), "pressure")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: pressure");
+			}
+			OnlyPressureGaugeCommand();
+			std::vector<PressureGauge> result = pgauge->getPressure();
+			oss << 	"1: [" << result[0].status << ", " << result[0].pressure << "]\n"
+					"2: [" << result[1].status << ", " << result[1].pressure << "]";
+			return oss.str();
+		}
 	/*
 
 
 		int slitnum=0;
 		double midpos;
-
-
-		// --- if command is createxrayport------------------creates xray port and class-------------------------
-		else if(command == "createxrayport")
-		{
-
-			// if number of parameters are wrong
-			if(nArg!=1)
-			{
-				strcpy(mess, "ERROR: Required number of parameters: 1");
-				return -1;
-			}
-			if(xrayTube != NULL)
-			{
-				strcpy(mess, "ERROR: The Serial Port and Xray class has ALREADY been created before");
-				return -1;
-			}
-			bool success = false;
-
-			//check through all the usb devices connected
-			char serial[200]="/dev/ttyUSBX";
-			int usbNum=-1;
-			bool used;
-			while(!success){
-				usbNum++;
-				if(usbNum >=10) break;
-				serial[11]=usbNum+48;
-				used=false;
-				for(int i=0;i<controller.size();i++)
-					if(!(strcmp(interface[i]->getSerial(),serial))){
-						used=true;
-						break;
-					}
-				// no need to check filter wheels as this command is not for laser box
-	#ifdef VACUUMBOX
-				if(pgauge != NULL && (!(strcmp(pgauge->getInterface()->getSerial(),serial))))
-					used=true;
-	#endif
-				if(!used) {
-					if (xrayTube==NULL){
-						Interface* tubeInterface = new Interface(serial , &success, true);
-						if(success){
-							xrayTube = new Xray(tubeInterface);
-	#ifdef XRAYBOX
-							strcpy(mess, "Serial Port to the xray tube has been created successfully");
-							return 0;
-	#endif
-						}else {
-							xrayTube = NULL;
-						}
-					}
-					else if(!(strcmp(xrayTube->getInterface()->getSerial(),serial))){
-						used=true;
-					}
-				}
-			}
-
-			if (xrayTube == NULL) {
-				strcpy(mess, "ERROR: Unable to create serial port for X-Ray Tube or the tube is switched off.");
-				return -1;
-			}
-
-			//should not reach here
-			return -1;
-		}
-
-
-		// --- if command is pressure------------------creates pgauge if doesnt exist, gets pressure-------------------------
-		else if(command == "pressure")
-		{
-
-			// if number of parameters are wrong
-			if(nArg!=1)
-			{
-				strcpy(mess, "ERROR: Required number of parameters: 1");
-				return -1;
-			}
-			if(pgauge == NULL) {
-
-				bool success = false;
-				//check through all the usb devices connected
-				char serial[200]="/dev/ttyUSBX";
-				bool used;
-				for(int usbNum=0;usbNum<10;usbNum++) {
-					serial[11]=usbNum+48;
-					used=false;
-					for(int i=0;i<controller.size();i++) {
-						if(!(strcmp(interface[i]->getSerial(),serial))){
-							used=true;
-							break;
-						}
-					}
-					// no need to check filter wheels as this command is not for laser box
-					if((xrayTube != NULL) && (!(strcmp(xrayTube->getInterface()->getSerial(),serial))))
-						used=true;
-					if(!used) {
-						Interface* pressureInterface = new Interface(serial, true, &success);
-						if(success){
-							pgauge = new Pgauge(pressureInterface);
-							printf("Serial Port to the Pressure Gauge Controller has been created successfully\n");
-							break;
-						}else {
-							pgauge = NULL;
-						}
-					}
-				}
-			}
-
-			if (pgauge == NULL) {
-				strcpy(mess, "ERROR: Unable to create Pressure Gauge Controller or the pump is switched off.");
-				return -1;
-			}
-
-			string status1="";double value1=-1;string status2="";double value2=-1;
-			int ret = 0;
-			//retries
-			for (int i = 0; i < 3; i ++) {
-				ret = pgauge->getPressure(status1,value1,status2,value2);
-				if (ret)
-					break;
-			}
-
-			if (!ret) {
-				strcpy(mess, "ERROR: Could not get pressure\n");
-				return -1;
-			}
-
-			sprintf(mess,"Gauge 1 [Status: %s, Pressure: %e], Gauge 2 [Status: %s, Pressure: %e]\n",
-					status1.c_str(), value1, status2.c_str(), value2);
-			return 0;
-		}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 		//------------------------------------------------- laser box specific list  ---------------------------------------------------------------------
@@ -1695,6 +1529,17 @@ string Initialize::executeCommand(vector<string> args) {
 		}
 		throw;
 	}
+	// delete xray class if tube switched off
+	catch (const PressureOffError &e) {
+		if (pgauge != NULL) {
+			int port = pgauge->getInterface()->getSerialPortNumber();
+			usbSerialPortsUsed[port] = false;
+			FILE_LOG(logINFO) << "Setting interface /ttyUSB" << port << ": Not in use";
+			delete pgauge;
+			pgauge = NULL;
+		}
+		throw;
+	}
 }
 
 Initialize::~Initialize() {
@@ -1773,8 +1618,6 @@ Initialize::Initialize()
 		}	
 	}
 	if (slit != NULL) {
-		cout << "Slit" << endl;
-		cout << "====" << endl;
 		slit->print();
 	}
 	if (fwheel.size() > 0) {
@@ -1790,14 +1633,10 @@ Initialize::Initialize()
 		controller[i]->print();
 	}	
 	if (xrayTube != NULL) {
-		cout << "Xray Tube" << endl;
-		cout << "=========" << endl;
 		xrayTube->print();
 	}
 	if (pgauge != NULL) {
-		cout << "Pressure Gauge" << endl;
-		cout << "==============" << endl;
-		cout << "\tUsb port\t: " << pgauge->getInterface()->getSerial() << endl;
+		pgauge->print();
 	}
 	cout << endl;
 }
@@ -1916,7 +1755,7 @@ void Initialize::UpdateInterface(InterfaceIndex index) {
 		throw TubeOffError (oss.str());
 	case PRESSURE:
 		oss << "Pressure Gauge is probably switched off. Could not find usb serial port.";
-		break;
+		throw PressureOffError(oss.str());
 	case CONTROLLER:
 		oss << "Could not find usb serial port for controller.";
 		break;

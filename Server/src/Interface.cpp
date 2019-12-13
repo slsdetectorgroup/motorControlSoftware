@@ -25,9 +25,22 @@
 #define CONTROLLER_MAX_TX_ATTEMPTS		(5)
 #define CONTROLLER_MAX_RX_ATTEMPTS		(5)
 #define CONTROLLER_READ_WAIT_US			(50000) // because of raspberry pi
-#define TUBE_MAX_RX_ATTEMPTS			(5)
+#define CONTROLLER_CHECK_STATUS_CMD		("st ")
+#define CONTROLLER_POSITION_CMD			("pos ")
+
+#define TUBE_MAX_RX_ATTEMPTS			(10)
 #define TUBE_MAX_REPEAT_ATTEMPTS		(5)
 #define TUBE_READ_WAIT_US				(200000)
+#define TUBE_STATUS_CMD					("sr:12 ")
+
+#define PRESSURE_MAX_RX_ATTEMPTS		(5)
+#define PRESSURE_MAX_REPEAT_ATTEMPTS	(5)
+#define PRESSURE_READ_WAIT_US			(200000)
+#define PRESSURE_ARE_YOU_THERE_CMD		("AYT\r\n")
+#define PRESSURE_TYPE_RESPONSE			("TPG362")
+#define PRESSURE_ACK_RESPONSE			("\x6\r\n")
+#define PRESSURE_NACK_RESPONSE			("\x15\r\n")
+#define PRESSURE_ENQUIRY_CMD			("\x5")
 
 
 Interface::Interface(std::string serial, int serialPortNumber, InterfaceIndex index) 
@@ -64,7 +77,7 @@ void Interface::ControllerInterface() {
 	FILE_LOG(logINFO) << "\tMotorcontroller, checking:" << serial;
 	serialfd = open (serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
 	if (serialfd == -1) {
-		FILE_LOG(logWARNING) << "Unable to open port " << serial << " for controller";
+		FILE_LOG(logDEBUG) << "Unable to open port " << serial << " for controller";
 		FILE_LOG(logWARNING) << "Fail";
 		throw std::runtime_error("Failed to open port");
 	}
@@ -91,7 +104,7 @@ void Interface::ValidateController() {
 	FILE_LOG(logINFO) << "\tValidating Controller";
 	try {
 		// will throw for ports that cant communicate
-		std::string result = ControllerSendCommand("st ", true);
+		std::string result = ControllerSendCommand(CONTROLLER_CHECK_STATUS_CMD, true);
 		// will throw for ports (tube) that can communciate, but wrong port (strange answer)
 		ControllerIsIdle(result, true);
 	} catch (...) {
@@ -127,7 +140,7 @@ bool Interface::ControllerIsIdle(std::string result, bool validate) {
 
 void Interface::ControllerWaitForIdle() {
 	for (;;) {
-		std::string result = ControllerSend("st ", true);
+		std::string result = ControllerSend(CONTROLLER_CHECK_STATUS_CMD, true);
 		if (ControllerIsIdle(result)) {
 			FILE_LOG(logDEBUG) << "Controller Idle";
 			break;
@@ -149,7 +162,7 @@ std::string Interface::ControllerSend(std::string command, bool readBack) {
 }
 
 std::string Interface::ControllerSendCommand(std::string command, bool readBack) {
-	if (command != "st " && command != "pos ") { // for debugging
+	if (command != std::string(CONTROLLER_CHECK_STATUS_CMD) && command != std::string(CONTROLLER_POSITION_CMD)) { // for debugging
 		FILE_LOG(logINFO) << "\tSending [" << command << "]   (port:" << serial << ", read:" << readBack << ')';
 	}
 	bool verbose = true;
@@ -172,7 +185,7 @@ std::string Interface::ControllerSendCommand(std::string command, bool readBack)
 			throw std::runtime_error(oss.str());
 		}
 	}
-	if (attempt > 1) {
+	if (attempt > 0) {
 		FILE_LOG(logDEBUG) << "Send attempt " << attempt;
 	}
 	// no read back
@@ -197,7 +210,7 @@ std::string Interface::ControllerSendCommand(std::string command, bool readBack)
 			throw std::runtime_error(oss.str());
 		}		
 	}
-	if (attempt > 1) {
+	if (attempt > 0) {
 		FILE_LOG(logDEBUG) << "receive attempt " << attempt;
 	}
 
@@ -209,7 +222,7 @@ std::string Interface::ControllerSendCommand(std::string command, bool readBack)
 		throw std::runtime_error(oss.str());		
 	}
 
-	if (command != "st ") {
+	if (command != std::string(CONTROLLER_CHECK_STATUS_CMD)) {
 		FILE_LOG(logINFO) << "\tReceived [" << command << "]: " << result;
 	}
 	return std::string(result);
@@ -221,7 +234,7 @@ void Interface::TubeInterface() {
 	FILE_LOG(logINFO) << "\tXray tube, checking:" << serial;
 	serialfd = open (serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
 	if (serialfd == -1) {
-		FILE_LOG(logWARNING) << "Unable to open port " << serial << " for xray tube\n";
+		FILE_LOG(logDEBUG) << "Unable to open port " << serial << " for xray tube";
         FILE_LOG(logWARNING) << "Fail";
 		throw std::runtime_error("Failed to open port");
 	}
@@ -246,13 +259,13 @@ void Interface::TubeInterface() {
 
 void Interface::ValidateTube() {
 	FILE_LOG(logINFO) << "\tValidating Tube";
-		try {
-			std::string result = TubeSend("sr:12 ", true);
-		} catch (...) {
-				close(serialfd);
-				FILE_LOG(logWARNING) << "Fail";
-				throw;
-		}
+	try {
+		std::string result = TubeSend(TUBE_STATUS_CMD, true);
+	} catch (...) {
+			close(serialfd);
+			FILE_LOG(logWARNING) << "Fail";
+			throw;
+	}
 	FILE_LOG(logINFOGREEN) << "\tSuccess";
 }
 
@@ -262,10 +275,10 @@ std::string Interface::TubeSend(std::string command, bool readBack) {
         try {
             std::string result = TubeSendCommand(command, readBack);
 			// ensure valid data as well for error code
-			if (command == "sr:12 ") {
+			if (command == std::string(TUBE_STATUS_CMD)) {
 				result.erase(result.begin());
 				std::istringstream iss(result);
-				int status = 1;
+				int status = -1;
 				iss >> status;
 				if (iss.fail()) {
 					std::ostringstream oss;
@@ -288,7 +301,7 @@ std::string Interface::TubeSend(std::string command, bool readBack) {
 }
 
 std::string Interface::TubeSendCommand(std::string command, bool readBack) {
-	FILE_LOG(logINFO) << "\tSend [" << command << "]:\t(port:" << serial << ", read:" << readBack << ')';
+	FILE_LOG(logINFO) << "\tSend Tube [" << command << "]:\t(port:" << serial << ", read:" << readBack << ')';
 	
 	bool verbose = false;
 
@@ -328,8 +341,8 @@ std::string Interface::TubeSendCommand(std::string command, bool readBack) {
 			throw std::runtime_error(oss.str());
 		}
 	}
-	if (attempt > 1) {
-		FILE_LOG(logINFO) << "receive attempt " << attempt;
+	if (attempt > 0) {
+		FILE_LOG(logDEBUG) << "receive attempt " << attempt;
 	}			
 
 	// throw error if read buffer empty
@@ -342,53 +355,190 @@ std::string Interface::TubeSendCommand(std::string command, bool readBack) {
 		throw std::runtime_error(oss.str());
 	}
 
-	FILE_LOG(logINFO) << "\tRead [" << command << "]:\t" << result;
+	FILE_LOG(logINFO) << "\tRead Tube [" << command << "]:\t" << result;
 	return std::string(result);
 }
 
 
 void Interface::PressureInterface() {
-	FILE_LOG(logINFO) << "Pressure, checking:" << serial;
+	FILE_LOG(logINFO) << "\tPressure, checking:" << serial;
 	serialfd = open (serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
 	if (serialfd == -1) {
-		FILE_LOG(logWARNING) << "Unable to open port " << serial << " for pressure, check permissions to use it\n";
-        FILE_LOG(logWARNING) << "Fail" << std::endl;
+		FILE_LOG(logDEBUG) << "Unable to open port " << serial << " for pressure gauge";
+        FILE_LOG(logWARNING) << "Fail";
 		throw std::runtime_error("Fail to open port");
 	}
+
 	struct termios new_serial_conf;
 	memset(&new_serial_conf, 0, sizeof(new_serial_conf));
-	/* control options */
-	//B9600	9600 baud
-	//CS8	8 data bits
-	//CSTOPB	2 stop bits (1 otherwise)
-	//CLOCAL	Local line - do not change "owner" of port
-	//CREAD	Enable receiver
-	new_serial_conf.c_cflag = B9600 | CS8 | CLOCAL | CREAD ;
-
-	/* input options */
-	//IGNPAR	Ignore parity errors
-	new_serial_conf.c_iflag = IGNPAR;
-
-	/* output options */
-	new_serial_conf.c_oflag = 0;
-
-	/* line options */
-	new_serial_conf.c_lflag = 0; // doesnt work with ICANON
-
-	/* flush input */
+	new_serial_conf.c_cflag = B9600 | CS8 | CREAD | CLOCAL; // control options
+	new_serial_conf.c_iflag = IGNPAR; // input options
+	new_serial_conf.c_oflag = 0; // output options
+	new_serial_conf.c_lflag = 0; // line options
+	// flush input 
 	sleep(2);
 	tcflush(serialfd, TCIOFLUSH);
-	tcsetattr(serialfd, TCSANOW, &new_serial_conf);
-
-
-	if (!checkPressureGaugePort()) {
-		FILE_LOG(logWARNING) << "Fail" << std::endl;
-		close(serialfd);
-		throw std::runtime_error("Fail to communicate with pressure gauge");
+	if (tcsetattr(serialfd, TCSANOW, &new_serial_conf)!= 0) {
+		std::ostringstream oss;
+		oss << errno << " from tcsetattr: " << strerror(errno);
+		throw std::runtime_error(oss.str());
 	}
-    FILE_LOG(logINFOGREEN) << "Success" << std::endl;
+
+	ValidatePressureGauge();
 }
 
+void Interface::ValidatePressureGauge() {
+	// send \r\n to clear commands sent by other interfaces
+	try {
+		PressureGaugeSendCommand("\r\n");
+	} catch (...) {
+		;
+	}
+	// validate
+	FILE_LOG(logINFO) << "\tValidating Pressure Gauge";
+	try {
+		std::string result = PressureGaugeSend(PRESSURE_ARE_YOU_THERE_CMD);
+		if (result.find(PRESSURE_TYPE_RESPONSE) == std::string::npos) {
+			std::ostringstream oss;
+			oss << "Unknown pressure gauge status " + result;
+			FILE_LOG(logERROR) << oss.str();
+			PressureGaugeSendCommand("RES\r\n");
+			throw std::runtime_error(oss.str());
+		}
+	} catch (...) {
+			close(serialfd);
+			FILE_LOG(logWARNING) << "Fail";
+			throw;
+	}
+	FILE_LOG(logINFOGREEN) << "\tSuccess";
+}
+
+std::string Interface::PressureGaugeSend(std::string command) {
+	int attempts = 0;
+	for (;;) {
+        try {
+            std::string result = PressureGaugeSendCommand(command);
+			return result;
+        } catch (const std::exception& e) {
+			++attempts;
+			if (attempts == PRESSURE_MAX_REPEAT_ATTEMPTS) {
+				std::ostringstream oss;
+				oss << "Pressure Gauge is probably switched off. " << e.what();
+				throw PressureOffError(oss.str());
+			}
+        }	
+		usleep(PRESSURE_READ_WAIT_US);	
+	}
+}
+
+std::string Interface::PressureGaugeSendCommand(std::string command) {
+	bool verbose = false;
+	FILE_LOG(logINFO) << "\tSend Gauge [" << command.substr(0, command.length() - 2) << "\\r\\n]:\t(port:" << serial << ')';
+
+	// send command
+	char buffer[COMMAND_BUFFER_LENGTH];
+	memset(buffer, 0, sizeof(buffer));
+	strcpy(buffer, command.c_str());	
+	int ret = write (serialfd, buffer, strlen(buffer));
+	if (ret == -1) {
+		std::ostringstream oss;
+		oss << "Could not write command [" << buffer << "] to pressure gauge";
+		if (verbose) {
+			FILE_LOG(logERROR) << oss.str();
+		}
+		throw std::runtime_error(oss.str());
+	}
+
+	// read acknowledge
+	char result[COMMAND_BUFFER_LENGTH];
+	memset(result, 0, sizeof(result));	
+	usleep(PRESSURE_READ_WAIT_US);
+	ret = read (serialfd, result, sizeof(result));
+	if (ret == -1) {
+		std::ostringstream oss;
+		oss << "Could not read ack status from pressure gauge";
+		if (verbose) {
+			FILE_LOG(logERROR) << oss.str();
+		}
+		throw std::runtime_error(oss.str());		
+	}
+
+	// validate ack
+	// length
+	if (strlen(result) == 0) {
+		std::ostringstream oss;
+		oss << "Could not read ack status from pressure gauge. Empty buffer";
+		if (verbose) {
+			FILE_LOG(logERROR) << oss.str();
+		}
+		throw std::runtime_error(oss.str());
+	}
+	// value
+	if (strncmp(result, PRESSURE_ACK_RESPONSE, strlen(PRESSURE_ACK_RESPONSE))) {
+		std::ostringstream oss;
+		oss << "Could not read acknowledge. Read ";
+		if (!strncmp(result, PRESSURE_NACK_RESPONSE, strlen(PRESSURE_NACK_RESPONSE))) {
+			oss << "negative acknowledge";
+		} else {
+			for (int i = 0; i < strlen(result); ++i) {
+				oss << std::hex << result[i] << std::dec;
+			}
+		}
+		if (verbose) {
+			FILE_LOG(logERROR) << oss.str();
+		}
+		throw std::runtime_error(oss.str());		
+	}
+	FILE_LOG(logDEBUG) << "\tAck rxd";
+
+	// send enquiry
+	memset(buffer, 0, sizeof(buffer));
+	strcpy(buffer, PRESSURE_ENQUIRY_CMD);
+	ret = write (serialfd, buffer, strlen(buffer));
+	if (ret == -1) {
+		std::ostringstream oss;
+		oss << "Could not write enquiry [" << buffer << "] to pressure gauge";
+		if (verbose) {
+			FILE_LOG(logERROR) << oss.str();
+		}
+		throw std::runtime_error(oss.str());
+	}	
+	FILE_LOG(logDEBUG) << "\tSent enquiry";
+
+	// read back
+	int attempt = 0;
+		memset(result, 0, sizeof(result));	
+	while (ret == -1 || strlen(result) < 5) {
+		memset(result, 0, sizeof(result));	
+		usleep(PRESSURE_READ_WAIT_US);
+		ret = read (serialfd, result, sizeof(result));
+		++attempt;
+		if (attempt == PRESSURE_MAX_RX_ATTEMPTS) {
+			std::ostringstream oss;
+			oss << "Receive attempt number " << PRESSURE_MAX_RX_ATTEMPTS << " for [" << buffer << "] to pressure gauge " << serial << ". Aborting read.";
+			if (verbose) {
+				FILE_LOG(logERROR) << oss.str();
+			}
+			throw std::runtime_error(oss.str());
+		}
+	}
+	if (attempt > 0) {
+		FILE_LOG(logDEBUG) << "receive attempt " << attempt;
+	}	
+
+	// throw error if read buffer empty
+	if (strlen(result) == 0) {
+		std::ostringstream oss;
+		oss << "Could not read pressure gauge. Empty buffer";
+		if (verbose) {
+			FILE_LOG(logERROR) << oss.str();
+		}
+		throw std::runtime_error(oss.str());
+	}
+
+	FILE_LOG(logINFO) << "\tRead Gauge [" << command.substr(0, command.length() - 2) << "\\r\\n]:\t" << result;
+	return std::string(result);
+}
 
 void Interface::FilterWheelInterface() {
 
@@ -427,99 +577,6 @@ void Interface::FilterWheelInterface() {
 	tcsetattr(serialfd, TCSANOW, &new_serial_conf);
 
     FILE_LOG(logINFOGREEN) << "Success";
-}
-
-
-
-bool Interface::checkPressureGaugePort() {
-
-    char crapstring[10]="c\r\n";
-    const int size = 255;
-    char modelcommand[10]="ayt\r\n";
-    char modelstring[10]="TPG36";
-    char buffer[size];
-
-    // was messed up as we were sending many messages thinking it is a motor or an xraytube
-    // reset it to normal by sending crap and reading the negative acknowledge
-    send_command_to_pressure(crapstring, strlen(crapstring), false, false);
-    read_from_pressure(crapstring, strlen(crapstring));
-
-    memset(buffer, 0, size);
-    strncpy(buffer, modelcommand, strlen(modelcommand));
-    if(!send_command_to_pressure(buffer, size))
-        return false;
-    if (strlen(buffer) < strlen(modelstring)) // could be fail due to max_retries
-          return false;
-    if (strncmp(buffer, modelstring, strlen(modelstring))) {
-        std::cout << serial << " is not Pressure Gauge Controller" << std::endl << std::endl;
-        return false;
-    }
-
-    return true;
-}
-
-
-int Interface::read_from_pressure(char* c, int size) {
-    const int max_retries = 10;
-    const int usleep_time = 200000; // 100ms
-    int ret = -1;
-
-    for (int retry = 0; retry < max_retries; ++retry) {
-
-        usleep(usleep_time);
-        memset(c, 0, size);
-
-        ret = read (serialfd, c, size);
-        if (ret < 1)
-            std::cout << "Error reading back. Attempt #" << retry << " of " <<
-            max_retries << ". Received " << ret << " bytes." << std::endl;
-        else
-            break;
-    }
-    return ret;
-}
-
-
-bool Interface::send_command_to_pressure(char* c, const int size, bool rb, bool enq) {
-    char ackstring[10]="\x6\r\n"; //\x6\xd\xa
-    char enqstring[10]="\x5";
-
-    // send command
-    std::cout << "Pressure, sending command (size:" << strlen(c) << ") "
-            "[" << c << "]" << std::endl;
-    if (write(serialfd, c, strlen(c)) == -1) {
-        std::cout << "Error sending command" << std::endl;
-        return false;
-    }
-
-    // read
-    if (rb) {
-        // read acknowledge
-        if (read_from_pressure(c, size) < strlen(ackstring)) // could be fail due to max_retries
-            return false;
-        if (strncmp(c, ackstring, strlen(ackstring))) {
-            std::cout << "Error reading acknowledge. Read";
-            for (int i = 0; i < strlen(c); ++i) printf("0x%x ",c[i]);
-            std::cout << std::endl;
-            return false;
-        }std::cout << "Pressure, received ack"<<std::endl;
-
-        // send enquiry
-        if (enq) {
-            std::cout << "Pressure, sending command (size:" << strlen(enqstring) << ") "
-                    "[" << enqstring << "]" << std::endl;
-            if (write(serialfd, enqstring, strlen(enqstring)) == -1) {
-                std::cout << "Error sending enquiry command" << std::endl;
-                return false;
-            }
-        }
-
-        // read output
-        if (read_from_pressure(c, size) < 1)
-            return false;
-    }
-
-    return true;
 }
 
 

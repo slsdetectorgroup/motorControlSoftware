@@ -29,6 +29,11 @@ enum {
   GOODBYE  /**< stop */
 };
 
+struct PressureGauge {
+	std::string status;
+	std::string pressure;
+};
+
 
 struct RuntimeError : public std::runtime_error {
 	RuntimeError(): runtime_error("Motor Control Software Failed") {
@@ -52,5 +57,9 @@ public:
     TubeStandbyError(std::string msg):RuntimeError(msg) {}
 };
 
+struct PressureOffError : public RuntimeError {
+public:
+    PressureOffError(std::string msg):RuntimeError(msg) {}
+};
 
 

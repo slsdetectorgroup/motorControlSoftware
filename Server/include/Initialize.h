@@ -22,6 +22,7 @@ class Initialize {
   std::string executeCommand(std::vector<std::string> args);
 
  private:
+  void OnlyPressureGaugeCommand();
   void OnlyTubeCommand();
   void OnlyFluorescenceCommand(std::string name);
   void RestrictedForSlitAndFluorescence(std::string name);

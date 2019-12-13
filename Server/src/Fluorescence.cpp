@@ -150,9 +150,9 @@ void Fluorescence::moveToTarget(std::string target) {
 }
 
 void Fluorescence::print() {
-    std::cout << "\tFluorescence" << (circular ? "_wheel [" : " [") << index << ']' << std::endl;
+    std::cout       << "\tFluorescence" << (circular ? "_wheel [" : " [") << index << ']' << std::endl;
     for (unsigned int i = 0; i < targetHolder.size(); ++i) {
-      std::cout << "\t  Target Holder [" << i << ']' << std::endl;
+        std::cout   << "\t  Target Holder [" << i << ']' << std::endl;
         targetHolder[i]->print();
     }
     std::cout << std::endl;

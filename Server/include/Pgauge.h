@@ -2,14 +2,19 @@
 
 class Interface;
 
-#include <string>
+#include "commonDefs.h"
+
+#include <vector>
 
 class Pgauge {
 public:
     Pgauge(Interface* interface);
+    ~Pgauge();
     Interface* getInterface();
+    std::string getStatus(int value);
+    int getInteger(std::string result);
+    std::vector<PressureGauge> getPressure();
     void print();
-    bool getPressure(std::string& status1, double& value1, std::string& status2, double& value2);
 
 private:
     Interface* interface;

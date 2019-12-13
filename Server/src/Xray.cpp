@@ -349,28 +349,6 @@ std::string Xray::sendCommandAndReadBack(std::string command) {
     return interface->TubeSend(command, true);
 }
 
-void Xray::print() {
-    bool standby = isOnStandby();
-    bool hv = getHVSwitch();
-    int v = getVoltage();
-    int c = getCurrent();
-    bool s1 = getShutter(1);
-    bool s2 = getShutter(2);
-    bool s3 = getShutter(3);
-    bool s4 = getShutter(4);
-    std::cout << "\tUsb port : " << interface->getSerial() << "\n\t  "
-            << "Status       : " << (standby ? "Stand-by" : "on") << "\n\t  "
-            << "High Voltage : " << (hv ? "on" : "off") << "\n\t  "
-            << "Voltage      : " << v << "\n\t  "
-            << "Current      : " << c << "\n\t  "
-            << "Shutter 1    : " << (s1 ? "on" : "off") << "\n\t  "
-            << "Shutter 2    : " << (s2 ? "on" : "off") << "\n\t  "
-            << "Shutter 3    : " << (s3 ? "on" : "off") << "\n\t  "
-            << "Shutter 4    : " << (s4 ? "on" : "off") << "\n\n";
-}
-
-
-
 void Xray::readAllWarmupTimestamps() {
     // initialize
     warmupTimings.resize(TUBE_WARM_UP_MAX_SIZE);
@@ -445,4 +423,26 @@ void Xray::setWarmupTimestamp(int voltage) {
     for (int i = voltage; i >= 0; --i) {
         warmupTimings[i] = timestamp;
     }
+}
+
+void Xray::print() {
+    bool standby = isOnStandby();
+    bool hv = getHVSwitch();
+    int v = getVoltage();
+    int c = getCurrent();
+    bool s1 = getShutter(1);
+    bool s2 = getShutter(2);
+    bool s3 = getShutter(3);
+    bool s4 = getShutter(4);
+	std::cout   << "Xray Tube" << std::endl;
+	std::cout   << "=========" << std::endl;
+    std::cout   << "\t  Usb port     : " << interface->getSerial() << std::endl
+                << "\t  Status       : " << (standby ? "Stand-by" : "on") << std::endl
+                << "\t  High Voltage : " << (hv ? "on" : "off") << std::endl
+                << "\t  Voltage      : " << v << std::endl
+                << "\t  Current      : " << c << std::endl
+                << "\t  Shutter 1    : " << (s1 ? "on" : "off") << std::endl
+                << "\t  Shutter 2    : " << (s2 ? "on" : "off") << std::endl
+                << "\t  Shutter 3    : " << (s3 ? "on" : "off") << std::endl
+                << "\t  Shutter 4    : " << (s4 ? "on" : "off") << std::endl << std::endl;
 }

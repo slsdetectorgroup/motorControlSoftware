@@ -184,11 +184,11 @@ std::string Controller::sendCommandAndReadBack(std::string command) {
 }
 
 void Controller::print() {
-    std::cout << "\tController [" << index << "]\n\t  "
-  			<< "Name         : " << name << "\n\t  "
-  			<< "SerialNumber : " << serialNumber << "\n\t  "
-			<< "UsbPort      : " << interface->getSerial() << "\n\t  "
- 	 		<< "Motors 0     : " << ((motor[0] == NULL) ? "None" : motor[0]->getName()) << "\n\t  "
- 	 		<< "Motors 1     : " << ((motor[1] == NULL) ? "None" : motor[1]->getName()) << "\n\t  "
- 	 		<< "Motors 2     : " << ((motor[2] == NULL) ? "None" : motor[2]->getName()) << "\n\n";
+    std::cout   << "\tController [" << index << "]\n"
+  			    << "\t  Name         : " << name << std::endl
+  			    << "\t  SerialNumber : " << serialNumber << std::endl
+			    << "\t  UsbPort      : " << interface->getSerial() << std::endl
+ 	 		    << "\t  Motors 0     : " << ((motor[0] == NULL) ? "None" : motor[0]->getName()) << std::endl
+ 	 		    << "\t  Motors 1     : " << ((motor[1] == NULL) ? "None" : motor[1]->getName()) << std::endl
+ 	 		    << "\t  Motors 2     : " << ((motor[2] == NULL) ? "None" : motor[2]->getName()) << std::endl << std::endl;
 }

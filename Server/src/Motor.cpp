@@ -65,16 +65,6 @@ double Motor::getPosition() {
 	return position;
 }
 
-void Motor::print() {
-  std::cout << "\tMotor [" << index << "]\n\t  "
-  			<< "Name        : " << name << "\n\t  "
-  			<< "Axis        : " << axis << "\n\t  "
-			<< "iController : " << controller << "\n\t  "
- 	 		<< "LowerLimit  : " << lowerLimit << "\n\t  "
-			<< "Upper Limit : " << upperLimit << "\n\t  "
-			<< "Position    : " << position << "\n\n";
-}
-
 bool Motor::canMotorMove(double position) {
   if (upperLimit == -1 && lowerLimit == -1)
 	  return true;
@@ -83,4 +73,13 @@ bool Motor::canMotorMove(double position) {
   return false;
 }
 
+void Motor::print() {
+  std::cout << "\tMotor [" << index << "]" << std::endl
+  			<< "\t  Name        : " << name << std::endl
+  			<< "\t  Axis        : " << axis << std::endl
+			<< "\t  iController : " << controller << std::endl
+ 	 		<< "\t  LowerLimit  : " << lowerLimit << std::endl
+			<< "\t  Upper Limit : " << upperLimit << std::endl
+			<< "\t  Position    : " << position << std::endl << std::endl;
+}
 
