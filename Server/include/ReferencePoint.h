@@ -1,5 +1,7 @@
 #pragma once
 
+class Controller;
+
 #include <string>
 #include <vector>
 
@@ -7,13 +9,12 @@ class ReferencePoint {
     public:
     ReferencePoint(int index, std::string name, std::vector<double> position);
     std::string getName();
-    double getXPosition();
-    double getYPosition();
-    double getZPosition();
+    std::vector<double> getPositions();  
+    bool isMatch(std::vector<double> pos);
     void print();
 
     private:
     int index;
     std::string name;
-    std::vector<double> position;
+    std::vector <double> position;
 };

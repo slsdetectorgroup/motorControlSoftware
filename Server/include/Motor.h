@@ -7,6 +7,7 @@ class Motor {
  public:
 
   Motor(int index, std::string name, int axis, int controller, double lowerLimit, double upperLimit);
+  static bool matches(double position1, double position2);
   std::string getName();
   int getAxis();
   int getController();

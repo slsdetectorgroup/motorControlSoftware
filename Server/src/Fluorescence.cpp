@@ -7,8 +7,8 @@
 
 #include <iostream>
 #include <sstream>
-#include <math.h>
 #include <cstring>
+#include <math.h>
 
 #define CIRCULAR_WIDTH          (45)
 #define CIRCULAR_OFFSET         (0)
@@ -105,7 +105,7 @@ void Fluorescence::updateCurrentTarget() {
 
 #ifdef XRAYBOX
     // laser position
-    if (!circular && (fabs(LINEAR_LASER_POSITION - position) < 0.0001)) {
+    if (!circular && Motor::matches(LINEAR_LASER_POSITION, position)) {
         currentTarget = FLUOR_LASER_VALUE;
         FILE_LOG(logINFO) << name << " at " << FLUOR_LASER_NAME;
         return;
@@ -116,7 +116,7 @@ void Fluorescence::updateCurrentTarget() {
     int ipos = round((position - (double)offset) / (double)width);
     double calculatedPosition = offset + ipos * width;
     // target positions
-    if (fabs(calculatedPosition - position) < 0.0001) {
+    if (Motor::matches(calculatedPosition, position)) {
         currentTarget = ipos;
         FILE_LOG(logINFO) << name << " at " << targetHolder[currentTargetHolder]->getCurrentTargetName(currentTarget);
     } 

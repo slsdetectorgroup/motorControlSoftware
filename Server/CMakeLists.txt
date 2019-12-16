@@ -6,6 +6,7 @@ set(SOURCES
     src/Pgauge.cpp
     src/Fwheel.cpp
     src/ReferencePoint.cpp
+    src/ReferencePoints.cpp
     src/Fluorescence.cpp
     src/TargetHolder.cpp
     src/Slit.cpp
@@ -21,6 +22,7 @@ set(HEADERS
     include/Pgauge.h
     include/Fwheel.h
     include/ReferencePoint.h
+    include/ReferencePoints.h
     include/Fluorescence.h
     include/TargetHolder.h
     include/Slit.h

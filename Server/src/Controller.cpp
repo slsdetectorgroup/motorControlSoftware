@@ -101,6 +101,9 @@ void Controller::moveRel(double position, int axis) {
     std::ostringstream oss;
     // validate  
     double currentPosition = motor[axis]->getPosition();
+    if (position == 0) {
+        return;
+    }
     if (!motor[axis]->canMotorMove(currentPosition + position)) {
         oss << "Cannot move " << motor[axis]->getName() << " by " << position << " (Position: " << currentPosition + position << "). Beyond limits " << motor[axis]->getLowerLimit() << " and " << motor[axis]->getUpperLimit() << '.';
         throw RuntimeError(oss.str());
@@ -117,6 +120,10 @@ void Controller::moveRel(double position, int axis) {
 
 void Controller::moveAbs(double position, int axis) {
     // validate
+    double currentPosition = motor[axis]->getPosition();
+    if (Motor::matches(position, currentPosition)) {
+       return;
+    }
     if (!motor[axis]->canMotorMove(position)) {
         std::ostringstream oss;
         oss << "Cannot move " << motor[axis]->getName() << " to position " << position << ". Beyond limits " << motor[axis]->getLowerLimit() << " and " << motor[axis]->getUpperLimit() << '.';

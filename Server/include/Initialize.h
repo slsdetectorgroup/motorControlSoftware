@@ -3,7 +3,7 @@
 class Xray;
 class Pgauge;
 class Fwheel;
-class ReferencePoint;
+class ReferencePoints;
 class Fluorescence;
 class Slit;
 class Controller;
@@ -22,7 +22,6 @@ class Initialize {
   std::string executeCommand(std::vector<std::string> args);
 
  private:
-  void OnlyPressureGaugeCommand();
   void OnlyTubeCommand();
   void OnlyFluorescenceCommand(std::string name);
   void RestrictedForSlitAndFluorescence(std::string name);
@@ -44,7 +43,7 @@ class Initialize {
   Xray* xrayTube;
   Pgauge* pgauge;
   std::vector<Fwheel*> fwheel;
-  std::vector<ReferencePoint*> referencePoint;
+  ReferencePoints* referencePoints;
   std::vector<Fluorescence*> fluorescence;
   Slit* slit;
   std::vector<Controller*> controller;

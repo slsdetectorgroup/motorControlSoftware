@@ -1,28 +1,41 @@
 #include "ReferencePoint.h"
+#include "Motor.h"
 #include "commonDefs.h"
 
 #include <iostream>
 
+
 ReferencePoint::ReferencePoint(int index, std::string name, std::vector<double> position)
-    : index(index), name(name), position(position) {
- 	FILE_LOG(logINFO) << "Reference Point [" << index << "]: [name:" << name << ", position:(" << position[0] << ", " << position[1] << ", " << position[2] << "]";       
-}
+    : index(index), name(name), position(position) {}
 
 std::string ReferencePoint::getName() {
     return name;
 }
 
-double ReferencePoint::getXPosition() {
-    return position[0];    
+std::vector<double> ReferencePoint::getPositions() {
+    return position;
 }
 
-double ReferencePoint::getYPosition() {
-    return position[1];
+bool ReferencePoint::isMatch(std::vector<double> pos) {
+    for (unsigned int i = 0; i < pos.size(); ++i) {
+        // if reference position is -1, valid as it is a dont care
+        if (Motor::matches(position[i], -1)) {
+            continue;
+        }
+        if (!Motor::matches(pos[i], position[i])) {
+            return false;
+        }
+    }
+    return true;
 }
 
-double ReferencePoint::getZPosition() {
-    return position[2];
-}
-void ReferencePoint::print() {
-    std::cout << "\t" << name << ": [" << position[0] << ", " <<  position[1] << ", " <<  position[2] << ']' << std::endl;
+void ReferencePoint::print() {  
+    std::cout << "\t  [" << index << "] : " << name << " [";
+    for (unsigned int i = 0; i < position.size(); ++i) {
+        std::cout << position[i];
+        if (i < position.size() - 1)  {
+            std::cout << ", ";
+        }
+    }        
+    std::cout << ']' << std::endl;
 }

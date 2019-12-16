@@ -1,12 +1,10 @@
 #include "Motor.h"
 #include "commonDefs.h"
 
-#include <iostream>
 #include <sstream>
-#include <cstring>
-#include <cstdlib>
-#include <stdio.h>
+#include <math.h>
 
+#define MOTOR_TOLERANCE	(0.0001)
 
 Motor::Motor(int index, std::string name, int axis, int controller, double lowerLimit, double upperLimit)
   : index(index),name(name),axis(axis),controller(controller), lowerLimit(lowerLimit),upperLimit(upperLimit),position(0.0) {
@@ -17,7 +15,14 @@ Motor::Motor(int index, std::string name, int axis, int controller, double lower
 		throw RuntimeError(oss.str());			
 	}
 	FILE_LOG(logINFO) << "Motor [" << index << "]: [name:" << name << ", axis:" << axis <<  ", iController:" << controller << "]";
-  }
+}
+
+bool Motor::matches(double position1, double position2) {
+	if (fabs(position1 - position2) < MOTOR_TOLERANCE) {
+		return true;
+	}
+	return false;
+}
 
 std::string Motor::getName() {
 	return name;

@@ -2,7 +2,7 @@
 #include "Xray.h"
 #include "Pgauge.h"
 #include "Fwheel.h"
-#include "ReferencePoint.h"
+#include "ReferencePoints.h"
 #include "Fluorescence.h"
 #include "Slit.h"
 #include "Controller.h"
@@ -33,16 +33,6 @@ using namespace std;
 #define MAX_USB_SERIAL_PORTS 			(10)
 #define USB_PORT_PREFIX					("/dev/ttyUSB")
 
-
-void Initialize::OnlyPressureGaugeCommand() {
-	if (pgauge == NULL) {
-		try {
-			UpdateInterface(PRESSURE);
-		} catch (RuntimeError &e) {
-			throw;
-		}	
-	}
-}
 
 void Initialize::OnlyTubeCommand() {
 	if (xrayTube == NULL) {
@@ -766,82 +756,83 @@ string Initialize::executeCommand(vector<string> args) {
 			return "ok";
 		}
 
+
+		// ----- pressure ------------------------------------------------------
+
 		else if (!strcasecmp(command.c_str(), "pressure")) {
 			if (nArg != 1) {
 				throw RuntimeError("Requires 1 parameters: pressure");
 			}
-			OnlyPressureGaugeCommand();
+			if (pgauge == NULL) {
+				try {
+					UpdateInterface(PRESSURE);
+				} catch (RuntimeError &e) {
+					throw;
+				}	
+			}
 			std::vector<PressureGauge> result = pgauge->getPressure();
 			oss << 	"1: [" << result[0].status << ", " << result[0].pressure << "]\n"
 					"2: [" << result[1].status << ", " << result[1].pressure << "]";
 			return oss.str();
 		}
-	/*
 
 
-		int slitnum=0;
-		double midpos;
+		// ----- reference points ----------------------------------------------
 
-
-		//------------------------------------------------- laser box specific list  ---------------------------------------------------------------------
-		// --- if command is checkref---------------------------------------
-		if(command == "checkref")
-		{
-			// if number of parameters are wrong
-			if(nArg!=1)
-			{
-				strcpy(mess, "ERROR: Required number of parameters: 1\nHelp: checkref");
-				return -1;
+		else if (!strcasecmp(command.c_str(), "reflist")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: reflist");
 			}
-
-			double x,y,z;
-			char *commands[15];
-			for(int j=0;j<15;j++)
-				commands[j]=new char[1000];
-			strcpy(commands[0],"pos");
-			//gets the position of x
-			strcpy(commands[1],"detector_x");
-			//if it returns an error, return an error
-			if(executeCommand(2,commands,mess)==-1)
-				return -1;
-			else
-				x=atof(mess);
-			//gets the position of y
-			strcpy(commands[1],"detector_y");
-			//if it returns an error, return an error
-			if(executeCommand(2,commands,mess)==-1)
-				return -1;
-			else
-				y=atof(mess);
-			//gets the position of z
-			strcpy(commands[1],"detector_z");
-			//if it returns an error, return an error
-			if(executeCommand(2,commands,mess)==-1)
-				return -1;
-			else
-				z=atof(mess);
-
-
-			for(int i=0;i<referencePoints.size();i++)
-			{
-				bool bx=false,by=false,bz=false;
-				//if its -1, then you dont care bout that axis
-				if((atof(referencePoints[i][1].c_str())<0)||(x==atof(referencePoints[i][1].c_str())))
-						bx=true;
-				if((atof(referencePoints[i][2].c_str())<0)||(y==atof(referencePoints[i][2].c_str())))
-						by=true;
-				if((atof(referencePoints[i][3].c_str())<0)||(z==atof(referencePoints[i][3].c_str())))
-						bz=true;
-				if(bx&&by&&bz)
-				{
-					strcpy(mess,referencePoints[i][0].c_str());
-					return 0;
-				}
+			if (referencePoints == NULL) {
+				throw RuntimeError ("No reference points added");
 			}
-			strcpy(mess,"None");
-			return 0;
-
+			oss << referencePoints->getList();
+			return oss.str();
 		}
+
+		else if (!strcasecmp(command.c_str(), "refvals")) {
+			if (nArg != 2) {
+				throw RuntimeError("Requires 2 parameters: refvals [name]");
+			}
+			if (referencePoints == NULL) {
+				throw RuntimeError ("No reference points added");
+			}
+			std::string name = args[1];
+			vector <double> positions = referencePoints->getPositions(name);
+			for (unsigned int i = 0; i < positions.size(); ++i) {
+				oss << positions[i] << ' ';
+			}
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "checkref")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: checkref");
+			}
+			if (referencePoints == NULL) {
+				throw RuntimeError ("No reference points added");
+			}
+			oss << referencePoints->getCurrentReferenceName();
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "ref")) {
+			if (nArg != 2) {
+				throw RuntimeError("Requires 2 parameters: ref [name]");
+			}
+			if (referencePoints == NULL) {
+				throw RuntimeError ("No reference points added");
+			}
+			std::string name = args[1];
+			referencePoints->moveTo(name);
+			return "ok";
+		}
+
+
+		// ----- filter wheels -------------------------------------------------
+
+
+	/*
 
 		// --- if command is fvals---------------------------------------
 		else if(command == "fvals")
@@ -873,32 +864,6 @@ string Initialize::executeCommand(vector<string> args) {
 		}
 
 
-		// --- if command is refvals---------------------------------------
-		else if(command == "refvals")
-		{
-			//if it doesnt exist, the error message in the end
-			num=4;
-			// if number of parameters are wrong
-			if(nArg!=2)
-			{
-				strcpy(mess, "ERROR: Required number of parameters: 2\nHelp: refvals [reference_name]");
-				return -1;
-			}
-			strcpy(mess,"");
-			//find the refpoint
-			for(int i=0;i<referencePoints.size();i++)
-				if(!strcasecmp(args[1],referencePoints[i][0].c_str()))
-				{
-					for(int j=1;j<=3;j++)
-					{
-						strcat(mess,referencePoints[i][j].c_str());
-						strcat(mess," ");
-					}
-					return 0;
-				}
-
-		}
-
 
 		// --- if command is fwlist---------------------------------------
 		else if(command == "fwlist")
@@ -920,88 +885,8 @@ string Initialize::executeCommand(vector<string> args) {
 		}
 
 
-		// --- if command is reflist---------------------------------------
-		else if(command == "reflist")
-		{
-			// if number of parameters are wrong
-			if(nArg!=1)
-			{
-				strcpy(mess, "ERROR: Required number of parameters: 1\nHelp: reflist");
-				return -1;
-			}
-			//all the filter wheels
-			for(int i=0;i<referencePoints.size();i++)
-			{
-				strcat(mess," ");
-				strcat(mess,referencePoints[i][0].c_str());
-			}
-			return 0;
 
-		}
-
-
-		// --- if command is ref---------------------------------------
-		else if(command == "ref")
-		{
-			num=4;
-			// if number of parameters are wrong
-			if(nArg!=2)
-			{
-				strcpy(mess, "ERROR: Required number of parameters: 2\nHelp: ref [reference_point_name]\n");
-				return -1;
-			}
-			//find the ref point
-			for(int i=0;i<referencePoints.size();i++)
-			{
-				if(!strcasecmp(args[1],referencePoints[i][0].c_str()))
-				{
-					double x,y,z;
-					char *commands[15];
-					for(int j=0;j<15;j++)
-						commands[j]=new char[1000];
-					//get the positions from the vector(from file)
-					x= atof(referencePoints[i][1].c_str());
-					y= atof(referencePoints[i][2].c_str());
-					z= atof(referencePoints[i][3].c_str());
-					//detx
-					if(x>=0)
-					{	//form command
-						strcpy(commands[0],"moveabs");
-						strcpy(commands[1],"detector_x");
-						sprintf(commands[2],"%f",x);
-						cout<<"mess:"<<mess<<"."<<endl;
-						//if it returns an error, return an error
-						if(executeCommand(3,commands,mess)==-1)
-							return -1;
-					}
-					//dety
-					if(y>=0)
-					{	//form command
-						strcpy(commands[0],"moveabs");
-						strcpy(commands[1],"detector_y");
-						sprintf(commands[2],"%f",y);
-						//if it returns an error, return an error
-						if(executeCommand(3,commands,mess)==-1)
-							return -1;
-					}
-					//detz
-					if(z>=0)
-					{	//form command
-						strcpy(commands[0],"moveabs");
-						strcpy(commands[1],"detector_z");
-						sprintf(commands[2],"%f",z);
-						//if it returns an error, return an error
-						if(executeCommand(3,commands,mess)==-1)
-							return -1;
-					}
-					sprintf(mess,"Moved to reference point %s. (%f,%f,%f)",args[1],x,y,z);
-					return 0;
-				}
-			}
-		}
-
-
-		// --- if command is fsetval---------------------------------------
+	// --- if command is fsetval---------------------------------------
 		else if(command == "fsetval")
 		{
 			num=0;
@@ -1603,12 +1488,10 @@ Initialize::Initialize()
 	for (unsigned int i = 0; i < motor.size(); ++i) {
 		motor[i]->print();
 	}	
-	if (referencePoint.size() > 0) {
-		cout << "Reference Points: " << referencePoint.size() << endl;
-		cout << "===================" << endl;
-		for (unsigned int i = 0; i < referencePoint.size(); ++i) {
-			referencePoint[i]->print();
-		}	
+	if (referencePoints != NULL) {
+		cout << "Reference Points" << endl;
+		cout << "================" << endl;
+		referencePoints->print();
 	}
 	if (fluorescence.size() > 0) {
 		cout << "Fluorescence Motors: " << fluorescence.size() << endl;
@@ -1855,18 +1738,36 @@ void Initialize::FwheelMode(vector<string> args) {
 
 	// parse
 	string name = args[1];
-	vector<double> positions(3);
-	for (unsigned int i = 0; i < 3; ++i) {
-		istringstream iss (args[2 + i].c_str());
-		iss >> positions[i];
+	vector<double> positions;
+	for (unsigned int i = 2; i < args.size(); ++i) {
+		istringstream iss (args[i].c_str());
+		double pos;
+		iss >> pos;
 		if (iss.fail()) {
-			throw RuntimeError("Could not scan refpoint positions for " + args[2 + i]);
+			throw RuntimeError("Could not scan refpoint positions for " + args[i]);
 		}
+		positions.push_back(pos);
 	}
 
-	// create referencepoints object
-	referencePoint.push_back(new ReferencePoint(referencePoint.size(), name, positions));
-	cout << endl;
+	// first referencepoints object
+	if (referencePoints == NULL) {
+		vector < Controller* > refController;
+		vector <int> axis;
+		int numPositionMotors = 3;
+		const char* motorNames[] = {"Detector_x", "Detector_y", "Detector_z"};
+		try {
+			for (unsigned int i = 0; i < numPositionMotors; ++i) {
+				int imotor =  GetMotorIndex(motorNames[i]);
+				refController.push_back(controller[motor[imotor]->getController()]);
+				axis.push_back(motor[imotor]->getAxis());
+			}
+		} catch (...) {
+			throw RuntimeError("Could not add reference point. Missing Detector_x, Detector_y or Detector_z motor");
+		}
+		referencePoints = new ReferencePoints(refController, axis);
+	}
+
+	referencePoints->add(name, positions);
  }
 
 
