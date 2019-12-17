@@ -27,6 +27,7 @@ bool Controller::CheckControllerSerialNumber(int usbport, Interface* interface, 
         std::string snum;
 	    iss >> snum;
         if (snum == serialNumber) {
+            FILE_LOG(logINFOGREEN) << "\tSuccess";
             return true;
         }
    	}

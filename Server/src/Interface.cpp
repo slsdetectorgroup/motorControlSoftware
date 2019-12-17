@@ -24,23 +24,34 @@
 
 #define CONTROLLER_MAX_TX_ATTEMPTS		(5)
 #define CONTROLLER_MAX_RX_ATTEMPTS		(5)
-#define CONTROLLER_READ_WAIT_US			(50000) // because of raspberry pi
+#define CONTROLLER_READ_WAIT_US			(50 * 1000) // because of raspberry pi
+#define CONTROLLER_IDENTIFY_CMD			("identify")
+#define CONTROLLER_MODEL_RESPONSE		("Corvus Eco")
 #define CONTROLLER_CHECK_STATUS_CMD		("st ")
 #define CONTROLLER_POSITION_CMD			("pos ")
 
 #define TUBE_MAX_RX_ATTEMPTS			(10)
 #define TUBE_MAX_REPEAT_ATTEMPTS		(5)
-#define TUBE_READ_WAIT_US				(200000)
+#define TUBE_READ_WAIT_US				(200 * 1000)
+#define TUBE_IDENTIFY_CMD				("id ")
+#define TUBE_MODEL_RESPONSE				("ISO-DEBYEFLEX 3003")
 #define TUBE_STATUS_CMD					("sr:12 ")
 
 #define PRESSURE_MAX_RX_ATTEMPTS		(5)
 #define PRESSURE_MAX_REPEAT_ATTEMPTS	(5)
-#define PRESSURE_READ_WAIT_US			(200000)
+#define PRESSURE_READ_WAIT_US			(200 * 1000)
 #define PRESSURE_ARE_YOU_THERE_CMD		("AYT\r\n")
 #define PRESSURE_TYPE_RESPONSE			("TPG362")
 #define PRESSURE_ACK_RESPONSE			("\x6\r\n")
 #define PRESSURE_NACK_RESPONSE			("\x15\r\n")
 #define PRESSURE_ENQUIRY_CMD			("\x5")
+
+#define FILTER_WHEEL_MAX_RX_ATTEMPTS	(10)			// minimum 2
+#define FILTER_WHEEL_MAX_REPEAT_ATTEMPTS (5)			
+#define FILTER_WHEEL_READ_WAIT_US		(500 * 1000)	// minimum (else pos=1 gets lost)
+#define FILTER_WHEEL_IDENTIFY_CMD		("*idn?\r")
+#define FILTER_WHEEL_MODEL_RESPONSE		("FW102C/FW212C Filter Wheel")
+#define FILTER_WHEEL_UNDEFINED_CMD		("Command error")
 
 
 Interface::Interface(std::string serial, int serialPortNumber, InterfaceIndex index) 
@@ -74,6 +85,7 @@ int Interface::getSerialPortNumber() {
 }
 
 void Interface::ControllerInterface() {
+	std::cout << std::endl;
 	FILE_LOG(logINFO) << "\tMotorcontroller, checking:" << serial;
 	serialfd = open (serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
 	if (serialfd == -1) {
@@ -103,30 +115,27 @@ void Interface::ControllerInterface() {
 void Interface::ValidateController() {
 	FILE_LOG(logINFO) << "\tValidating Controller";
 	try {
-		// will throw for ports that cant communicate
-		std::string result = ControllerSendCommand(CONTROLLER_CHECK_STATUS_CMD, true);
-		// will throw for ports (tube) that can communciate, but wrong port (strange answer)
-		ControllerIsIdle(result, true);
+		std::string result = ControllerSendCommand(CONTROLLER_IDENTIFY_CMD, true);
+		if (result.find(std::string(CONTROLLER_MODEL_RESPONSE)) == std::string::npos) {
+			throw std::runtime_error("Not identified as controller port");
+		}
 	} catch (...) {
 		close(serialfd);
 		FILE_LOG(logWARNING) << "Fail";
 		throw;
 	}
 
-	FILE_LOG(logINFOGREEN) << "\tSuccess";
+	FILE_LOG(logINFO) << "\tFound controller port";
 	ControllerWaitForIdle();
 }
 
-bool Interface::ControllerIsIdle(std::string result, bool validate) {
+bool Interface::ControllerIsIdle(std::string result) {
 	std::istringstream iss(result);
 	int status = 1;
 	iss >> status;
 	if (iss.fail()) {
 		std::ostringstream oss;
 		oss << "Unknown controller status " + result;
-		if (validate) {
-			throw std::runtime_error(oss.str());
-		}
 		FILE_LOG(logDEBUG) << oss.str();
 		return false;
 	}
@@ -152,8 +161,7 @@ void Interface::ControllerWaitForIdle() {
 std::string Interface::ControllerSend(std::string command, bool readBack) {
 	for (;;) {
         try {
-            std::string result = ControllerSendCommand(command, readBack);
-			return result;
+            return ControllerSendCommand(command, readBack);
         } catch (...) {
 			;
         }	
@@ -231,6 +239,7 @@ std::string Interface::ControllerSendCommand(std::string command, bool readBack)
 
 
 void Interface::TubeInterface() {
+	std::cout << std::endl;
 	FILE_LOG(logINFO) << "\tXray tube, checking:" << serial;
 	serialfd = open (serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
 	if (serialfd == -1) {
@@ -260,7 +269,11 @@ void Interface::TubeInterface() {
 void Interface::ValidateTube() {
 	FILE_LOG(logINFO) << "\tValidating Tube";
 	try {
-		std::string result = TubeSend(TUBE_STATUS_CMD, true);
+		std::string result = TubeSend(TUBE_IDENTIFY_CMD, true);
+		if (result.find(std::string(TUBE_MODEL_RESPONSE)) == std::string::npos) {
+			throw std::runtime_error("Not identified as tube port");
+		}
+		TubeSend(TUBE_STATUS_CMD, true);
 	} catch (...) {
 			close(serialfd);
 			FILE_LOG(logWARNING) << "Fail";
@@ -361,6 +374,7 @@ std::string Interface::TubeSendCommand(std::string command, bool readBack) {
 
 
 void Interface::PressureInterface() {
+	std::cout << std::endl;
 	FILE_LOG(logINFO) << "\tPressure, checking:" << serial;
 	serialfd = open (serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
 	if (serialfd == -1) {
@@ -417,8 +431,7 @@ std::string Interface::PressureGaugeSend(std::string command) {
 	int attempts = 0;
 	for (;;) {
         try {
-            std::string result = PressureGaugeSendCommand(command);
-			return result;
+            return  PressureGaugeSendCommand(command);
         } catch (const std::exception& e) {
 			++attempts;
 			if (attempts == PRESSURE_MAX_REPEAT_ATTEMPTS) {
@@ -541,63 +554,154 @@ std::string Interface::PressureGaugeSendCommand(std::string command) {
 }
 
 void Interface::FilterWheelInterface() {
-
-	//O_NOCTTY flag tells UNIX that this program doesn't want to be the "controlling terminal" for that port.
-	//O_NDELAY flag tells UNIX that this program doesn't care what state the DCD signal line is in - whether the other end of the port is up and running. If you do not specify this flag, your process will be put to sleep until the DCD signal line is the space voltage.
-	FILE_LOG(logINFO) << "Filter wheel, checking:" << serial;
-	serialfd= open (serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
+	std::cout << std::endl;
+	FILE_LOG(logINFO) << "\tFilter wheel, checking:" << serial;
+	serialfd = open (serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
 	if (serialfd == -1) {
-		FILE_LOG(logWARNING) << "Unable to open port " << serial << " for filter wheel, check permissions to use it\n";
-        FILE_LOG(logWARNING) << "Fail" << std::endl;
+		FILE_LOG(logDEBUG) << "Unable to open port " << serial << " for filter wheel";
+        FILE_LOG(logWARNING) << "Fail";
 		throw std::runtime_error("Fail to open port");
 	}
+
 	struct termios new_serial_conf;
 	memset(&new_serial_conf, 0, sizeof(new_serial_conf));
-	/* control options */
-	//B9600	115200 baud
-	//CS8	8 data bits
-	//CSTOPB	2 stop bits (1 otherwise)
-	//CLOCAL	Local line - do not change "owner" of port
-	//CREAD	Enable receiver
-	new_serial_conf.c_cflag = B115200 | CS8 | CREAD | CLOCAL;
-
-	/* input options */
-	//IGNPAR	Ignore parity errors
-	new_serial_conf.c_iflag = IGNPAR;
-
-	/* output options */
-	new_serial_conf.c_oflag = 0;
-
-	/* line options */
-	new_serial_conf.c_lflag = 0;//ICANON;
-
-	/* flush input */
+	new_serial_conf.c_cflag = B115200 | CS8 | CREAD | CLOCAL; // control options
+	new_serial_conf.c_iflag = IGNPAR; // input options
+	new_serial_conf.c_oflag = 0; // output options
+	new_serial_conf.c_lflag = 0; // line options
+	// flush input 
 	sleep(2);
 	tcflush(serialfd, TCIOFLUSH);
-	tcsetattr(serialfd, TCSANOW, &new_serial_conf);
+	if (tcsetattr(serialfd, TCSANOW, &new_serial_conf)!= 0) {
+		std::ostringstream oss;
+		oss << errno << " from tcsetattr: " << strerror(errno);
+		throw std::runtime_error(oss.str());
+	}
 
-    FILE_LOG(logINFOGREEN) << "Success";
+	ValidateFilterWheel();
+}
+
+void Interface::ValidateFilterWheel() { 
+	FILE_LOG(logINFO) << "\tValidating Filter Wheel";
+	try {
+		std::string result = FilterWheelSendCommand(FILTER_WHEEL_IDENTIFY_CMD, true);
+		if (result.find(std::string(FILTER_WHEEL_MODEL_RESPONSE)) == std::string::npos) {
+			throw std::runtime_error("Not identified as tube port");
+		}
+	} catch (const std::exception& e) {
+		close(serialfd);
+		FILE_LOG(logWARNING) << "Fail";
+		throw;
+	}
+	FILE_LOG(logINFO) << "\tFound filter wheel port";
+}
+
+std::string Interface::FilterWheelSend(std::string command, bool readBack) {
+	for (;;) {
+        try {
+            return FilterWheelSendCommand(command, readBack);
+        } catch (const std::exception& e) {
+			;
+        }	
+		usleep(FILTER_WHEEL_READ_WAIT_US);	
+	}
 }
 
 
-char* Interface::send_command_to_fw(char* c, int rb) {
-	//rb=1;
-	char buffer[255]="", command[200]="";
-	char* p = buffer;
+std::string Interface::FilterWheelSendCommand(std::string command, bool readBack) {
+	FILE_LOG(logINFO) << "\tSend Filter Wheel [" << command.substr(0, command.length() - 1) << "]:\t(port:" << serial << ", read:" << readBack << ')';
+	
+	bool verbose = false;
 
-	strcpy(command,c);
-#ifdef VERBOSE_MOTOR
-	std::cout<<"Sending command:*"<<command<<"*"<<;
-#endif
-	strcat(command,"\r");
+	// send command
+	char buffer[COMMAND_BUFFER_LENGTH];
+	memset(buffer, 0, sizeof(buffer));
+	strcpy(buffer, command.c_str());	
 
-#ifdef VERBOSE_MOTOR
-	std::cout<<" to port "<<serial<<std::endl;
-#endif
+	int ret = write (serialfd, buffer, strlen(buffer));
+	if (ret == -1) {
+		std::ostringstream oss;
+		oss << "Could not write to filter wheel";
+		if (verbose) {
+			FILE_LOG(logERROR) << oss.str();
+		}
+		throw std::runtime_error(oss.str());
+	}
 
-	if (write (serialfd,command,strlen(command))==-1)
-		std::cout<<"error sending the command \n";
+	// read back
+	char result[COMMAND_BUFFER_LENGTH];
+	ret = -1;
+	int attempt = 0;
+	// reads atlease twice
+	while (ret == -1) {
+		memset(result, 0, sizeof(result));	
+		usleep(FILTER_WHEEL_READ_WAIT_US);
+		ret = read (serialfd, result, sizeof(result));
+		++attempt;
+		if (attempt == FILTER_WHEEL_MAX_RX_ATTEMPTS) {
+			std::ostringstream oss;
+			oss << "Receive attempt number " << FILTER_WHEEL_MAX_RX_ATTEMPTS << " for [" << buffer << "] to filter wheel " << serial << ". Aborting read.";
+			if (verbose) {
+				FILE_LOG(logERROR) << oss.str();
+			}
+			throw std::runtime_error(oss.str());
+		}
+	}
+	if (attempt > 0 && verbose) {
+		FILE_LOG(logINFORED) << "receive attempt " << attempt;
+	}			
 
-		return p;
+	// throw error if read buffer empty
+	if (strlen(result) == 0) {
+		std::ostringstream oss;
+		oss << "Empty receive buffer from filter wheel";
+		if (verbose) {
+			FILE_LOG(logERROR) << oss.str();
+		}
+		throw std::runtime_error(oss.str());
+	}
+
+	// error
+	if (strstr(result, FILTER_WHEEL_UNDEFINED_CMD) != NULL) {
+		for (int i = 0; i < strlen(result); ++i) {
+			if (result[i] == '\r') {
+				result[i] = 'R';
+			} else if (result[i] == '\n') {
+				result[i] = 'N';
+			}
+		}
+		std::ostringstream oss;
+		oss << "Filter wheel returns unknown command or argument: " << result;
+		if (verbose) {
+			FILE_LOG(logERROR) << oss.str();
+		}
+		throw std::runtime_error(oss.str());
+	}
+
+	// no need to parse result (just read it off the buffer)
+	if (!readBack) {
+		for (int i = 0; i < strlen(result); ++i) {
+			if (result[i] == '\r') {
+				result[i] = 'R';
+			} else if (result[i] == '\n') {
+				result[i] = 'N';
+			}
+		}
+		FILE_LOG(logINFO) << "\tRead Filter Wheel [" << command.substr(0, command.length() - 1) << "]: [" << result << ']';
+		return command;
+	}
+
+	// extract result
+	// if segfault here, it needs more time to read (increase FILTER_WHEEL_READ_WAIT_US)
+	char* firstCR = strchr(result,'\r');
+	char* secondCR = strchr(firstCR + 1,'\r');
+	char* nextCR = strchr(secondCR + 1,'\r');
+	char output[COMMAND_BUFFER_LENGTH];
+	memset(output, 0, sizeof(output));
+	memcpy(output, firstCR + 1, secondCR - firstCR);
+	output[strlen(output) - 1] = '\0';
+
+	result[strlen(result) - 1] = '\0';
+	FILE_LOG(logINFO) << "\tRead Filter Wheel [" << command.substr(0, command.length() - 1) << "]: [" << output << ']';
+	return std::string(output);
 }
-

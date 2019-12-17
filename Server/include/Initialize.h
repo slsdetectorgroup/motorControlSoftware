@@ -26,6 +26,7 @@ class Initialize {
   void OnlyFluorescenceCommand(std::string name);
   void RestrictedForSlitAndFluorescence(std::string name);
   void UpdateSlitLimits(std::string name);
+  int GetFwheelIndex(std::string name);  
   int GetFluorescenceIndex(std::string name);
   int GetMotorIndex(std::string name);
   int GetControllerIndex(std::string name);

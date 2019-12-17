@@ -74,6 +74,15 @@ void Initialize::UpdateSlitLimits(string name) {
 	}
 }
 
+int Initialize::GetFwheelIndex(string name) {
+	for (unsigned int i = 0; i < fwheel.size(); ++i) {
+		if (!strcasecmp(name.c_str(), fwheel[i]->getName().c_str())) {
+			return i;
+		}
+	}
+	throw RuntimeError("Unknown filter wheel " + name);
+}
+
 int Initialize::GetFluorescenceIndex(string name) {
 	for (unsigned int i = 0; i < fluorescence.size(); ++i) {
 		if (!strcasecmp(name.c_str(), fluorescence[i]->getName().c_str())) {
@@ -420,565 +429,10 @@ string Initialize::executeCommand(vector<string> args) {
 		}
 
 
-		// ----- tube ----------------------------------------------------------
-
-		if (!strcasecmp(command.c_str(), "sendtube")) {
-			if (nArg < 2) {
-				throw RuntimeError("Requires 2 parameters: sendtube [commands..]");
-			}
-			string advancedCommand;
-			for (int j = 1; j < nArg; ++j) {
-				advancedCommand += (args[j] + " ");
-			}
-			OnlyTubeCommand();
-			xrayTube->sendCommand(advancedCommand);
-			return "ok";
-		}
-
-		else if (!strcasecmp(command.c_str(), "readtube")) {
-			if (nArg < 2) {
-				throw RuntimeError("Requires 2 parameters: readtube [commands..]");
-			}
-			string advancedCommand;
-			for (int j = 1; j < nArg; ++j) {
-				advancedCommand += (args[j] + " ");
-			}
-			OnlyTubeCommand();
-			return xrayTube->sendCommandAndReadBack(advancedCommand);
-		}
-
-		else if (!strcasecmp(command.c_str(), "getpower")) {
-			if (nArg != 1) {
-				throw RuntimeError("Requires 1 parameters: getpower ");
-			}
-			OnlyTubeCommand();
-			oss << xrayTube->getMaxPower() << " W";
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "geterr")) {
-			if (nArg != 1) {
-				throw RuntimeError("Requires 1 parameters: geterr ");
-			}
-			OnlyTubeCommand();
-			oss << xrayTube->getErrorCode();
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "getemess")) {
-			if (nArg != 1) {
-				throw RuntimeError("Requires 1 parameters: getemess ");
-			}
-			OnlyTubeCommand();
-			oss << xrayTube->getErrorMessage();
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "clear")) {
-			if (nArg != 1) {
-				throw RuntimeError("Requires 1 parameters: clear ");
-			}
-			OnlyTubeCommand();
-			xrayTube->clearErrorCode();
-			oss << xrayTube->getErrorCode();
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "isstandby")) {
-			if (nArg != 1) {
-				throw RuntimeError("Requires 1 parameters: isstandby ");
-			}
-			oss << (xrayTube->isOnStandby() ? "standby" : "on");
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "gethv")) {
-			if (nArg != 1) {
-				throw RuntimeError("Requires 1 parameters: gethv ");
-			}
-			OnlyTubeCommand();
-			oss << (xrayTube->getHVSwitch() ? "on" : "off");
-			return oss.str();
-		}
-		
-		else if (!strcasecmp(command.c_str(), "hv")) {
-			if (nArg != 2) {
-				throw RuntimeError("Requires 2 parameters: hv [on/off]");
-			}
-			OnlyTubeCommand();
-			string value = args[1];
-			bool on = false;
-			if (!strcasecmp(value.c_str(), "on")) {
-				on = true;
-			} else if (!strcasecmp(value.c_str(), "off")) {
-				on = false;
-			} else {
-				throw RuntimeError ("Cannot scan hv argument " + value);
-			}
-			xrayTube->setHVSwitch(on);
-			oss << (xrayTube->getHVSwitch() ? "on" : "off");
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "getv")) {
-			if (nArg != 1) {
-				throw RuntimeError("Requires 1 parameters: getv ");
-			}
-			OnlyTubeCommand();
-			oss << xrayTube->getVoltage() << " kV";
-			return oss.str();
-		}
-	
-		else if (!strcasecmp(command.c_str(), "setv")) {
-			if (nArg != 2) {
-				throw RuntimeError("Requires 2 parameters: setv [voltage] ");
-			}
-			OnlyTubeCommand();
-			int value = 0;
-			istringstream iss (args[1].c_str());
-			iss >> value;
-			if (iss.fail()) {
-				throw RuntimeError("Could not scan voltage argument " + args[1]);
-			}	
-			xrayTube->setVoltage(value);
-			oss << xrayTube->getVoltage() << " kV";
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "getc")) {
-			if (nArg != 1) {
-				throw RuntimeError("Requires 1 parameters: getc ");
-			}
-			OnlyTubeCommand();
-			oss << xrayTube->getCurrent() << " mA";
-			return oss.str();
-		}
-	
-		else if (!strcasecmp(command.c_str(), "setc")) {
-			if (nArg != 2) {
-				throw RuntimeError("Requires 2 parameters: setc [current] ");
-			}
-			OnlyTubeCommand();
-			int value = 0;
-			istringstream iss (args[1].c_str());
-			iss >> value;
-			if (iss.fail()) {
-				throw RuntimeError("Could not scan current argument " + args[1]);
-			}	
-			xrayTube->setCurrent(value);
-			oss << xrayTube->getCurrent() << " mA";
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "setvc")) {
-			if (nArg != 3) {
-				throw RuntimeError("Requires 3 parameters: setvc [voltage] [current]");
-			}
-			OnlyTubeCommand();
-			int voltage = 0;
-			{
-				istringstream iss (args[1].c_str());
-				iss >> voltage;
-				if (iss.fail()) {
-					throw RuntimeError("Could not scan voltage argument " + args[1]);
-				}
-			}
-			int current = 0;
-			{
-				istringstream iss (args[2].c_str());
-				iss >> current;
-				if (iss.fail()) {
-					throw RuntimeError("Could not scan current argument " + args[2]);
-				}			
-			}
-			xrayTube->setVoltageAndCurrent(voltage, current);
-			pair <int, int> values = xrayTube->getVoltageAndCurrent();
-			oss << values.first << " kV, " << values.second << " mA";
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "getvc")) {
-			if (nArg != 1) {
-				throw RuntimeError("Requires 1 parameters: getvc ");
-			}
-			OnlyTubeCommand();
-			pair <int, int> values = xrayTube->getVoltageAndCurrent();
-			oss << values.first << " kV, " << values.second << " mA";
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "getactualv")) {
-			if (nArg != 1) {
-				throw RuntimeError("Requires 1 parameters: getactualv ");
-			}
-			OnlyTubeCommand();
-			oss << xrayTube->getActualVoltage() << " kV";
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "getactualc")) {
-			if (nArg != 1) {
-				throw RuntimeError("Requires 1 parameters: getactualc ");
-			}
-			OnlyTubeCommand();
-			oss << xrayTube->getActualCurrent() << " mA";
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "getactualvc")) {
-			if (nArg != 1) {
-				throw RuntimeError("Requires 1 parameters: getactualvc ");
-			}
-			OnlyTubeCommand();
-			pair <int, int> values = xrayTube->getActualVoltageAndCurrent();
-			oss << values.first << " kV, " << values.second << " mA";
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "getshutter")) {
-			if (nArg != 2) {
-				throw RuntimeError("Requires 2 parameters: getshutter [shutter index] ");
-			}
-			OnlyTubeCommand();
-			int index = 0;
-			istringstream iss (args[1].c_str());
-			iss >> index;
-			if (iss.fail()) {
-				throw RuntimeError("Could not scan shutter index argument " + args[1]);
-			}
-			oss << (xrayTube->getShutter(index) ? "on" : "off");
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "getshutters")) {
-			if (nArg != 1) {
-				throw RuntimeError("Requires 1 parameters: getshutters ");
-			}
-			OnlyTubeCommand();
-			oss << "1:" << (xrayTube->getShutter(1) ? "on" : "off") << ' ';
-			oss << "2:" << (xrayTube->getShutter(2) ? "on" : "off") << ' ';
-			oss << "3:" << (xrayTube->getShutter(3) ? "on" : "off") << ' ';
-			oss << "4:" << (xrayTube->getShutter(4) ? "on" : "off");
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "connectedshutters")) {
-			if (nArg != 1) {
-				throw RuntimeError("Requires 1 parameters: connectedshutters ");
-			}
-			OnlyTubeCommand();
-			oss << "1:" << (xrayTube->isShutterConnected(1) ? "c" : "nc") << ' ';
-			oss << "2:" << (xrayTube->isShutterConnected(2) ? "c" : "nc") << ' ';
-			oss << "3:" << (xrayTube->isShutterConnected(3) ? "c" : "nc") << ' ';
-			oss << "4:" << (xrayTube->isShutterConnected(4) ? "c" : "nc");
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "shutter")) {
-			if (nArg != 3) {
-				throw RuntimeError("Requires 3 parameters: shutter [shutter index] [on/off]");
-			}
-			OnlyTubeCommand();
-			int index = 0;
-			istringstream iss (args[1].c_str());
-			iss >> index;
-			if (iss.fail()) {
-				throw RuntimeError("Could not scan shutter index argument " + args[1]);
-			}
-			bool on = false;
-			if (!strcasecmp(args[2].c_str(), "on")) {
-				on = true;
-			} else if (!strcasecmp(args[2].c_str(), "off")) {
-				on = false;
-			} else {
-				throw RuntimeError ("Cannot scan shutter value argument " + args[2]);
-			}
-			xrayTube->setShutter(index, on);
-			oss << (xrayTube->getShutter(index) ? "on" : "off");
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "warmup")) {
-			if (nArg != 2) {
-				throw RuntimeError("Requires 2 parameters: warmup [voltage]");
-			}
-			OnlyTubeCommand();
-			int voltage = 0;
-			istringstream iss (args[1].c_str());
-			iss >> voltage;
-			if (iss.fail()) {
-				throw RuntimeError("Could not scan warm up voltage argument " + args[1]);
-			}
-			xrayTube->startWarmup(voltage);
-			oss << (xrayTube->getHVSwitch() ? "on" : "off");
-			return oss.str();
-		}	
-
-		else if (!strcasecmp(command.c_str(), "getwtime")) {
-			if (nArg != 1) {
-				throw RuntimeError("Requires 1 parameters: getwtime ");
-			}
-			OnlyTubeCommand();
-			oss << xrayTube->getWarmupTimeRemaining() << " s";
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "issafe")) {
-			if (nArg != 1) {
-				throw RuntimeError("Requires 1 parameters: issafe ");
-			}
-			OnlyTubeCommand();
-			oss << (xrayTube->isAccessPossible() ? "yes" : "no");
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "readwarmuptiming")) {
-			if (nArg != 2) {
-				throw RuntimeError("Requires 2 parameters: readwarmuptiming [voltage] ");
-			}
-			OnlyTubeCommand();
-			int voltage = 0;
-			istringstream iss (args[1].c_str());
-			iss >> voltage;
-			if (iss.fail()) {
-				throw RuntimeError("Could not scan timestamp voltage argument " + args[1]);
-			}
-			oss << xrayTube->getWarmupTimestamp(voltage);
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "writeallwarmuptiming")) {
-			if (nArg != 1) {
-				throw RuntimeError("Requires 1 parameters: writeallwarmuptiming");
-			}
-			OnlyTubeCommand();
-			xrayTube->writeAllWarmupTimestamps();
-			return "ok";
-		}
-
-
-		// ----- pressure ------------------------------------------------------
-
-		else if (!strcasecmp(command.c_str(), "pressure")) {
-			if (nArg != 1) {
-				throw RuntimeError("Requires 1 parameters: pressure");
-			}
-			if (pgauge == NULL) {
-				try {
-					UpdateInterface(PRESSURE);
-				} catch (RuntimeError &e) {
-					throw;
-				}	
-			}
-			std::vector<PressureGauge> result = pgauge->getPressure();
-			oss << 	"1: [" << result[0].status << ", " << result[0].pressure << "]\n"
-					"2: [" << result[1].status << ", " << result[1].pressure << "]";
-			return oss.str();
-		}
-
-
-		// ----- reference points ----------------------------------------------
-
-		else if (!strcasecmp(command.c_str(), "reflist")) {
-			if (nArg != 1) {
-				throw RuntimeError("Requires 1 parameters: reflist");
-			}
-			if (referencePoints == NULL) {
-				throw RuntimeError ("No reference points added");
-			}
-			oss << referencePoints->getList();
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "refvals")) {
-			if (nArg != 2) {
-				throw RuntimeError("Requires 2 parameters: refvals [name]");
-			}
-			if (referencePoints == NULL) {
-				throw RuntimeError ("No reference points added");
-			}
-			std::string name = args[1];
-			vector <double> positions = referencePoints->getPositions(name);
-			for (unsigned int i = 0; i < positions.size(); ++i) {
-				oss << positions[i] << ' ';
-			}
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "checkref")) {
-			if (nArg != 1) {
-				throw RuntimeError("Requires 1 parameters: checkref");
-			}
-			if (referencePoints == NULL) {
-				throw RuntimeError ("No reference points added");
-			}
-			oss << referencePoints->getCurrentReferenceName();
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "ref")) {
-			if (nArg != 2) {
-				throw RuntimeError("Requires 2 parameters: ref [name]");
-			}
-			if (referencePoints == NULL) {
-				throw RuntimeError ("No reference points added");
-			}
-			std::string name = args[1];
-			referencePoints->moveTo(name);
-			return "ok";
-		}
-
-
-		// ----- filter wheels -------------------------------------------------
+		// ----- slits ---------------------------------------------------------
 
 
 	/*
-
-		// --- if command is fvals---------------------------------------
-		else if(command == "fvals")
-		{
-			//if it doesnt exist, the error message in the end
-			num=0;
-			// if number of parameters are wrong
-			if(nArg!=2)
-			{
-				strcpy(mess, "ERROR: Required number of parameters: 2\nHelp: fvals [filter_wheel_name]");
-				return -1;
-			}
-
-			strcpy(mess,"");
-			//find the fwheel and move it
-			for(int i=0;i<Fwheel::NumFwheels;i++)
-				if(!strcasecmp(args[1],fwheel[i]->getName()))
-				{
-					char cVal[20]="";
-					for(int j=0;j<Fwheel::NumSlotsInWheel;j++)
-					{
-						sprintf(cVal,"%f",fwheel[i]->ValueList[j]);
-						strcat(mess,cVal);
-						strcat(mess," ");
-					}
-					return 0;
-				}
-
-		}
-
-
-
-		// --- if command is fwlist---------------------------------------
-		else if(command == "fwlist")
-		{
-			// if number of parameters are wrong
-			if(nArg!=1)
-			{
-				strcpy(mess, "ERROR: Required number of parameters: 1\nHelp: fwlist");
-				return -1;
-			}
-			//all the filter wheels
-			for(int i=0;i<fwheel.size();i++)
-			{
-				strcat(mess," ");
-				strcat(mess,fwheel[i]->getName());
-			}
-			return 0;
-
-		}
-
-
-
-	// --- if command is fsetval---------------------------------------
-		else if(command == "fsetval")
-		{
-			num=0;
-			// if number of parameters are wrong
-			if(nArg!=3)
-			{
-				strcpy(mess, "ERROR: Required number of parameters: 3\nHelp: fsetval [filter_wheel_name] [value]\n");
-				return -1;
-			}
-
-			// if value is not a number
-			temp.assign(args[2]);
-			if(temp.find_first_not_of("0123456789.-")!=string::npos)
-			{
-				sprintf(mess, "ERROR: %s for absorption value should be a number",args[2]);
-				return -1;
-			}
-
-			//find the fwheel and move it
-			for(int i=0;i<fwheel.size();i++)
-				if(!strcasecmp(args[1],fwheel[i]->getName()))
-				{
-					if(!fwheel[i]->setValue(atof(args[2])))
-					{
-						sprintf(mess,"ERROR: %s absorption value for %s is not defined. \nOptions(",args[2],args[1]);
-						char cVal[20]="";
-						for(int j=0;j<Fwheel::NumSlotsInWheel;j++)
-						{
-							sprintf(cVal,"%f",fwheel[i]->ValueList[j]);
-							strcat(mess,cVal);
-							strcat(mess,",");
-						}
-						strcat(mess,")");
-						return -1;
-					}
-					sprintf(mess,"%s set to %s value",args[1],args[2]);
-					return 0;
-				}
-		}
-
-
-
-		// --- if command is fgetval---------------------------------------
-		else if(command == "fgetval")
-		{
-			num=0;
-			// if number of parameters are wrong
-			if(nArg!=2)
-			{
-				strcpy(mess, "ERROR: Required number of parameters: 2\nHelp: fgetval [filter_wheel_name]\n");
-				return -1;
-			}
-
-			//find fwheel and value
-			for(int i=0;i<fwheel.size();i++)
-				if(!strcasecmp(args[1],fwheel[i]->getName()))
-				{
-					sprintf(mess,"%f",fwheel[i]->getValue());
-					return 0;
-				}
-		}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1400,9 +854,503 @@ string Initialize::executeCommand(vector<string> args) {
 
 
 	*/
-		// unknown command
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		// ----- tube ----------------------------------------------------------
+
+		if (!strcasecmp(command.c_str(), "sendtube")) {
+			if (nArg < 2) {
+				throw RuntimeError("Requires 2 parameters: sendtube [commands..]");
+			}
+			string advancedCommand;
+			for (int j = 1; j < nArg; ++j) {
+				advancedCommand += (args[j] + " ");
+			}
+			OnlyTubeCommand();
+			xrayTube->sendCommand(advancedCommand);
+			return "ok";
+		}
+
+		else if (!strcasecmp(command.c_str(), "readtube")) {
+			if (nArg < 2) {
+				throw RuntimeError("Requires 2 parameters: readtube [commands..]");
+			}
+			string advancedCommand;
+			for (int j = 1; j < nArg; ++j) {
+				advancedCommand += (args[j] + " ");
+			}
+			OnlyTubeCommand();
+			return xrayTube->sendCommandAndReadBack(advancedCommand);
+		}
+
+		else if (!strcasecmp(command.c_str(), "getpower")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: getpower ");
+			}
+			OnlyTubeCommand();
+			oss << xrayTube->getMaxPower() << " W";
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "geterr")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: geterr ");
+			}
+			OnlyTubeCommand();
+			oss << xrayTube->getErrorCode();
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "getemess")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: getemess ");
+			}
+			OnlyTubeCommand();
+			oss << xrayTube->getErrorMessage();
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "clear")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: clear ");
+			}
+			OnlyTubeCommand();
+			xrayTube->clearErrorCode();
+			oss << xrayTube->getErrorCode();
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "isstandby")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: isstandby ");
+			}
+			oss << (xrayTube->isOnStandby() ? "standby" : "on");
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "gethv")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: gethv ");
+			}
+			OnlyTubeCommand();
+			oss << (xrayTube->getHVSwitch() ? "on" : "off");
+			return oss.str();
+		}
+		
+		else if (!strcasecmp(command.c_str(), "hv")) {
+			if (nArg != 2) {
+				throw RuntimeError("Requires 2 parameters: hv [on/off]");
+			}
+			OnlyTubeCommand();
+			string value = args[1];
+			bool on = false;
+			if (!strcasecmp(value.c_str(), "on")) {
+				on = true;
+			} else if (!strcasecmp(value.c_str(), "off")) {
+				on = false;
+			} else {
+				throw RuntimeError ("Cannot scan hv argument " + value);
+			}
+			xrayTube->setHVSwitch(on);
+			oss << (xrayTube->getHVSwitch() ? "on" : "off");
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "getv")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: getv ");
+			}
+			OnlyTubeCommand();
+			oss << xrayTube->getVoltage() << " kV";
+			return oss.str();
+		}
+	
+		else if (!strcasecmp(command.c_str(), "setv")) {
+			if (nArg != 2) {
+				throw RuntimeError("Requires 2 parameters: setv [voltage] ");
+			}
+			OnlyTubeCommand();
+			int value = 0;
+			istringstream iss (args[1].c_str());
+			iss >> value;
+			if (iss.fail()) {
+				throw RuntimeError("Could not scan voltage argument " + args[1]);
+			}	
+			xrayTube->setVoltage(value);
+			oss << xrayTube->getVoltage() << " kV";
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "getc")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: getc ");
+			}
+			OnlyTubeCommand();
+			oss << xrayTube->getCurrent() << " mA";
+			return oss.str();
+		}
+	
+		else if (!strcasecmp(command.c_str(), "setc")) {
+			if (nArg != 2) {
+				throw RuntimeError("Requires 2 parameters: setc [current] ");
+			}
+			OnlyTubeCommand();
+			int value = 0;
+			istringstream iss (args[1].c_str());
+			iss >> value;
+			if (iss.fail()) {
+				throw RuntimeError("Could not scan current argument " + args[1]);
+			}	
+			xrayTube->setCurrent(value);
+			oss << xrayTube->getCurrent() << " mA";
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "setvc")) {
+			if (nArg != 3) {
+				throw RuntimeError("Requires 3 parameters: setvc [voltage] [current]");
+			}
+			OnlyTubeCommand();
+			int voltage = 0;
+			{
+				istringstream iss (args[1].c_str());
+				iss >> voltage;
+				if (iss.fail()) {
+					throw RuntimeError("Could not scan voltage argument " + args[1]);
+				}
+			}
+			int current = 0;
+			{
+				istringstream iss (args[2].c_str());
+				iss >> current;
+				if (iss.fail()) {
+					throw RuntimeError("Could not scan current argument " + args[2]);
+				}			
+			}
+			xrayTube->setVoltageAndCurrent(voltage, current);
+			pair <int, int> values = xrayTube->getVoltageAndCurrent();
+			oss << values.first << " kV, " << values.second << " mA";
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "getvc")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: getvc ");
+			}
+			OnlyTubeCommand();
+			pair <int, int> values = xrayTube->getVoltageAndCurrent();
+			oss << values.first << " kV, " << values.second << " mA";
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "getactualv")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: getactualv ");
+			}
+			OnlyTubeCommand();
+			oss << xrayTube->getActualVoltage() << " kV";
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "getactualc")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: getactualc ");
+			}
+			OnlyTubeCommand();
+			oss << xrayTube->getActualCurrent() << " mA";
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "getactualvc")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: getactualvc ");
+			}
+			OnlyTubeCommand();
+			pair <int, int> values = xrayTube->getActualVoltageAndCurrent();
+			oss << values.first << " kV, " << values.second << " mA";
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "getshutter")) {
+			if (nArg != 2) {
+				throw RuntimeError("Requires 2 parameters: getshutter [shutter index] ");
+			}
+			OnlyTubeCommand();
+			int index = 0;
+			istringstream iss (args[1].c_str());
+			iss >> index;
+			if (iss.fail()) {
+				throw RuntimeError("Could not scan shutter index argument " + args[1]);
+			}
+			oss << (xrayTube->getShutter(index) ? "on" : "off");
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "getshutters")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: getshutters ");
+			}
+			OnlyTubeCommand();
+			oss << "1:" << (xrayTube->getShutter(1) ? "on" : "off") << ' ';
+			oss << "2:" << (xrayTube->getShutter(2) ? "on" : "off") << ' ';
+			oss << "3:" << (xrayTube->getShutter(3) ? "on" : "off") << ' ';
+			oss << "4:" << (xrayTube->getShutter(4) ? "on" : "off");
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "connectedshutters")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: connectedshutters ");
+			}
+			OnlyTubeCommand();
+			oss << "1:" << (xrayTube->isShutterConnected(1) ? "c" : "nc") << ' ';
+			oss << "2:" << (xrayTube->isShutterConnected(2) ? "c" : "nc") << ' ';
+			oss << "3:" << (xrayTube->isShutterConnected(3) ? "c" : "nc") << ' ';
+			oss << "4:" << (xrayTube->isShutterConnected(4) ? "c" : "nc");
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "shutter")) {
+			if (nArg != 3) {
+				throw RuntimeError("Requires 3 parameters: shutter [shutter index] [on/off]");
+			}
+			OnlyTubeCommand();
+			int index = 0;
+			istringstream iss (args[1].c_str());
+			iss >> index;
+			if (iss.fail()) {
+				throw RuntimeError("Could not scan shutter index argument " + args[1]);
+			}
+			bool on = false;
+			if (!strcasecmp(args[2].c_str(), "on")) {
+				on = true;
+			} else if (!strcasecmp(args[2].c_str(), "off")) {
+				on = false;
+			} else {
+				throw RuntimeError ("Cannot scan shutter value argument " + args[2]);
+			}
+			xrayTube->setShutter(index, on);
+			oss << (xrayTube->getShutter(index) ? "on" : "off");
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "warmup")) {
+			if (nArg != 2) {
+				throw RuntimeError("Requires 2 parameters: warmup [voltage]");
+			}
+			OnlyTubeCommand();
+			int voltage = 0;
+			istringstream iss (args[1].c_str());
+			iss >> voltage;
+			if (iss.fail()) {
+				throw RuntimeError("Could not scan warm up voltage argument " + args[1]);
+			}
+			xrayTube->startWarmup(voltage);
+			oss << (xrayTube->getHVSwitch() ? "on" : "off");
+			return oss.str();
+		}	
+
+		else if (!strcasecmp(command.c_str(), "getwtime")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: getwtime ");
+			}
+			OnlyTubeCommand();
+			oss << xrayTube->getWarmupTimeRemaining() << " s";
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "issafe")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: issafe ");
+			}
+			OnlyTubeCommand();
+			oss << (xrayTube->isAccessPossible() ? "yes" : "no");
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "readwarmuptiming")) {
+			if (nArg != 2) {
+				throw RuntimeError("Requires 2 parameters: readwarmuptiming [voltage] ");
+			}
+			OnlyTubeCommand();
+			int voltage = 0;
+			istringstream iss (args[1].c_str());
+			iss >> voltage;
+			if (iss.fail()) {
+				throw RuntimeError("Could not scan timestamp voltage argument " + args[1]);
+			}
+			oss << xrayTube->getWarmupTimestamp(voltage);
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "writeallwarmuptiming")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: writeallwarmuptiming");
+			}
+			OnlyTubeCommand();
+			xrayTube->writeAllWarmupTimestamps();
+			return "ok";
+		}
+
+
+		// ----- pressure ------------------------------------------------------
+
+		else if (!strcasecmp(command.c_str(), "pressure")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: pressure");
+			}
+			if (pgauge == NULL) {
+				try {
+					UpdateInterface(PRESSURE);
+				} catch (RuntimeError &e) {
+					throw;
+				}	
+			}
+			std::vector<PressureGauge> result = pgauge->getPressure();
+			oss << 	"1: [" << result[0].status << ", " << result[0].pressure << "]\n"
+					"2: [" << result[1].status << ", " << result[1].pressure << "]";
+			return oss.str();
+		}
+
+
+		// ----- reference points ----------------------------------------------
+
+		else if (!strcasecmp(command.c_str(), "reflist")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: reflist");
+			}
+			if (referencePoints == NULL) {
+				throw RuntimeError ("No reference points added");
+			}
+			oss << referencePoints->getList();
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "refvals")) {
+			if (nArg != 2) {
+				throw RuntimeError("Requires 2 parameters: refvals [name]");
+			}
+			if (referencePoints == NULL) {
+				throw RuntimeError ("No reference points added");
+			}
+			std::string name = args[1];
+			vector <double> positions = referencePoints->getPositions(name);
+			for (unsigned int i = 0; i < positions.size(); ++i) {
+				oss << positions[i] << ' ';
+			}
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "getref")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: getref");
+			}
+			if (referencePoints == NULL) {
+				throw RuntimeError ("No reference points added");
+			}
+			oss << referencePoints->getCurrentReferenceName();
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "setref")) {
+			if (nArg != 2) {
+				throw RuntimeError("Requires 2 parameters: setref [name]");
+			}
+			if (referencePoints == NULL) {
+				throw RuntimeError ("No reference points added");
+			}
+			std::string name = args[1];
+			referencePoints->moveTo(name);
+			return "ok";
+		}
+
+
+		// ----- filter wheels -------------------------------------------------
+
+		else if (!strcasecmp(command.c_str(), "fwlist")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: fwlist");
+			}
+			if (fwheel.size() == 0) {
+				throw RuntimeError ("No filter wheels added");
+			}
+			for (unsigned int i = 0; i < fwheel.size(); ++i) {
+				oss << fwheel[i]->getName();
+				if (i < fwheel.size() - 1) {
+					oss << ' ';
+				}
+			}
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "fwvals")) {
+			if (nArg != 2) {
+				throw RuntimeError("Requires 2 parameters: fwvals [name]");
+			}
+			string name = args[1];
+			int ifwheel = GetFwheelIndex(name);
+			vector <double> result = fwheel[ifwheel]->getValueList();
+			for (unsigned int i = 0; i < result.size(); ++i) {
+				oss << result[i];
+				if (i < result.size() - 1) {
+					oss << ' ';
+				}
+			}
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "getfw")) {
+			if (nArg != 2) {
+				throw RuntimeError("Requires 2 parameters: getfw [name]");
+			}
+			string name = args[1];
+			int ifwheel = GetFwheelIndex(name);
+			oss << fwheel[ifwheel]->getValue();
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "setfw")) {
+			if (nArg != 3) {
+				throw RuntimeError("Requires 3 parameters: setfw [name] [value]");
+			}
+			string name = args[1];
+			int ifwheel = GetFwheelIndex(name);
+			double value = 0;
+			istringstream iss (args[2].c_str());
+			iss >> value;
+			if (iss.fail()) {
+				throw RuntimeError("Could not scan filter wheel value argument " + args[2]);
+			}	
+			fwheel[ifwheel]->setValue(value);
+			oss << fwheel[ifwheel]->getValue();
+			return oss.str();
+		}
+
+		// ----- unknown command -----------------------------------------------
+
 		throw RuntimeError("Unknown command " + command);
 	} 
+
 	// delete xray class if tube switched off
 	catch (const TubeOffError &e) {
 		if (xrayTube != NULL) {
@@ -1414,6 +1362,7 @@ string Initialize::executeCommand(vector<string> args) {
 		}
 		throw;
 	}
+
 	// delete xray class if tube switched off
 	catch (const PressureOffError &e) {
 		if (pgauge != NULL) {
@@ -1674,10 +1623,10 @@ void Initialize::TubeMode(vector<string> args) {
 	// get tube interface
 	try {
 		UpdateInterface(TUBE);
+		xrayTube->setMaxPower(maxTubePower);
 	} catch (RuntimeError &e) {
 		FILE_LOG(logWARNING) << "Xray Tube is probably switched off. Continuing.";
 	}	
-	xrayTube->setMaxPower(maxTubePower);
 	cout << endl;
 }
 
@@ -1721,10 +1670,6 @@ void Initialize::FwheelMode(vector<string> args) {
 	} catch (RuntimeError &e) {
 		throw RuntimeError("Could not get usb port for Fwheel " + name);
 	}
-
-	// ensure they start at position 1
-	fwheel[fwheel.size() - 1]->setStartPosition();
-	fwheel[fwheel.size() - 1]->setStartPosition(); //the second time it works
 	cout << endl;
  }
 

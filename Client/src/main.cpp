@@ -9,10 +9,10 @@
 
 std::string useSystemCommand(std::string command) {
     FILE* sysFile = popen(command.c_str(), "r");
-	  char output[COMMAND_BUFFER_LENGTH];
-	  memset(output, 0, sizeof(output));
-	  fgets(output, sizeof(output), sysFile);
-	  pclose(sysFile);
+	char output[COMMAND_BUFFER_LENGTH];
+	memset(output, 0, sizeof(output));
+	fgets(output, sizeof(output), sysFile);
+	pclose(sysFile);
 
     std::istringstream iss(output);
 		std::vector<std::string> result = std::vector<std::string>(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>());

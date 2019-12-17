@@ -26,11 +26,12 @@ class Interface {
   std::string PressureGaugeSend(std::string command);
   
   void FilterWheelInterface();
-  char* send_command_to_fw(char* c, int rb);
+  /* Calls FilterWheelSendCommand handles exceptions */
+  std::string FilterWheelSend(std::string command, bool readBack = false);
 
 private:
   void ValidateController();
-  bool ControllerIsIdle(std::string result, bool validate = false);
+  bool ControllerIsIdle(std::string result);
   std::string ControllerSendCommand(std::string command, bool readBack = false);
 
   void ValidateTube();
@@ -38,6 +39,9 @@ private:
 
   void ValidatePressureGauge();
   std::string PressureGaugeSendCommand(std::string command);
+
+  void ValidateFilterWheel();
+  std::string FilterWheelSendCommand(std::string command, bool readBack);
 
   std::string serial;
   int serialPortNumber;

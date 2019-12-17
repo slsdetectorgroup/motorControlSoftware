@@ -6,21 +6,23 @@
 #include <sstream>
 #include <cstring>
 #include <stdio.h>
+#include <math.h>
 
-using namespace std;
+#define NUM_FWHEEL_VALUES				(6)
+#define FWHEEL_SERIAL_NUM_LINK_PART1	("more /sys/class/tty/ttyUSB")
+#define FWHEEL_SERIAL_NUM_LINK_PART2	("/device/../../serial")
+#define FWHEEL_TOLERANCE				(0.0001)
 
-#define NUM_FWHEEL_VALUES	(6)
 
-
-Fwheel::Fwheel(int index, std::string name, std::string serialNumber, vector<double> values)
-	:index(index), name(name), serialNumber(serialNumber), values(values), interface(NULL) {
-  currentValue = values[0];
+Fwheel::Fwheel(int index, std::string name, std::string serialNumber, std::vector<double> valueList)
+	:index(index), name(name), serialNumber(serialNumber), valueList(valueList), interface(NULL) {
+  currentValue = valueList[0];
   FILE_LOG(logINFO) << "Fwheel  [" << index << "]: [name:" << name << ", serialNumber: " << serialNumber <<  ", currentValue:" << currentValue << "]";
 }
 
 bool Fwheel::CheckFWSerialNumber(int usbport, std::string serialNumber) {
 	std::ostringstream oss;
-	oss << "more /sys/class/tty/ttyUSB" << usbport << "/device/../../serial";
+	oss << FWHEEL_SERIAL_NUM_LINK_PART1 << usbport << FWHEEL_SERIAL_NUM_LINK_PART2;
 	std::string command = oss.str();
 
 	FILE* sysFile = popen(command.c_str(), "r");
@@ -30,6 +32,7 @@ bool Fwheel::CheckFWSerialNumber(int usbport, std::string serialNumber) {
 	pclose(sysFile);
 
 	if (strstr(output, serialNumber.c_str()) != NULL) {
+        FILE_LOG(logINFOGREEN) << "\tSuccess";
 		return true;
 	}
 	return false;
@@ -43,52 +46,69 @@ std::string Fwheel::getSerialNumber() {
 	return serialNumber;
 }
 
+std::vector <double> Fwheel::getValueList() {
+	return valueList;
+}
+
 void Fwheel::setInterface(Interface* interface) {
 	this->interface = interface;
 	FILE_LOG(logINFO) << "\tFwheel " << name << ": [usbPort:" << interface->getSerial() << ']';
+	setStartPosition();
 }
 
 Interface* Fwheel::getInterface() {
   return interface;
 }
 
-
 void Fwheel::setStartPosition() {
-	//start position
-	interface->send_command_to_fw((char*)"pos=1",0);
-	currentValue=values[0];
+	setValue(valueList[0]);
 }
 
-
 double Fwheel::getValue() {
+	std::string result = interface->FilterWheelSend("pos?\r", true);
+	std::istringstream iss(result);
+    int position = -1;
+    iss >> position;
+    if (iss.fail()) {
+        std::ostringstream oss;
+        oss << "Cannot scan integer from result for filter wheel " << name << ": " + result;
+        throw RuntimeError(oss.str());
+    }	
+	if (position < 1 || position > NUM_FWHEEL_VALUES) {
+        std::ostringstream oss;
+        oss << "Invalid position " << position << " got from filter wheel " << name << ": " + result;
+        throw RuntimeError(oss.str());
+	}
+	currentValue = valueList[position - 1];
 	return currentValue;
 }
 
-int Fwheel::setValue(double currentValue) {
-	char command[COMMAND_BUFFER_LENGTH];
-
-	std::string prefix = "pos=";
-	for(int i = 0; i < NUM_FWHEEL_VALUES; ++i) 	{
-		if (values[i] == currentValue) {
-			memset(command, 0, sizeof(command));
-			sprintf(command, "%s%d", prefix.c_str(), i + 1); //+1 because positions for filter wheel in display are from 1 to 6
-			interface->send_command_to_fw(command, 0);
-			this->currentValue = currentValue;
-			return 1;
+void Fwheel::setValue(double currentValue) {
+	std::ostringstream oss;
+	for (unsigned int i = 0; i < valueList.size(); ++i) {
+		if (fabs(valueList[i] - currentValue) < FWHEEL_TOLERANCE) {
+			oss << "pos=" << i + 1 << '\r';
+			interface->FilterWheelSend(oss.str());
+			if (currentValue != getValue()) {
+				oss << "Filter wheel " << name << " could not be moved to " << currentValue << ". It is at " << this->currentValue;
+				throw RuntimeError(oss.str());
+			}
+			return;
 		}
 	}
-
-	//did not find the currentValue in the list
-	return 0;
+	oss << "Invalid absorption value " << currentValue;
+	throw RuntimeError (oss.str());
 }
 
 
 void Fwheel::print() {
-	std::cout << "\tFilter Wheel" << index << std::endl;
+	std::cout << "\tFilter Wheel [" << index << ']' << std::endl;
 	std::cout << "\t\t[Name:" << name << ", SerialNumber:" << serialNumber << ", UsbPort:" << interface->getSerial() << ']' << std::endl;
 	std::cout << "\t\t[Values: ";
-	for (unsigned int i = 0; i < values.size(); ++i) {
-		std::cout << values[i] << ", ";
+	for (unsigned int i = 0; i < valueList.size(); ++i) {
+		std::cout << valueList[i];
+		if (i < valueList.size() - 1) 
+		std::cout << ", ";
 	}  
 	std::cout << ']' << std::endl << std::endl;
 }
