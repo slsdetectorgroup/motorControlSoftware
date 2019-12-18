@@ -4,12 +4,12 @@
 #include <sstream>
 #include <math.h>
 
-#define MOTOR_TOLERANCE	(0.0001)
+#define MOTOR_TOLERANCE	(0.000001)
 
 Motor::Motor(int index, std::string name, int axis, int controller, double lowerLimit, double upperLimit)
   : index(index),name(name),axis(axis),controller(controller), lowerLimit(lowerLimit),upperLimit(upperLimit),position(0.0) {
 	// validations
-	if (lowerLimit > upperLimit) {
+	if (lowerLimit != -1 && upperLimit != -1 && lowerLimit > upperLimit) {
 		std::ostringstream oss; 
 		oss << "Invalid limits to set motor " << name;
 		throw RuntimeError(oss.str());			
@@ -37,7 +37,7 @@ int Motor::getController() {
 }
 
 void Motor::setLowerLimit(double lowerLimit) {
-	if (lowerLimit > upperLimit) {
+	if (lowerLimit != -1 && upperLimit != -1 && lowerLimit > upperLimit) {
 		std::ostringstream oss;
 		oss << "Could not set lower limit " << lowerLimit << ". Must be less than upper limit " << upperLimit;
 		throw RuntimeError(oss.str());
@@ -50,7 +50,7 @@ double Motor::getLowerLimit() {
 }
 
 void Motor::setUpperLimit(double upperLimit) {
-	if (upperLimit < lowerLimit) {
+	if (lowerLimit != -1 && upperLimit != -1 && upperLimit < lowerLimit) {
 		std::ostringstream oss;
 		oss << "Could not set upper limit " << upperLimit << ". Must be greater than lower limit " << lowerLimit;
 		throw RuntimeError(oss.str());
@@ -71,11 +71,13 @@ double Motor::getPosition() {
 }
 
 bool Motor::canMotorMove(double position) {
-  if (upperLimit == -1 && lowerLimit == -1)
-	  return true;
-  if (position >= lowerLimit && position <= upperLimit)
-	  return true;
-  return false;
+  	if (lowerLimit != -1 && position < lowerLimit)
+	  	return false;
+
+  	if (upperLimit != -1 && position > upperLimit)
+	  	return false;
+
+  	return true;
 }
 
 void Motor::print() {

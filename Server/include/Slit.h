@@ -7,10 +7,11 @@ class Slit {
 
   Slit(Controller* controllerX1, Controller* controllerX2, int axisX1, int axisX2);
   void updateLimits();
-
+  std::string canBothMove(double position1, double position2);
   double getSlitWidth();
-  double getX1Center();
-
+  void setSlitWidth(double width);
+  double getCenter();
+  void setCenter(double center);
   void print();
   
 

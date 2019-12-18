@@ -9,7 +9,7 @@
 
 
 #ifdef XRAYBOX
-#define DEFAULT_SERVER_HOSTNAME 		("mpc2128.psi.ch")
+#define DEFAULT_SERVER_HOSTNAME 		("pc13784.psi.ch")//("mpc2128.psi.ch")
 #elif LASERBOX
 #define DEFAULT_SERVER_HOSTNAME 		("mpc2085.psi.ch")
 #else

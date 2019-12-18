@@ -34,6 +34,12 @@ using namespace std;
 #define USB_PORT_PREFIX					("/dev/ttyUSB")
 
 
+void Initialize::OnlySlitCommand() {
+	if (slit == NULL) {
+		throw RuntimeError ("Slits motors do not exist");
+	}
+}
+
 void Initialize::OnlyTubeCommand() {
 	if (xrayTube == NULL) {
 		try {
@@ -417,7 +423,7 @@ string Initialize::executeCommand(vector<string> args) {
 
 		else if (!strcasecmp(command.c_str(), "movefl")) {
 			if (nArg != 3) {
-				throw RuntimeError("Requires 2 parameters: movefl [fluorescence motor] [target name]");
+				throw RuntimeError("Requires 3 parameters: movefl [fluorescence motor] [target name]");
 			}
 			string name = args[1];
 			OnlyFluorescenceCommand(name);
@@ -431,450 +437,55 @@ string Initialize::executeCommand(vector<string> args) {
 
 		// ----- slits ---------------------------------------------------------
 
-
-	/*
-
-
-
-		// --- if command is getX1Limit---------------------------------------
-		else if(command == "getX1Limit")
-		{
-
-			// if number of parameters are wrong
-			if(nArg!=1)
-			{
-				strcpy(mess, "ERROR: Required number of parameters: 1");
-				return -1;
+		else if (!strcasecmp(command.c_str(), "getslitwidth")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: getslitwidth");
 			}
-
-			// if number of parameters are wrong
-			if(slit==NULL)
-			{
-				strcpy(mess, "ERROR: Slits are not entered in the config file");
-				return -1;
-			}
-
-			sprintf(mess,"%f",slit->getX1Limit());
-			return 0;
-
+			OnlySlitCommand();
+			oss << fixed << slit->getSlitWidth(); 
+			return oss.str();
 		}
 
-
-
-		// --- if command is getX2Limit---------------------------------------
-		else if(command == "getX2Limit")
-		{
-
-			// if number of parameters are wrong
-			if(nArg!=1)
-			{
-				strcpy(mess, "ERROR: Required number of parameters: 1");
-				return -1;
+		else if (!strcasecmp(command.c_str(), "setslitwidth")) {
+			if (nArg != 2) {
+				throw RuntimeError("Requires 2 parameters: setslitwidth [value]");
 			}
-
-			// if number of parameters are wrong
-			if(slit==NULL)
-			{
-				strcpy(mess, "ERROR: Slits are not entered in the config file");
-				return -1;
-			}
-
-			sprintf(mess,"%f",slit->getX2Limit());
-			return 0;
-
+			OnlySlitCommand();
+			double value = 0;
+			istringstream iss (args[1].c_str());
+			iss >> value;
+			if (iss.fail()) {
+				throw RuntimeError("Could not scan slit width value argument " + args[1]);
+			}	
+			slit->setSlitWidth(value);
+			oss << fixed << slit->getSlitWidth(); 
+			return oss.str();
 		}
 
-
-		// --- if command is getcenter---------------------------------------
-		else if(command == "getcenter")
-		{
-			//if slits are not included in config file
-			if(slit == NULL)
-			{
-				strcpy(mess, "ERROR: The slit motors do not exist in the config file.");
-				return -1;
+		else if (!strcasecmp(command.c_str(), "getcenter")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: getcenter");
 			}
-			// if number of parameters are wrong
-			if(nArg!=1)
-			{
-				strcpy(mess, "ERROR: Required number of parameters: 1");
-				return -1;
-			}
-
-			sprintf(mess,"%f",slit->getX1Center());
-			return 0;
+			OnlySlitCommand();
+			oss << fixed << slit->getCenter(); 
+			return oss.str();
 		}
 
-
-
-		// --- if command is getslitwidth---------------------------------------
-		else if(command == "getslitwidth")
-		{
-			//if slits are not included in config file
-			if(slit == NULL)
-			{
-				strcpy(mess, "ERROR: The slit motors do not exist in the config file.");
-				return -1;
+		else if (!strcasecmp(command.c_str(), "setcenter")) {
+			if (nArg != 2) {
+				throw RuntimeError("Requires 2 parameters: setcenter [value]");
 			}
-			// if number of parameters are wrong
-			if(nArg!=1)
-			{
-				strcpy(mess, "ERROR: Required number of parameters: 1");
-				return -1;
-			}
-
-			sprintf(mess,"%f",slit->getSlitWidth());
-			return 0;
+			OnlySlitCommand();
+			double value = 0;
+			istringstream iss (args[1].c_str());
+			iss >> value;
+			if (iss.fail()) {
+				throw RuntimeError("Could not scan center value argument " + args[1]);
+			}	
+			slit->setCenter(value);
+			oss << fixed << slit->getCenter(); 
+			return oss.str();
 		}
-
-
-
-
-
-
-		// --- if command is widthrel---------------------------------------
-		else if(command == "widthrel")
-		{
-			//if slits are not included in config file
-			if(slit == NULL)
-			{
-				strcpy(mess, "ERROR: The slit motors do not exist in the config file.");
-				return -1;
-			}
-
-			double halfWidth;
-			// if number of parameters are wrong
-			if(nArg!=2)
-			{
-				strcpy(mess, "ERROR: Required number of parameters: 2");
-				return -1;
-			}
-
-			// if width is not a number
-			temp.assign(args[1]);
-			if(temp.find_first_not_of("0123456789.-")!=string::npos)
-			{
-				sprintf(mess, "ERROR: %s for width should be a number",args[1]);
-				return -1;
-			}
-
-			halfWidth = atof(args[1])/2;
-			newPosition = motor[slit1_exists]->getPosition() - halfWidth;
-			newPosition2 = motor[slit2_exists]->getPosition() - halfWidth;
-
-			// checks if width is too large, then the motors will go past the original positions
-			if(slit->canBothSlitsMove(newPosition,newPosition2))
-			{
-				strcpy(mess,"ERROR: The width should be small enough so that the slit motors can move");
-				return -1;
-			}
-
-			motor[slit1_exists]->moveRel(0-halfWidth ,motor[slit2_exists]->getAxis(),0-halfWidth );
-
-			// sets the positions in the motor objects and the slit object
-			motor[slit1_exists]->setPosition(newPosition);
-			motor[slit2_exists]->setPosition(newPosition2);
-			slit->setBothpos(newPosition,newPosition2);
-
-			sprintf(mess,"The Slit width has been increased by %f and slit_x1 has moved to %f and slit_x2 has moved to %f",atof(args[1]),newPosition, newPosition2);
-			return 0;
-		}
-
-
-
-
-
-
-		// --- if command is widthabs---------------------------------------
-		else if(command == "widthabs")
-		{
-			//if slits are not included in config file
-			if(slit == NULL)
-			{
-				strcpy(mess, "ERROR: The slit motors do not exist in the config file.");
-				return -1;
-			}
-
-			// if number of parameters are wrong
-			if(nArg!=2)
-			{
-				strcpy(mess, "ERROR: Required number of parameters: 2");
-				return -1;
-			}
-
-			// if width is not a number
-			temp.assign(args[1]);
-			if(temp.find_first_not_of("0123456789.")!=string::npos)
-			{
-				sprintf(mess, "ERROR: %s for width should be a positive number",args[1]);
-				return -1;
-			}
-
-			// the absolute middle position of the slits
-			midpos = (motor[slit1_exists]->getPosition()+slit->getX1Limit())/2;
-			// the distance to be moved relatively from the middle position of the slits
-			double moveby = atof(args[1])/2;
-
-			newPosition = midpos - moveby;
-			newPosition2 = slit->getLimit()-(midpos+moveby);
-
-			// checks if width is too large, then the motors will go past the original positions
-			if(slit->canBothSlitsMove(newPosition,newPosition2))
-			{
-				strcpy(mess,"ERROR: The width should be small enough so that the slit motors can move");
-				return -1;
-			}
-			motor[slit1_exists]->moveAbs(newPosition,motor[slit2_exists]->getAxis(),newPosition2,motor[slit2_exists]->getPosition());
-
-			// sets the positions in the motor objects and the slit object
-			motor[slit1_exists]->setPosition(newPosition);
-			motor[slit2_exists]->setPosition(newPosition2);
-			slit->setBothpos(newPosition,newPosition2);
-			midpos = (motor[slit1_exists]->getPosition()+slit->getX1Limit())/2;
-			sprintf(mess,"Slit_x1 has been moved to %f and slit_x2 to %f, with a width of %f and midpos is %f",newPosition, newPosition2,slit->getSlitWidth(),midpos);
-			return 0;
-		}
-
-
-
-
-
-		// --- if command is centerrel---------------------------------------
-		else if(command == "centerrel")
-		{
-			//if slits are not included in config file
-			if(slit == NULL)
-			{
-				strcpy(mess, "ERROR: The slit motors do not exist in the config file.");
-				return -1;
-			}
-
-			// if number of parameters are wrong
-			if(nArg!=2)
-			{
-				strcpy(mess, "ERROR: Required number of parameters: 2");
-				return -1;
-			}
-
-			// if position is not a number
-			temp.assign(args[1]);
-			if(temp.find_first_not_of("0123456789.-")!=string::npos)
-			{
-				sprintf(mess, "ERROR: %s for position should be a number",args[1]);
-				return -1;
-			}
-
-			newPosition = motor[slit1_exists]->getPosition()+atof(args[1]);
-			newPosition2 = motor[slit2_exists]->getPosition()-atof(args[1]);
-
-			if(slit->canBothSlitsMove(newPosition,newPosition2))
-			{
-				strcpy(mess,"ERROR: Either of the slits cannot be moved to a negative position ");
-				return -1;
-			}	  motor[slit1_exists]->moveRel(atof(args[1]),motor[slit2_exists]->getAxis(),0-atof(args[1]));
-			// sets the positions in the motor objects and the slit object
-			motor[slit1_exists]->setPosition(newPosition);
-			motor[slit2_exists]->setPosition(newPosition2);
-			slit->setBothpos(newPosition,newPosition2);
-			midpos = (motor[slit1_exists]->getPosition()+slit->getX1Limit())/2;
-			sprintf(mess,"Slit_x1 has been moved to %f and slit_x2 to %f, with same width %f but midpos is %f",newPosition, newPosition2,slit->getSlitWidth(),midpos );
-			return 0;
-
-		}
-
-
-
-
-
-
-		// --- if command is centerabs---------------------------------------
-		else if(command == "centerabs")
-		{
-			//if slits are not included in config file
-			if(slit == NULL)
-			{
-				strcpy(mess, "ERROR: The slit motors do not exist in the config file.");
-				return -1;
-			}
-
-			// if number of parameters are wrong
-			if(nArg!=2)
-			{
-				strcpy(mess, "ERROR: Required number of parameters: 2");
-				return -1;
-			}
-
-			// if position is not a number
-			temp.assign(args[1]);
-			if(temp.find_first_not_of("0123456789.")!=string::npos)
-			{
-				sprintf(mess, "ERROR: %s for position should be a positive number",args[1]);
-				return -1;
-			}
-
-			// the absolute middle position of the slits
-			midpos = (motor[slit1_exists]->getPosition()+slit->getX1Limit())/2;
-			// calculate the relative position to be moved
-			double relpos =  atof(args[1]) - midpos;
-
-			newPosition = motor[slit1_exists]->getPosition() + relpos;
-			newPosition2 = motor[slit2_exists]->getPosition() - relpos;
-
-			//check if the slits will crash into each other
-			if(slit->canBothSlitsMove(newPosition,newPosition2))
-			{
-				strcpy(mess,"ERROR: Either of the slits cannot be moved to a negative position");
-				return -1;
-			}
-
-			motor[slit1_exists]->moveRel(relpos,motor[slit2_exists]->getAxis(),0-relpos);
-			// sets the positions in the motor objects and the slit object
-			motor[slit1_exists]->setPosition(newPosition);
-			motor[slit2_exists]->setPosition(newPosition2);
-			slit->setBothpos(newPosition,newPosition2);
-			midpos = (motor[slit1_exists]->getPosition()+slit->getX1Limit())/2;
-			sprintf(mess,"Slit_x1 has been moved to %f and slit_x2 to %f, with same width %f but midpos is %f",newPosition, newPosition2,slit->getSlitWidth(),midpos );
-			return 0;
-
-		}
-
-
-
-
-
-		// --- if command is 'exactcenter' to move one of the slits right next to the other----------------
-		else if(command == "exactcenter")
-		{
-			//if slits are not included in config file
-			if(slit == NULL)
-			{
-				strcpy(mess, "ERROR: The slit motors do not exist in the config file.");
-				return -1;
-			}
-
-			// if number of parameters are wrong
-			if(nArg!=1)
-			{
-				strcpy(mess, "ERROR: Required number of parameters: 1");
-				return -1;
-			}
-			double exactcenter = slit->getLimit()/2;
-			// moving both slits to exact center
-			motor[slit1_exists]->moveAbs(exactcenter,motor[slit2_exists]->getAxis(),exactcenter,motor[slit2_exists]->getPosition());
-			motor[slit1_exists]->setPosition(exactcenter);
-			motor[slit2_exists]->setPosition(exactcenter);
-			slit->setBothpos(exactcenter,exactcenter);
-			sprintf(mess,"Moved both the slits to the exact center at position 51.25");
-			return 0;
-
-		}
-
-
-
-
-		// --- if command is 'x1zerowidth' to move slit_x2 towards slit_x1 with width 0----------------
-		else if(command == "x1zerowidth")
-		{
-			//if slits are not included in config file
-			if(slit == NULL)
-			{
-				strcpy(mess, "ERROR: The slit motors do not exist in the config file.");
-				return -1;
-			}
-
-			// if number of parameters are wrong
-			if(nArg!=1)
-			{
-				strcpy(mess, "ERROR: Required number of parameters: 1");
-				return -1;
-			}
-
-			newPosition=slit->getX2Limit();
-			motor[slit2_exists]->moveAbs(newPosition,0,0,0);
-			motor[slit2_exists]->setPosition(newPosition);
-			slit->setX2pos(newPosition);
-			sprintf(mess,"Moved slit_x2 to %f position, slit_x1:%f position,width:%f",newPosition,motor[slit1_exists]->getPosition(),slit->getSlitWidth());
-			return 0;
-
-		}
-
-
-
-
-		// --- if command is 'zerowidth' to move both slits simultaneously
-		//right next to each other to an absolute position of the slit specified--------------------------
-		else if(command == "zerowidth")
-		{
-			//if slits are not included in config file
-			if(slit == NULL)
-			{
-				strcpy(mess, "ERROR: The slit motors do not exist in the config file.");
-				return -1;
-			}
-
-			// if number of parameters are wrong
-			if(nArg!=2)
-			{
-				strcpy(mess, "ERROR: Required number of parameters: 2");
-				return -1;
-			}
-
-			// if position is a positive number
-			temp.assign(args[2]);
-			if(temp.find_first_not_of("0123456789.")!=string::npos)
-			{
-				sprintf(mess, "ERROR: %s for position should be a positive number",args[2]);
-				return -1;
-			}
-
-			newPosition=atof(args[2]);
-			newPosition2=slit->getLimit()-newPosition;
-
-			// check if position given is within limit
-			if(newPosition>slit->getLimit())
-			{
-				sprintf(mess, "ERROR: Position should be less than %f, else slits crash into each other",slit->getLimit());
-				return -1;
-			}
-
-
-			motor[slit1_exists]->moveAbs(newPosition,motor[slit2_exists]->getAxis(),newPosition2,motor[slit2_exists]->getPosition());
-			motor[slit1_exists]->setPosition(newPosition);
-			motor[slit2_exists]->setPosition(newPosition2);
-			slit->setBothpos(newPosition,newPosition2);
-			sprintf(mess,"Moved slit_x1 to %f position and slit_x2 to %f position with 0 width",newPosition,newPosition2);
-			return 0;
-
-		}
-
-
-
-
-
-
-
-	*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 		// ----- tube ----------------------------------------------------------
 

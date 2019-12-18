@@ -11,8 +11,8 @@ controller	corvus_2	09040216
 #motor	Crystal		    1	    corvus_3	0		    360
 #motor	Huber		    2	    corvus_3	-50		    150
 motor	Fluorescence	3	    corvus_2	0		    251.8267
-#motor	Slit_x1		    1	    corvus_2	-1		    -1
-#motor	Slit_x2		    2	    corvus_2	-1		    -1
+#motor	Slit_x1		    1	    corvus_2	0		    -1
+#motor	Slit_x2		    2	    corvus_2	0		    -1
 #motor	PSF		        3	    corvus_1	0		    42.4
 #motor	Detector_x	    1	    corvus_1	0		    255.5
 #motor	Detector_y	    1	    corvus_1	0		    102.7

@@ -103,10 +103,11 @@ void Controller::moveRel(double position, int axis) {
     // validate  
     double currentPosition = motor[axis]->getPosition();
     if (position == 0) {
+        FILE_LOG(logINFO) << "\tNothing to move";
         return;
     }
     if (!motor[axis]->canMotorMove(currentPosition + position)) {
-        oss << "Cannot move " << motor[axis]->getName() << " by " << position << " (Position: " << currentPosition + position << "). Beyond limits " << motor[axis]->getLowerLimit() << " and " << motor[axis]->getUpperLimit() << '.';
+        oss << "Cannot move " << motor[axis]->getName() << " by " << position << " (to position " << currentPosition + position << "). Beyond limits " << motor[axis]->getLowerLimit() << " and " << motor[axis]->getUpperLimit() << '.';
         throw RuntimeError(oss.str());
     }
     // move    
@@ -123,7 +124,8 @@ void Controller::moveAbs(double position, int axis) {
     // validate
     double currentPosition = motor[axis]->getPosition();
     if (Motor::matches(position, currentPosition)) {
-       return;
+        FILE_LOG(logINFO) << "\tNothing to move";
+        return;
     }
     if (!motor[axis]->canMotorMove(position)) {
         std::ostringstream oss;
@@ -168,6 +170,11 @@ void Controller::calibrate(int axis) {
     interface->ControllerSend(oss.str());   
     interface->ControllerWaitForIdle();
     debugPositions();
+    if (!Motor::matches(motor[axis]->getPosition(), 0)) {
+        std::ostringstream oss;
+        oss << "Could not calibrate " << motor[axis]->getName() << ". Position: " << std::fixed << motor[axis]->getPosition();
+        throw RuntimeError(oss.str());
+    }
 }
 
 void Controller::rangeMeasure(int axis) {
