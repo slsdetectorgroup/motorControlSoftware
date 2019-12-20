@@ -3,11 +3,13 @@
 
 
 #include "MySocketTCP.h"
+#include "commonDefs.h"
 #include <string.h>
 #include <iostream>
 #include <math.h>
 #include <errno.h>
 #include <stdio.h>
+#include <sstream>
 using namespace std;
 
 MySocketTCP::~MySocketTCP(){
@@ -64,7 +66,9 @@ MySocketTCP::MySocketTCP(const char* const host_ip_or_name, unsigned short int c
   portno=port_number;
   struct hostent *hostInfo = gethostbyname(host_ip_or_name);
   if (hostInfo == NULL){
-    cerr << "Exiting: Problem interpreting host: " << host_ip_or_name << "\n";
+    ostringstream oss;
+    oss << "Exiting: Problem interpreting host: " << host_ip_or_name;
+    throw RuntimeError(oss.str());
   } else {
     // Set some fields in the serverAddress structure.  
     serverAddress.sin_family = hostInfo->h_addrtype;

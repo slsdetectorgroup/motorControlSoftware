@@ -2,64 +2,52 @@ set(CMAKE_AUTOMOC ON)
 
 set(SOURCES
     src/gui_main.cpp
-    src/MotorControlGui.cpp
+    src/Gui.cpp
     src/MotorWidget.cpp
-    src/OptionsWidget.cpp
+    src/SlitWidget.cpp
+    src/FwheelWidget.cpp 
+#    src/OptionsWidget.cpp
+#    src/PGaugeWidget.cpp 
     ../Client/src/Client.cpp
     ../include/MySocketTCP.cpp
 )
 
 set(FORMS
+    forms/form_gui.ui
     forms/form_motorwidget.ui
-    forms/form_optionsgui.ui
+    forms/form_slitwidget.ui
+    forms/form_fwheelwidget.ui 
+#    forms/form_optionsgui.ui
+#    forms/form_pgaugewidget.ui 
 )
 
 
 set(HEADERS
-    include/MotorControlGui.h
+    include/GuiDefs.h
+    include/Gui.h
     include/MotorWidget.h
-    include/OptionsWidget.h
+    include/SlitWidget.h
+    include/FwheelWidget.h 
+#    include/OptionsWidget.h
+#    include/PGaugeWidget.h 
     ../Client/include/Client.h
     ../include/MySocketTCP.h
     ../include/commonDefs.h
+    ../include/logger.h
 )
 
 #options
 if (USE_BIG_XRAY)
-    list (APPEND FORMS 
-        forms/form_motorcontrolgui.ui
-    )
     set(bin_name  "XRayBoxGui64_sl7")
 endif (USE_BIG_XRAY)
 
 if (USE_LASER)
-    list (APPEND HEADERS 
-        include/FwheelWidget.h 
-    )
-    list (APPEND SOURCES 
-        src/FwheelWidget.cpp 
-    )
-    list (APPEND FORMS 
-        forms/form_fwheelwidget.ui 
-        forms/form_laserboxgui.ui
-    )
     set(bin_name  "LaserBoxGui64_sl7")
 endif (USE_LASER)
 
 if (USE_VACUUM)
-    list (APPEND HEADERS 
-        include/PGaugeWidget.h 
-    )
-    list (APPEND SOURCES 
-        src/PGaugeWidget.cpp 
-    )
-    list (APPEND FORMS 
-        forms/form_pgaugewidget.ui 
-        forms/form_vacuumboxgui.ui
-    )
     set(bin_name  "VacuumBoxGui64_sl7")
 endif (USE_VACUUM)
-
 
 
 

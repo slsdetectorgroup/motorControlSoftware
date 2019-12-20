@@ -127,10 +127,11 @@ bool Xray::isOnStandby() {
 }
 
 void Xray::setHVSwitch(bool on) {
-    if (isOnStandby()) {
-        throw RuntimeError ("Cannot set high voltage. Tube is on Stand-by mode.");
-    }
     std::ostringstream oss;
+    if (isOnStandby()) {
+        oss << "Cannot set high voltage. Tube is on " << TUBE_STANDBY_ERROR_PHRASE << " mode";
+        throw RuntimeError (oss.str());
+    }
     oss << "hv:" << (on ? 1 : 0) << ' ';
     interface->TubeSend(oss.str());
 }
@@ -165,12 +166,13 @@ void Xray::validateVoltage(int voltage) {
 }
 
 void Xray::setVoltage(int value) {
+    std::ostringstream oss;
     if (isOnStandby()) {
-        throw RuntimeError ("Cannot set voltage. Tube is on Stand-by mode.");
+        oss << "Cannot set voltage. Tube is on " << TUBE_STANDBY_ERROR_PHRASE << " mode";
+        throw RuntimeError (oss.str());
     }
     validateVoltage(value);
     validatePower(value, getCurrent());
-    std::ostringstream oss;
     oss << "sv:" << value << ' ';
     interface->TubeSend(oss.str());
 }
@@ -189,12 +191,13 @@ void Xray::validateCurrent(int current) {
 }
 
 void Xray::setCurrent(int value)  {
+    std::ostringstream oss;
     if (isOnStandby()) {
-        throw RuntimeError ("Cannot set current. Tube is on Stand-by mode.");
+        oss << "Cannot set current. Tube is on " << TUBE_STANDBY_ERROR_PHRASE << " mode";
+        throw RuntimeError (oss.str());
     }
     validateCurrent(value);
     validatePower(getVoltage(), value);
-    std::ostringstream oss;
     oss << "sc:" << value << ' ';
     interface->TubeSend(oss.str());
 }
@@ -205,13 +208,14 @@ int Xray::getCurrent() {
 }
 
 void Xray::setVoltageAndCurrent(int v, int c)	{
+    std::ostringstream oss;
     if (isOnStandby()) {
-        throw RuntimeError ("Cannot set voltage and current. Tube is on Stand-by mode.");
+        oss << "Cannot set voltage and current. Tube is on " << TUBE_STANDBY_ERROR_PHRASE << " mode";
+        throw RuntimeError (oss.str());
     }
     validateVoltage(v);
     validateCurrent(c);
     validatePower(v, c);
-    std::ostringstream oss;
     oss << "sn:" << v << "," << c << ' ';
     interface->TubeSend(oss.str());
 }
@@ -285,15 +289,15 @@ bool Xray::isShutterConnected(int index) {
 }
 
 void Xray::setShutter(int index, bool on)	{
+    std::ostringstream oss;
     if (isOnStandby()) {
-        throw RuntimeError ("Cannot set shutter. Tube is on Stand-by mode.");
+        oss << "Cannot set shutter. Tube is on " << TUBE_STANDBY_ERROR_PHRASE << " mode";
+        throw RuntimeError (oss.str());
     }
     if (!isShutterConnected(index)) {
-        std::ostringstream oss;
         oss << "Shutter " << index << " not connected";
         throw RuntimeError (oss.str());
     }
-    std::ostringstream oss;
     oss << (on ? "os:" : "cs:") << index << ' ';
     interface->TubeSend(oss.str());
 }
@@ -307,8 +311,10 @@ bool Xray::getShutter(int index) {
 }
 
 void Xray::startWarmup(int voltage) {
+    std::ostringstream oss;
     if (isOnStandby()) {
-        throw RuntimeError ("Cannot initiate warmup. Tube is on Stand-by mode.");
+        oss << "Cannot initiate warmup. Tube is on " << TUBE_STANDBY_ERROR_PHRASE << " mode";
+        throw RuntimeError (oss.str());
     }
     validateVoltage(voltage);
 
@@ -317,7 +323,6 @@ void Xray::startWarmup(int voltage) {
             setShutter(i, false);
         }
     }
-    std::ostringstream oss;
     oss << "wu:4," << voltage << ' ';
     interface->TubeSend(oss.str());
     setHVSwitch(true);

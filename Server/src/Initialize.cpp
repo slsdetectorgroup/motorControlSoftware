@@ -164,7 +164,6 @@ string Initialize::executeCommand(vector<string> args) {
 			if (nArg != 1 ) {
 				throw RuntimeError("Requires 1 parameters: list");
 			}	
-			oss << motor.size() << ' ';
 			for(unsigned int i = 0; i < motor.size(); ++i) {
 				oss << motor[i]->getName() << ' ';
 			}
@@ -555,7 +554,7 @@ string Initialize::executeCommand(vector<string> args) {
 			if (nArg != 1) {
 				throw RuntimeError("Requires 1 parameters: isstandby ");
 			}
-			oss << (xrayTube->isOnStandby() ? "standby" : "on");
+			oss << (xrayTube->isOnStandby() ? TUBE_STANDBY_ERROR_PHRASE : "on");
 			return oss.str();
 		}
 
@@ -898,6 +897,14 @@ string Initialize::executeCommand(vector<string> args) {
 
 		// ----- filter wheels -------------------------------------------------
 
+		else if (!strcasecmp(command.c_str(), "nfw")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: nfw");
+			}
+			oss << fwheel.size();
+			return oss.str();
+		}
+
 		else if (!strcasecmp(command.c_str(), "fwlist")) {
 			if (nArg != 1) {
 				throw RuntimeError("Requires 1 parameters: fwlist");
@@ -1002,7 +1009,7 @@ Initialize::~Initialize() {
 
 
 Initialize::Initialize() 
-	: xrayTube(NULL), pgauge(NULL), slit(NULL), maxTubePower(0) {
+	: xrayTube(NULL), pgauge(NULL), referencePoints(NULL), slit(NULL), maxTubePower(0) {
 
 	usbSerialPortsUsed.resize(MAX_USB_SERIAL_PORTS);
 	for (unsigned int i = 0; i < usbSerialPortsUsed.size(); ++i) {
@@ -1194,10 +1201,10 @@ void Initialize::UpdateInterface(InterfaceIndex index) {
 	ostringstream oss;
 	switch (index) {
 	case TUBE:
-		oss << "Tube is probably switched off. Could not find usb serial port.";
+		oss << TUBE_OFF_ERROR_PHRASE << ". Could not find usb serial port.";
 		throw TubeOffError (oss.str());
 	case PRESSURE:
-		oss << "Pressure Gauge is probably switched off. Could not find usb serial port.";
+		oss << PRESSUR_OFF_ERROR_PHRASE << ". Could not find usb serial port.";
 		throw PressureOffError(oss.str());
 	case CONTROLLER:
 		oss << "Could not find usb serial port for controller.";

@@ -22,6 +22,8 @@
 #define TCP_PACKET_LENGTH				(1024)
 #define TIME_BUFFER_LENGTH				(28)
 
+#define FWHEEL_TOLERANCE				(0.0001)
+
 
 enum {
   OK, /**< function successfully executed */
@@ -62,4 +64,19 @@ public:
     PressureOffError(std::string msg):RuntimeError(msg) {}
 };
 
+struct BoxInUseError : public RuntimeError {
+public:
+    BoxInUseError(std::string msg):RuntimeError(msg) {}
+};
+
+struct AnotherUserError : public RuntimeError {
+public:
+    AnotherUserError(std::string msg):RuntimeError(msg) {}
+};
+
+#define TUBE_OFF_ERROR_PHRASE		("Tube is probably switched off")
+#define TUBE_STANDBY_ERROR_PHRASE	("Stand-by")
+#define PRESSUR_OFF_ERROR_PHRASE	("Pressure Gauge is probably switched off")
+#define BOX_IN_USE_ERROR_PHRASE		("box is in use by")
+#define ANOTHER_USER_ERROR_PHRASE	("Another user had updated the server")
 

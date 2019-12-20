@@ -305,7 +305,7 @@ std::string Interface::TubeSend(std::string command, bool readBack) {
 			++attempts;
 			if (attempts == TUBE_MAX_REPEAT_ATTEMPTS) {
 				std::ostringstream oss;
-				oss << "Tube is probably switched off. " << e.what();
+				oss << TUBE_OFF_ERROR_PHRASE << ". " << e.what();
 				throw TubeOffError(oss.str());
 			}
         }	
@@ -436,7 +436,7 @@ std::string Interface::PressureGaugeSend(std::string command) {
 			++attempts;
 			if (attempts == PRESSURE_MAX_REPEAT_ATTEMPTS) {
 				std::ostringstream oss;
-				oss << "Pressure Gauge is probably switched off. " << e.what();
+				oss << PRESSUR_OFF_ERROR_PHRASE << ". " << e.what();
 				throw PressureOffError(oss.str());
 			}
         }	

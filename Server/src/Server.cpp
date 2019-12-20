@@ -112,7 +112,8 @@ int main(int argc, char *argv[]) {
 				if (lastCmdUnlock && clientType == "gui" && commandName != "list") {
 					proceed = false;
 					ret = FAIL;
-					strcpy(mess,"Another user had updated the server. So, your GUI is not updated.\nInitiating Update..");
+					sprintf(mess,"%s. So, your GUI is not updated.\nInitiating Update..",
+					ANOTHER_USER_ERROR_PHRASE);
 					FILE_LOG(logERROR) << mess;
 				}
 			}
@@ -131,8 +132,9 @@ int main(int argc, char *argv[]) {
 #else
 							"vacuum"
 #endif
-							" box is in use by \n\nUser Name\t%s: %s\nPC Name\t\t: %s\nLast Command at\t: %s\n\n"
+							" %s \n\nUser Name\t%s: %s\nPC Name\t\t: %s\nLast Command at\t: %s\n\n"
 							"Please check with this person before you use \"unlock\".\n", 
+							BOX_IN_USE_ERROR_PHRASE,
 							(clientType == "gui" ? "\t" : ""), 
 							lockedUserName.c_str(), lockedPcName.c_str(), lockedTimestamp.c_str());	
 					FILE_LOG(logERROR) << mess;		
@@ -167,6 +169,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		sock->SendDataOnly(&ret, sizeof(ret));
+		FILE_LOG(logINFO) << "Server Sent: " << mess;
 		sock->SendDataOnly(mess, sizeof(mess));
 		sock->Disconnect();
 	}

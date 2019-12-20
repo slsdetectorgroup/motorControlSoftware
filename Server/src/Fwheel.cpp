@@ -11,7 +11,6 @@
 #define NUM_FWHEEL_VALUES				(6)
 #define FWHEEL_SERIAL_NUM_LINK_PART1	("more /sys/class/tty/ttyUSB")
 #define FWHEEL_SERIAL_NUM_LINK_PART2	("/device/../../serial")
-#define FWHEEL_TOLERANCE				(0.0001)
 
 
 Fwheel::Fwheel(int index, std::string name, std::string serialNumber, std::vector<double> valueList)
