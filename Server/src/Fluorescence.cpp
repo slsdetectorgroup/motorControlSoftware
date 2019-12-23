@@ -16,8 +16,6 @@
 #define LINEAR_WIDTH            (34)
 #define LINEAR_OFFSET           (12)
 
-#define MAX_FLUOR_VALUES        (8)
-
 #define LINEAR_LASER_POSITION   (128)
 #define FLUOR_LASER_NAME		("Laser")
 #define FLUOR_LASER_VALUE		(-1)
@@ -77,14 +75,12 @@ void Fluorescence::addTarget(std::string name, std::string energy) {
     targetHolder[targetHolder.size() - 1]->addTarget(name, energy);
 }
 
-std::string Fluorescence::getList() {
+std::string Fluorescence::getList(int index) {
     std::string result;
-    for (unsigned int i = 0; i < targetHolder.size(); ++i) {
-        result += targetHolder[i]->getList();
-        if (i < targetHolder.size() - 1) {
-            result += ' ';
-        }
-    }    
+#ifdef XRAYBOX
+    result += (std::string(FLUOR_LASER_NAME) + " - ");
+#endif
+    result += targetHolder[index]->getList();
     return result;
 }
 

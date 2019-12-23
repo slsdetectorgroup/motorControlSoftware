@@ -1,13 +1,16 @@
 #include "Gui.h"
 #include "MotorWidget.h"
+#include "FluorWidget.h"
 #include "SlitWidget.h"
 #include "FwheelWidget.h"
+#include "PGaugeWidget.h"
+#include "TubeWidget.h"
 #include "GuiDefs.h"
 
 #include <QtGui>
 
 Gui::Gui(std::string hostname)
-	: QMainWindow(0), hostname(hostname), slits(NULL) {
+	: QMainWindow(0), hostname(hostname), slits(NULL), pgauge(NULL), tube(NULL) {
 	setupUi(this);
 	LayoutWindow();
 	Initialization();
@@ -21,6 +24,10 @@ void Gui::LayoutWindow() {
 	
 	LoadMotorWidgets();
 	LoadFwheelWidgets();
+	groupPressure->setChecked(true);
+	groupTube->setChecked(true);
+
+	pushStop->hide();
 	
 	layoutDone = true;
 }
@@ -55,7 +62,13 @@ void Gui::LoadMotorWidgets() {
 
 		// create fluorescence widget
 		if (motorName.find("Fluorescence") != std::string::npos) {
-			std::cout << "creating fluorescence widget" << std::endl;
+			if (fluorWidgets.size() == 0) {
+				groupFluorescence->setEnabled(true);
+				lblFluors->hide();
+			}	
+			fluorWidgets.push_back(new FluorWidget(this, motorName, hostname));
+			int currentIndex = fluorWidgets.size() - 1;
+			gridFluorescence->addWidget(fluorWidgets[currentIndex], currentIndex, 0);
 			continue;
 		}
 
@@ -84,6 +97,7 @@ void Gui::LoadFwheelWidgets() {
 		}
 	} catch (const std::exception& e) {
 		Message(WARNING, e.what(), "Gui::LoadFwheelWidgets");
+		return;
 	}
 
 	// get list of filter wheel names
@@ -116,11 +130,115 @@ void Gui::LoadFwheelWidgets() {
 
 void Gui::Initialization() {
 	connect(pushUpdate, SIGNAL(clicked()), this, SLOT(Update()));
+	connect(groupPressure, SIGNAL(toggled(bool)), this, SLOT(LoadPressureWidget()));
+	connect(groupTube, SIGNAL(toggled(bool)), this, SLOT(LoadTubeWidget()));
+	// motors
 	for (unsigned int i = 0; i < motorWidgets.size(); ++i) {
 		connect(motorWidgets[i], SIGNAL(UpdateSignal()), this, SLOT(Update()));
 	}
+	// slits
 	if (slits != NULL) {
 		connect(slits, SIGNAL(UpdateSignal()), this, SLOT(Update()));		
+	}
+	// fluorescence
+	for (unsigned int i = 0; i < fluorWidgets.size(); ++i) {
+		connect(fluorWidgets[i], SIGNAL(UpdateSignal()), this, SLOT(Update()));		
+	}
+	// fwheel 
+	for (unsigned int i = 0; i < fwheelWidgets.size(); ++i) {
+		connect(fwheelWidgets[i], SIGNAL(UpdateSignal()), this, SLOT(Update()));		
+	}	
+}
+
+void Gui::LoadPressureWidget(bool userClick) {
+	std::pair <std::string, int> result = SendCommand(hostname, 1, "ispressure", "Gui::LoadPressureWidget");
+    	if (!result.first.empty()) {
+			if (result.first == "on") {
+				EnablePressureWidget(true);
+			} else {
+				if (userClick) {
+					Message(WARNING, "Vacuum pump is switched off.", "Gui::LoadPressureWidget");
+				}
+				EnablePressureWidget(false);
+			}
+    	}
+}
+
+void Gui::EnablePressureWidget(bool enable) {
+	disconnect(groupPressure, SIGNAL(toggled(bool)), this, SLOT(LoadPressureWidget()));
+	if (pgauge != NULL) {
+		disconnect(pgauge, SIGNAL(UpdateSignal()), this, SLOT(Update()));	
+		disconnect(pgauge, SIGNAL(SwitchedOffSignal(bool)), this, SLOT(EnablePressureWidget(bool)));
+	}
+	if (!enable) {
+		if (pgauge != NULL) {
+			gridPressure->removeWidget(pgauge);
+			delete pgauge;
+			pgauge = NULL;
+			lblPressure->show();
+		}
+		groupPressure->setChecked(false);
+	} else {
+		if (pgauge == NULL) {
+			lblPressure->hide();
+			pgauge = new PGaugeWidget(this, hostname);
+			gridPressure->addWidget(pgauge, 0, 0);	
+		}
+		pgauge->Update();
+		groupPressure->setChecked(true);
+	}
+	connect(groupPressure, SIGNAL(toggled(bool)), this, SLOT(LoadPressureWidget()));
+	if (pgauge != NULL) {
+		connect(pgauge, SIGNAL(UpdateSignal()), this, SLOT(Update()));	
+		connect(pgauge, SIGNAL(SwitchedOffSignal(bool)), this, SLOT(EnablePressureWidget(bool)));
+	}
+}
+
+void Gui::LoadTubeWidget(bool userClick) {
+	std::pair <std::string, int> result = SendCommand(hostname, 1, "istube", "Gui::LoadTubeWidget");
+    	if (!result.first.empty()) {
+			if (result.first == "on") {
+				EnableTubeWidget(true);
+			} else {
+				if (userClick) {
+					if (result.first == "standby") {
+						Message(WARNING, "Xray Tube is on Stand-by.", "Gui::LoadTubeWidget");
+					} else {
+						Message(WARNING, "Xray Tube is switched off.", "Gui::LoadTubeWidget");
+					}
+				}
+				EnableTubeWidget(false);
+			}
+    	}
+}
+
+void Gui::EnableTubeWidget(bool enable) {
+	connect(groupTube, SIGNAL(toggled(bool)), this, SLOT(LoadTubeWidget()));
+	if (tube != NULL) {
+		disconnect(tube, SIGNAL(UpdateSignal()), this, SLOT(Update()));	
+		disconnect(tube, SIGNAL(SwitchedOffSignal(bool)), this, SLOT(EnableTubeWidget(bool)));
+	}
+	if (!enable) {
+		if (tube != NULL) {
+			gridTube->removeWidget(tube);
+			delete tube;
+			tube = NULL;
+			lblTube->show();
+		}
+		groupTube->setChecked(false);
+	} else {
+		if (tube == NULL) {
+			lblTube->hide();
+			tube = new TubeWidget(this, hostname);
+			gridTube->addWidget(tube, 0, 0);	
+		}
+		tube->Update();
+		groupTube->setChecked(true);
+	}
+	connect(groupTube, SIGNAL(toggled(bool)), this, SLOT(LoadTubeWidget()));
+	if (tube != NULL) {
+		connect(tube, SIGNAL(UpdateSignal()), this, SLOT(Update()));	
+		connect(tube, SIGNAL(SwitchedOffSignal(bool)), this, SLOT(EnableTubeWidget(bool)));
 	}
 }
 
@@ -128,17 +246,51 @@ void Gui::Update() {
 	if (!layoutDone) {
 		return;
 	}
-	statusbar->showMessage("Updating ...");
+	statusbar->showMessage("Updating ..."); // gets replaced by temp explanations of tool tip texts (not permanent)
 
 	// update motors
 	for (unsigned int i = 0; i < motorWidgets.size(); ++i) {
 		motorWidgets[i]->Update();
+		statusbar->showMessage("Updating ...");
 	}
+
 	// udpate slits
 	if (slits != NULL) {
 		slits->Update();
+		statusbar->showMessage("Updating ...");
 	}
-	statusbar->showMessage("Update completed", 3 * 1000);
+	// update fluorescence
+	for (unsigned int i = 0; i < fluorWidgets.size(); ++i) {
+		fluorWidgets[i]->Update();
+		statusbar->showMessage("Updating ...");
+	}	
+	// update fwheels
+	for (unsigned int i = 0; i < fwheelWidgets.size(); ++i) {
+		fwheelWidgets[i]->Update();
+		statusbar->showMessage("Updating ...");
+	}		
+	// udpate pressure gauge (only if enabled)
+	if (groupPressure->isChecked()) {
+		LoadPressureWidget(false);	
+		statusbar->showMessage("Updating ...");
+	}
+	// udpate pressure gauge (only if enabled)
+	if (groupTube->isChecked()) {
+		LoadTubeWidget(false);	
+		statusbar->showMessage("Updating ...");
+	}
+
+	statusbar->showMessage("Update completed", 2 * 1000);
+}
+
+void Gui::Stop() {
+    pushStop->setChecked(true);
+    FILE_LOG(logINFO) << "Stopping all motors";
+    std::ostringstream oss;
+    oss << "stopall ";
+    std::pair <std::string, int> result = SendCommand(hostname, 1, oss.str(), "Gui::Stop");
+    Update();
+    pushStop->setChecked(false);
 }
 
 void Gui::closeEvent(QCloseEvent* event) {
@@ -153,3 +305,7 @@ void Gui::closeEvent(QCloseEvent* event) {
 		event->accept();
 	}
 }
+
+
+
+

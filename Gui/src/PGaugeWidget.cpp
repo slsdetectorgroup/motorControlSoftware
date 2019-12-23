@@ -1,149 +1,147 @@
-/********************************************//**
- * @file PGaugeWidget.cpp
- * @short uses the form for a PGauge widget and defines its methods
- * @author Dhanya
- ***********************************************/
 #include "PGaugeWidget.h"
-#include "MotorWidget.h"
-#include <iostream>
-#include <string.h>
-using namespace std;
-#ifdef VACUUMBOX
+#include "GuiDefs.h"
 
+#include <QTimer>
+#include <sstream>
+#include <iterator>
+#include <vector>
 
+#define TIMEOUT 5000
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-PGaugeWidget::PGaugeWidget(QWidget *parent):QWidget(parent), updating(false)
-{
+PGaugeWidget::PGaugeWidget(QWidget *parent, std::string hostname)
+    :   QWidget(parent), hostname(hostname) {
 	setupUi(this);
+    LayoutWindow();
+    Initialization();
+}
 
-    normal = pStatusDisplay->palette();
-    red = new QPalette();
-    red->setColor(QPalette::Text, Qt::red);
+PGaugeWidget::~PGaugeWidget() {}
 
-    connect(pushRefresh,      SIGNAL(clicked()),        this, SLOT(TimeoutRefresh()));
-    connect(pushStop,      SIGNAL(clicked()),           this, SLOT(StopRefresh()));
-
-
-    int ret = UpdateValueFromServer();
-
+void PGaugeWidget::LayoutWindow() {
     spinUpdate->setValue(TIMEOUT/1000);
     timer = new QTimer(this);
-    connect(timer,      SIGNAL(timeout()),              this, SLOT(TimeoutRefresh()));
-    timer->start(TIMEOUT);
-    if (!ret)
-        StopRefresh();
-
-}
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-void PGaugeWidget::StopRefresh() {
-    timer->stop();
-    MotorWidget::ErrorMessage((char*)"Switching off automatic pressure update.\n");
+    chkRefresh->setChecked(true);
+    pthread_mutex_init(&mutex, NULL);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+void PGaugeWidget::Initialization() {
+    connect(chkRefresh, SIGNAL(toggled(bool)), this, SLOT(EnableUpdate(bool)));
+    connect(timer, SIGNAL(timeout()), this, SLOT(TimeoutRefresh()));
+}
+
+void PGaugeWidget::EnableUpdate(bool enable) {
+    pthread_mutex_lock(&mutex);
+    if (enable) {
+        GetPressure();
+    } else {
+        if (timer->isActive()) {
+            timer->stop();
+            Message(WARNING, "Switching off automatic pressure update", "PGaugeWidget::EnableUpdate");
+        }
+    }
+    pthread_mutex_unlock (&mutex);
+}
 
 void PGaugeWidget::TimeoutRefresh() {
-    if (updating)
-        return;
+    if (!pthread_mutex_trylock (&mutex)) {
+        GetPressure();
+        pthread_mutex_unlock (&mutex);
+    }
+}
+
+void PGaugeWidget::GetPressure() {
+    FILE_LOG(logDEBUG) << "Getting pressure from Server";
+
+    // stop update temporarily
     timer->stop();
-    if (UpdateValueFromServer())
-        timer->start(spinUpdate->value() * 1000);
-    else
-        MotorWidget::ErrorMessage((char*)"Switching off automatic pressure update.\n");
-}
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-int PGaugeWidget::UpdateValueFromServer()
-{
-    updating = true;
-    cout << "Updating Pressure from Server" << endl;
-
-    const int size = 255;
-    char command[size];
-    memset(command, 0, size);
-    char str[size];
-    memset(str, 0, size);
-
-    strcpy(command,"gui pressure ");
-    strcpy(str,MotorWidget::SendCommand(2,command));
-
-    // error
-    if (strstr(str, "ERROR:") != NULL) {
-        // red
-        pStatusDisplay->setPalette(*red);
-        pValueDisplay->setPalette(*red);
-        pStatusDisplay2->setPalette(*red);
-        pValueDisplay2->setPalette(*red);
-
-        // read error
-        if (strstr(str, "ERROR: Could not get pressure") != NULL) {
-            pStatusDisplay->setText("READ ERROR");
-            pValueDisplay->setText("READ ERROR");
-            pStatusDisplay2->setText("READ ERROR");
-            pValueDisplay2->setText("READ ERROR");
+    try {
+        std::pair <std::string, int> result = SendCommand(hostname, 1, "pressure ", "PGaugeWidget::GetPressure");
+        std::string timestamp = GetTimeStamp();
+        // error
+        bool readError = false;
+        if (result.first.empty()) {
+            readError = true;       
         } else {
-            pStatusDisplay->setText("START ERROR");
-            pValueDisplay->setText("START ERROR");
-            pStatusDisplay2->setText("START ERROR");
-            pValueDisplay2->setText("START ERROR");
+		//std::cout<<"result:"<<result.first<<std::endl;
+            std::string pressure = result.first;
+            size_t startPos = pressure.find('[');
+            size_t endPos = pressure.find(']');
+            size_t comma = pressure.find(',');       
+            if (startPos == std::string::npos || endPos == std::string::npos 
+                || comma == std::string::npos
+                || comma < startPos || comma > endPos) {
+                readError = true; 
+            } else {
+                pStatusDisplay->setText(pressure.substr(startPos + 1, comma - startPos - 1).c_str());
+                pValueDisplay->setText((pressure.substr(comma + 2, endPos - comma - 2) + "  hPa").c_str());  
+                size_t startPos2 = pressure.find('[', endPos + 1);
+                size_t endPos2 = pressure.find(']', endPos + 1);
+                size_t comma2 = pressure.find(',', endPos + 1);                   
+                if (startPos2 == std::string::npos || endPos2 == std::string::npos 
+                    || comma2 == std::string::npos
+                    || comma2 < startPos2 || comma2 > endPos2) {
+                    readError = true; 
+                } else {         
+                    pStatusDisplay2->setText(pressure.substr(startPos2 + 1, comma2 - startPos2 - 1).c_str());
+                    pValueDisplay2->setText((pressure.substr(comma2 + 2, endPos2 - comma2 - 2) + "  hPa").c_str());  
+                }
+            }
         }
-        cout << str << endl;
-        gauge1box->setTitle("Pressure Gauge 1");
-        gauge2box->setTitle("Pressure Gauge 2");
-        updating = false;
-        return 0;
+        if (readError) {
+            pStatusDisplay->setText("Read Error");
+            pValueDisplay->setText("Read Error");
+            pStatusDisplay2->setText("Read Error");
+            pValueDisplay2->setText("Read Error");                 
+        } else {
+            lblUpdate->setText(("Last update:   " + timestamp).c_str());
+        }
+        if (result.second) {
+            emit UpdateSignal();
+        }
+
+    	// restart timer
+    	if (chkRefresh->isChecked()) {
+        	if (!timer->isActive()) {
+            	timer->start(spinUpdate->value() * 1000);
+        	}
+    	}
+
+    } catch (const PressureOffError& e) {
+	    disconnect(chkRefresh, SIGNAL(toggled(bool)), this, SLOT(EnableUpdate(bool)));
+        chkRefresh->setChecked(false); 
+	    Message(WARNING, "Vacuum pump switched off. ", "PGaugeWidget::GetPressure");
+	    connect(chkRefresh, SIGNAL(toggled(bool)), this, SLOT(EnableUpdate(bool)));
+        pStatusDisplay->setText("Vacuum pump off");
+        pValueDisplay->setText("Vacuum pump off");
+        pStatusDisplay2->setText("Vacuum pump off");
+        pValueDisplay2->setText("Vacuum pump off");
+	    emit SwitchedOffSignal(false);
     }
 
-    // success
-    pStatusDisplay->setPalette(normal);
-    pValueDisplay->setPalette(normal);
-    pStatusDisplay2->setPalette(normal);
-    pValueDisplay2->setPalette(normal);
 
-    char status1[20], status2[20];
-    memset(status1, 0, 20);
-    memset(status2, 0, 20);
-    float value1 = -1, value2 = -1;
-
-    const char delim[3] = ":,";
-    char *token;
-    token = strtok(str, delim);
-    token = strtok(NULL, delim);
-    strcpy(status1, token+1);
-    token = strtok(NULL, delim);
-    token = strtok(NULL, delim);
-    sscanf(token, " %e]", &value1);
-    token = strtok(NULL, delim);
-    token = strtok(NULL, delim);
-    strcpy(status2, token+1);
-    token = strtok(NULL, delim);
-    token = strtok(NULL, delim);
-    sscanf(token, " %e]", &value2);
-
-    printf("Gauge 1 [%s, %e], Gauge 2 [%s, %e]\n",status1, value1, status2, value2);
-
-
-    pStatusDisplay->setText(QString(status1));
-    pValueDisplay->setText(QString::number(value1, 'E', 5) + QString(" mbar"));
-    pStatusDisplay2->setText(QString(status2));
-    pValueDisplay2->setText(QString::number(value2, 'E', 5) + QString(" mbar"));
-
-    if (strstr(status1,"Measurement data okay") == NULL) {
-        pStatusDisplay->setPalette(*red);
-        pValueDisplay->setPalette(*red);
-    }
-    if (strstr(status2,"Measurement data okay") == NULL) {
-        pStatusDisplay2->setPalette(*red);
-        pValueDisplay2->setPalette(*red);
-    }
-
-    updating = false;
-    return 1;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-#endif
+std::string PGaugeWidget::GetTimeStamp() {
+    FILE* sysFile = popen("date", "r");
+	char output[COMMAND_BUFFER_LENGTH];
+	memset(output, 0, sizeof(output));
+	fgets(output, sizeof(output), sysFile);
+	pclose(sysFile);
+    std::string result(output, TIME_BUFFER_LENGTH);
+    FILE_LOG(logDEBUG) << "Date:[" << result << ']';
+    if (result.find("CET ") != std::string::npos) {
+        result.erase (result.find("CET "), 4);
+    }
+    return result;
+}
+
+
+void PGaugeWidget::Update() {
+    if (chkRefresh->isChecked()) {
+        pthread_mutex_lock(&mutex);
+        GetPressure();
+        pthread_mutex_unlock (&mutex);
+    }
+}
+

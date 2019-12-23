@@ -23,14 +23,17 @@ bool Controller::CheckControllerSerialNumber(int usbport, Interface* interface, 
     std::string result = interface->ControllerSend("getserialno ", true);
     interface->ControllerWaitForIdle();
     std::istringstream iss(result);
+	std::string snum;
     if (iss.good()) {
-        std::string snum;
+        
 	    iss >> snum;
         if (snum == serialNumber) {
             FILE_LOG(logINFOGREEN) << "\tSuccess";
             return true;
         }
    	}
+    FILE_LOG(logINFO) << "Expected [" << serialNumber << "], got [" << snum << ']';
+    FILE_LOG(logWARNING) << "Fail";
 	return false;
 }
 
@@ -183,6 +186,12 @@ void Controller::rangeMeasure(int axis) {
     interface->ControllerSend(oss.str());   
     interface->ControllerWaitForIdle();
     debugPositions();
+}
+
+void Controller::stop() {
+    interface->ControllerSend("\x3 ");   
+    interface->ControllerWaitForIdle();
+    debugPositions();    
 }
 
 void Controller::sendCommand(std::string command) {

@@ -22,6 +22,8 @@ void SlitWidget::LayoutWindow() {
 void SlitWidget::Initialization() {
 	connect(spinSlitWidth, SIGNAL(valueChanged(double)), this, SLOT(SetSlitWidth(double)));
 	connect(spinCenter, SIGNAL(valueChanged(double)), this, SLOT(SetCenter(double)));
+	connect(motorx1, SIGNAL(MotorMovedSignal()), this, SLOT(Update()));
+	connect(motorx2, SIGNAL(MotorMovedSignal()), this, SLOT(Update()));
 }
 
 void SlitWidget::GetSlitWidth() {
@@ -51,6 +53,9 @@ void SlitWidget::SetSlitWidth(double value) {
     }
     if (result.second) {
         emit UpdateSignal();
+    } else {
+        motorx1->Update();
+        motorx2->Update();        
     }
 }
 
@@ -81,12 +86,15 @@ void SlitWidget::SetCenter(double value) {
     }
     if (result.second) {
         emit UpdateSignal();
+    } else {
+        motorx1->Update();
+        motorx2->Update();        
     }
 }
 
 void SlitWidget::Update() {
     motorx1->Update();
-    motorx2->Update();
+    motorx2->Update();    
     GetSlitWidth();
     GetCenter();
 }

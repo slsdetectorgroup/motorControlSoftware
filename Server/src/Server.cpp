@@ -29,7 +29,15 @@ int main(int argc, char *argv[]) {
     // subsequent read/write to socket gives error - must handle locally
     signal(SIGPIPE, SIG_IGN);
 
-	MySocketTCP *sock = new MySocketTCP(PORT_NO);
+	int portno = PORT_NO;
+	if (argc == 1) {
+		FILE_LOG(logINFO) << "Control Server";
+	} else {
+		FILE_LOG(logINFO) << "Stop Server";
+		portno = PORT_NO + 1;
+	}
+
+	MySocketTCP *sock = new MySocketTCP(portno);
 	if (sock->getErrorStatus()) {
 		throw RuntimeError("Could not create server socket");
 	}

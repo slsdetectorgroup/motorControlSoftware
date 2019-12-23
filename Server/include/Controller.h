@@ -27,6 +27,7 @@ class Controller {
     void resetPosition(double position, int axis);
     void calibrate(int axis);
     void rangeMeasure(int axis);
+    void stop();
 
     // advanced
     void sendCommand(std::string command);

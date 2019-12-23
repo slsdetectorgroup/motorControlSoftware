@@ -121,6 +121,18 @@ inline std::pair <std::string, bool> SendCommand(std::string hostname, int nComm
             }
 		}
 	} 
+
+    catch (const TubeOffError& e) {
+        throw;
+    }
+
+    catch (const TubeStandbyError& e) {
+        throw;
+    }
+
+    catch (const PressureOffError& e) {
+        throw;
+    }
     
     catch (const std::exception& e) {
         Message(WARNING, e.what(), source);

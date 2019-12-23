@@ -23,7 +23,7 @@
 #define TIME_BUFFER_LENGTH				(28)
 
 #define FWHEEL_TOLERANCE				(0.0001)
-
+#define MAX_FLUOR_VALUES        		(8)
 
 enum {
   OK, /**< function successfully executed */

@@ -4,10 +4,12 @@ set(SOURCES
     src/gui_main.cpp
     src/Gui.cpp
     src/MotorWidget.cpp
+    src/FluorWidget.cpp
     src/SlitWidget.cpp
     src/FwheelWidget.cpp 
+    src/PGaugeWidget.cpp 
+    src/TubeWidget.cpp 
 #    src/OptionsWidget.cpp
-#    src/PGaugeWidget.cpp 
     ../Client/src/Client.cpp
     ../include/MySocketTCP.cpp
 )
@@ -15,10 +17,12 @@ set(SOURCES
 set(FORMS
     forms/form_gui.ui
     forms/form_motorwidget.ui
+    forms/form_fluorwidget.ui
     forms/form_slitwidget.ui
     forms/form_fwheelwidget.ui 
+    forms/form_pgaugewidget.ui 
+    forms/form_tubewidget.ui 
 #    forms/form_optionsgui.ui
-#    forms/form_pgaugewidget.ui 
 )
 
 
@@ -26,10 +30,12 @@ set(HEADERS
     include/GuiDefs.h
     include/Gui.h
     include/MotorWidget.h
+    include/FluorWidget.h
     include/SlitWidget.h
     include/FwheelWidget.h 
+    include/PGaugeWidget.h 
+    include/TubeWidget.h 
 #    include/OptionsWidget.h
-#    include/PGaugeWidget.h 
     ../Client/include/Client.h
     ../include/MySocketTCP.h
     ../include/commonDefs.h
@@ -77,6 +83,8 @@ target_include_directories(${bin_name} PUBLIC
 target_link_libraries(${bin_name} PUBLIC
     ${QT_QTCORE_LIBRARIES}
     ${QT_QTGUI_LIBRARIES}
+    pthread
+    rt
     png
     z
     Qt4::QtOpenGL

@@ -268,6 +268,26 @@ string Initialize::executeCommand(vector<string> args) {
 			return oss.str();
 		}
 
+		else if (!strcasecmp(command.c_str(), "stopall")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: stopall ");
+			}
+			for (unsigned int i = 0; i < controller.size(); ++i) {
+				controller[i]->stop();
+			}
+			return "ok";
+		}
+
+		else if (!strcasecmp(command.c_str(), "stop")) {
+			if (nArg != 2) {
+				throw RuntimeError("Requires 2 parameters: stop [motor]");
+			}
+			string name = args[1];
+			int imotor = GetMotorIndex(name);
+			controller[motor[imotor]->getController()]->stop();
+			return "ok";
+		}	
+
 		else if (!strcasecmp(command.c_str(), "cal")) {
 			if (nArg != 2) {
 				throw RuntimeError("Requires 2 parameters: cal [motor] ");
@@ -400,13 +420,19 @@ string Initialize::executeCommand(vector<string> args) {
 		}
 
 		else if (!strcasecmp(command.c_str(), "fllist")) {
-			if (nArg != 2) {
-				throw RuntimeError("Requires 2 parameters: fllist [fluorescence motor]");
+			if (nArg != 3) {
+				throw RuntimeError("Requires 3 parameters: fllist [fluorescence motor] [holder index]");
 			}
 			string name = args[1];
 			OnlyFluorescenceCommand(name);
 			int ifluor = GetFluorescenceIndex(name);
-			return fluorescence[ifluor]->getList();
+			int index = 0;
+			istringstream iss (args[2].c_str());
+			iss >> index;
+			if (iss.fail()) {
+				throw RuntimeError("Could not scan holder index argument " + args[2]);
+			}	
+			return fluorescence[ifluor]->getList(index);
 		}	
 
 		else if (!strcasecmp(command.c_str(), "getfl")) {
@@ -550,12 +576,19 @@ string Initialize::executeCommand(vector<string> args) {
 			return oss.str();
 		}
 
-		else if (!strcasecmp(command.c_str(), "isstandby")) {
+		else if (!strcasecmp(command.c_str(), "istube")) {
 			if (nArg != 1) {
-				throw RuntimeError("Requires 1 parameters: isstandby ");
+				throw RuntimeError("Requires 1 parameters: istube ");
 			}
-			oss << (xrayTube->isOnStandby() ? TUBE_STANDBY_ERROR_PHRASE : "on");
-			return oss.str();
+			try {
+				OnlyTubeCommand();
+			} catch (RuntimeError &e) {
+				return "off";
+			}
+			if (xrayTube->isOnStandby()) {
+				return "standby";
+			}
+			return "on";
 		}
 
 		else if (!strcasecmp(command.c_str(), "gethv")) {
@@ -840,6 +873,22 @@ string Initialize::executeCommand(vector<string> args) {
 			oss << 	"1: [" << result[0].status << ", " << result[0].pressure << "]\n"
 					"2: [" << result[1].status << ", " << result[1].pressure << "]";
 			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "ispressure")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: ispressure");
+			}
+			try {
+				if (pgauge == NULL) {
+					UpdateInterface(PRESSURE);
+				} else {
+					pgauge->getPressure();
+				}
+			} catch (RuntimeError &e) {
+				return "off";
+			}
+			return "on";
 		}
 
 

@@ -10,8 +10,19 @@
 Client::Client(std::string hostname) :  hostname(hostname) {}
 
 std::string Client::SendCommand(int nCommand, std::string command) {
+    int portno = PORT_NO;
+    if (command.find("stop") != std::string::npos) {
+        portno = PORT_NO + 1;
+    }
+    if (command.find("stop") != std::string::npos) {
+        portno = PORT_NO + 1;
+    }    
+    if (command.find("gui ") == std::string::npos) {
+        FILE_LOG(logINFO) << "port: " << portno;
+    }
+
     // connect
-    MySocketTCP sock(hostname.c_str(), PORT_NO);
+    MySocketTCP sock(hostname.c_str(), portno);
     if (sock.Connect() < 0) {
         throw RuntimeError("Could not connect to socket");
     }
@@ -97,13 +108,13 @@ std::string Client::useSystemCommand(std::string command) {
 	fgets(output, sizeof(output), sysFile);
 	pclose(sysFile);
 
-    std::istringstream iss(output);
-		std::vector<std::string> result = std::vector<std::string>(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>());
-
     if (command == "date") {
-        std::string result(output, TIME_BUFFER_LENGTH);
-        FILE_LOG(logDEBUG) << "Date:[" << result << ']';
-        return result;
+        std::string dateresult(output, TIME_BUFFER_LENGTH);
+        FILE_LOG(logDEBUG) << "Date:[" << dateresult << ']';
+        return dateresult;
     }
+
+    std::istringstream iss(output);
+	std::vector<std::string> result = std::vector<std::string>(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>());
     return result[0];
 }

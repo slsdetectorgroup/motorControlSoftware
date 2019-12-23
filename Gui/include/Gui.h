@@ -2,8 +2,11 @@
 
 #include "ui_form_gui.h"
 class MotorWidget;
+class FluorWidget;
 class SlitWidget;
 class FwheelWidget;
+class PGaugeWidget;
+class TubeWidget;
 
 #include <QMainWindow>
 
@@ -18,10 +21,14 @@ class Gui : public QMainWindow, private Ui::GuiObject {
     void closeEvent(QCloseEvent* event);
 
     private slots:
+    void LoadPressureWidget(bool userClick = true);
+    void EnablePressureWidget(bool enable);
+    void LoadTubeWidget(bool userClick = true);
+    void EnableTubeWidget(bool enable);
     void Update();
+    void Stop();
 
     private:
-    //void Initialization();
     void LayoutWindow();
     void LoadMotorWidgets();
     void LoadFwheelWidgets();
@@ -29,8 +36,11 @@ class Gui : public QMainWindow, private Ui::GuiObject {
 
     std::string hostname;
     std::vector <MotorWidget*> motorWidgets;
+    std::vector <FluorWidget*> fluorWidgets;
     SlitWidget* slits;
     std::vector <FwheelWidget*> fwheelWidgets;
+    PGaugeWidget* pgauge;
+    TubeWidget* tube;
     bool layoutDone;
 };
 

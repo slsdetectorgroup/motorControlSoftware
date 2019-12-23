@@ -586,7 +586,7 @@ void Interface::ValidateFilterWheel() {
 	try {
 		std::string result = FilterWheelSendCommand(FILTER_WHEEL_IDENTIFY_CMD, true);
 		if (result.find(std::string(FILTER_WHEEL_MODEL_RESPONSE)) == std::string::npos) {
-			throw std::runtime_error("Not identified as tube port");
+			throw std::runtime_error("Not identified as filter wheel port");
 		}
 	} catch (const std::exception& e) {
 		close(serialfd);

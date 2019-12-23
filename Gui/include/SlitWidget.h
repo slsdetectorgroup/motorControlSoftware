@@ -9,7 +9,7 @@ class SlitWidget:public QWidget, private Ui::SlitWidgetObject {
     SlitWidget(QWidget *parent, std::string hostname);
     ~SlitWidget();
 
-    public:
+    public slots:
     void Update();
 
     private slots:

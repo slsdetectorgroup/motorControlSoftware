@@ -16,6 +16,7 @@ class MotorWidget:public QWidget, private Ui::MotorWidgetObject {
     void MoveAbsolute(double value);
     void MoveLeft();
     void MoveRight();
+    void Calibrate();
 
     private:
     void LayoutWindow();
@@ -29,4 +30,5 @@ class MotorWidget:public QWidget, private Ui::MotorWidgetObject {
 
     signals:
     void UpdateSignal();
+    void MotorMovedSignal();
 };

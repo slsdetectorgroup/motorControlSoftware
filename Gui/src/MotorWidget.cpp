@@ -24,6 +24,7 @@ void MotorWidget::Initialization() {
     connect(spinAbsolute, SIGNAL(valueChanged(double)), this, SLOT(MoveAbsolute(double)));
     connect(pushLeft, SIGNAL(clicked()), this, SLOT(MoveLeft()));
     connect(pushRight, SIGNAL(clicked()), this, SLOT(MoveRight()));
+    connect(pushCal, SIGNAL(clicked()), this, SLOT(Calibrate()));
 }
 
 void MotorWidget::GetPosition() {
@@ -53,6 +54,8 @@ void MotorWidget::MoveAbsolute(double value) {
     }
     if (result.second) {
         emit UpdateSignal();
+    } else {
+        emit MotorMovedSignal();
     }
 }
 
@@ -69,13 +72,39 @@ void MotorWidget::MoveRelative(double value) {
     std::ostringstream oss;
     oss << "moverel " << name << ' ' << value;
     std::pair <std::string, int> result = SendCommand(hostname, 3, oss.str(), "MotorWidget::MoveRelative");
-    if (result.first.empty()) {
-        GetPosition();
-    }
+    GetPosition();
     if (result.second) {
         emit UpdateSignal();
+    } else {
+        emit MotorMovedSignal();
     }
 }
+
+void MotorWidget::Calibrate() {
+    if (Message(QUESTION, "Are you sure you want to calibrate the motor?", "MotorWidget::Calibrate", "Calibrate?") == FAIL) {
+        return;
+    }
+    pushCal->setChecked(true);
+    lblPosition->setEnabled(false);
+    spinAbsolute->setEnabled(false);
+    spinRelative->setEnabled(false);
+    FILE_LOG(logINFO) << "Calibrating " << name;
+    std::ostringstream oss;
+    oss << "cal " << name;
+    std::pair <std::string, int> result = SendCommand(hostname, 2, oss.str(), "MotorWidget::Calibrate");
+    Message(INFORMATION, "Calibration Completed", "MotorWidget::Calibrate");
+    GetPosition();
+    if (result.second) {
+        emit UpdateSignal();
+    } else {
+        emit MotorMovedSignal();
+    }
+    pushCal->setChecked(false);
+    lblPosition->setEnabled(true);
+    spinAbsolute->setEnabled(true);
+    spinRelative->setEnabled(true);
+}
+
 
 void MotorWidget::Update() {
     GetPosition();

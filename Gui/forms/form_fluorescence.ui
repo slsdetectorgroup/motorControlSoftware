@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>FluorescenceWidgetObject</class>
- <widget class="QWidget" name="FluorescenceWidgetObject">
+ <class>FluorWidgetObject</class>
+ <widget class="QWidget" name="FluorWidgetObject">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -50,7 +50,7 @@
       <string>name?</string>
      </property>
      <property name="flat">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
      <layout class="QGridLayout" name="gridGroupbox">
       <item row="0" column="1">
