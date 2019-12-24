@@ -1,5 +1,6 @@
 #include "Gui.h"
 #include "MotorWidget.h"
+#include "ReferencePointsWidget.h"
 #include "FluorWidget.h"
 #include "SlitWidget.h"
 #include "FwheelWidget.h"
@@ -10,7 +11,7 @@
 #include <QtGui>
 
 Gui::Gui(std::string hostname)
-	: QMainWindow(0), hostname(hostname), slits(NULL), pgauge(NULL), tube(NULL) {
+	: QMainWindow(0), hostname(hostname), refpoints(NULL), slits(NULL), pgauge(NULL), tube(NULL) {
 	setupUi(this);
 	LayoutWindow();
 	Initialization();
@@ -22,9 +23,27 @@ Gui::~Gui() {}
 void Gui::LayoutWindow() {
 	layoutDone = false;
 	
+	std::ostringstream oss;
+#ifdef XRAYBOX
+	oss << "XRay Box Gui";
+#elif LASERBOX
+	oss << "Laser Box Gui";
+#else
+	oss << "Vacuum Box Gui";
+#endif
+	oss << " - " << hostname;
+	std::string title = oss.str();
+	FILE_LOG(logINFOBLUE) << title;
+	setWindowTitle(title.c_str());
+
 	LoadMotorWidgets();
+	LoadReferencePointsWidget();
 	LoadFwheelWidgets();
+
+// takes a lot of time to look if pressure gauge port exists
+#ifdef VACUUMBOX
 	groupPressure->setChecked(true);
+#endif
 	groupTube->setChecked(true);
 
 	pushStop->hide();
@@ -83,6 +102,49 @@ void Gui::LoadMotorWidgets() {
 	}	
 }
 
+void Gui::LoadReferencePointsWidget() {
+	// get number of reference points
+	std::pair <std::string, int> result = SendCommand(hostname, 1, "nref", "Gui::LoadReferencePointsWidget");
+    if (result.first.empty()) {
+		return;
+	}
+	try {
+		// if no refernce points, return
+		int nref = getInteger(result.first);
+		if (nref == 0) {
+			return;
+		}
+	} catch (const std::exception& e) {
+		Message(WARNING, e.what(), "Gui::LoadReferencePointsWidget");
+		return;
+	}
+	MotorWidget* x = NULL;
+	MotorWidget* y = NULL;
+	MotorWidget* z = NULL;
+	for (unsigned int i = 0; i< motorWidgets.size(); ++i) {
+		if (motorWidgets[i]->GetName() == "Detector_x") {
+			x = motorWidgets[i];
+			continue;
+		}
+		if (motorWidgets[i]->GetName() == "Detector_y") {
+			y = motorWidgets[i];
+			continue;
+		}
+		if (motorWidgets[i]->GetName() == "Detector_z") {
+			z = motorWidgets[i];
+			continue;
+		}
+	}
+	if (x == NULL || y == NULL || z == NULL) {
+		Message(WARNING, "No reference points added as Detector_x, Detector_y or Detector_z is missing", "Gui::LoadReferencePointsWidget");
+		return;
+	}
+	groupReferencePoints->setEnabled(true);
+	lblReferencePoints->hide();
+	refpoints = new ReferencePointsWidget(this, hostname, x, y, z);
+	gridReferencePoints->addWidget(refpoints, 0, 0);	
+}
+
 void Gui::LoadFwheelWidgets() {
 	// get number of filter wheels
 	std::pair <std::string, int> result = SendCommand(hostname, 1, "nfw", "Gui::LoadFwheelWidgets");
@@ -136,6 +198,10 @@ void Gui::Initialization() {
 	for (unsigned int i = 0; i < motorWidgets.size(); ++i) {
 		connect(motorWidgets[i], SIGNAL(UpdateSignal()), this, SLOT(Update()));
 	}
+	// reference points
+	if (refpoints != NULL) {
+		connect(refpoints, SIGNAL(UpdateSignal()), this, SLOT(Update()));		
+	}	
 	// slits
 	if (slits != NULL) {
 		connect(slits, SIGNAL(UpdateSignal()), this, SLOT(Update()));		
@@ -213,7 +279,7 @@ void Gui::LoadTubeWidget(bool userClick) {
 }
 
 void Gui::EnableTubeWidget(bool enable) {
-	connect(groupTube, SIGNAL(toggled(bool)), this, SLOT(LoadTubeWidget()));
+	disconnect(groupTube, SIGNAL(toggled(bool)), this, SLOT(LoadTubeWidget()));
 	if (tube != NULL) {
 		disconnect(tube, SIGNAL(UpdateSignal()), this, SLOT(Update()));	
 		disconnect(tube, SIGNAL(SwitchedOffSignal(bool)), this, SLOT(EnableTubeWidget(bool)));
@@ -253,7 +319,11 @@ void Gui::Update() {
 		motorWidgets[i]->Update();
 		statusbar->showMessage("Updating ...");
 	}
-
+	// udpate reference points
+	if (refpoints != NULL) {
+		refpoints->Update();
+		statusbar->showMessage("Updating ...");
+	}	
 	// udpate slits
 	if (slits != NULL) {
 		slits->Update();

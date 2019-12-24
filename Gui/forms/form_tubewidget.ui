@@ -99,7 +99,7 @@
          </size>
         </property>
         <property name="text">
-         <string>Right</string>
+         <string>3</string>
         </property>
        </widget>
       </item>
@@ -227,7 +227,7 @@
          </size>
         </property>
         <property name="text">
-         <string>Right</string>
+         <string>1</string>
         </property>
        </widget>
       </item>
@@ -252,7 +252,7 @@
          </size>
         </property>
         <property name="text">
-         <string>Right</string>
+         <string>2</string>
         </property>
        </widget>
       </item>
@@ -277,7 +277,7 @@
          </size>
         </property>
         <property name="text">
-         <string>Right</string>
+         <string>4</string>
         </property>
        </widget>
       </item>

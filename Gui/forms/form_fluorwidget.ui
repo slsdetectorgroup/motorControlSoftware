@@ -214,6 +214,9 @@
               <height>25</height>
              </size>
             </property>
+            <property name="layoutDirection">
+             <enum>Qt::RightToLeft</enum>
+            </property>
             <property name="editable">
              <bool>false</bool>
             </property>
@@ -239,6 +242,9 @@
               <height>25</height>
              </size>
             </property>
+            <property name="layoutDirection">
+             <enum>Qt::RightToLeft</enum>
+            </property>
             <property name="editable">
              <bool>false</bool>
             </property>
@@ -263,6 +269,9 @@
               <width>16777215</width>
               <height>25</height>
              </size>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::LeftToRight</enum>
             </property>
             <property name="text">
              <string/>

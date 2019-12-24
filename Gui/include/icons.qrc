@@ -12,6 +12,5 @@
         <file>../images/dontopen.png</file>
         <file>../images/highvoltage.png</file>
         <file>../images/error.png</file>
-        <file>../images/hv.png</file>
     </qresource>
 </RCC>

@@ -28,7 +28,7 @@ void FwheelWidget::LoadAbsorptionValues() {
 	if (result.first.empty()) {
 		return;
 	}
-	FILE_LOG(logINFO) << "fwlist:" << result.first;
+	FILE_LOG(logDEBUG) << "fwvals:" << result.first;
 	// parse values
 	std::istringstream iss(result.first);
 	std::vector<std::string> list = std::vector<std::string>(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>());

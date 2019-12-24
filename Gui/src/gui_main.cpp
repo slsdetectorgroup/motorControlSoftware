@@ -5,14 +5,6 @@
 #include <QPlastiqueStyle>
 
 int main(int argc, char **argv) {
-#ifdef XRAYBOX
-	FILE_LOG(logINFOBLUE) << "XRay Box Gui";
-#elif LASERBOX
-	FILE_LOG(logINFOBLUE) << "Laser Box Gui";
-#else
-	FILE_LOG(logINFOBLUE) << "Vacuum Box Gui";
-#endif
-
     // find server hostname
     std::string serverHostname = DEFAULT_SERVER_HOSTNAME;
     if (argc > 2) {

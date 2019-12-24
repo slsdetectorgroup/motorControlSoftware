@@ -11,6 +11,10 @@
 ReferencePoints::ReferencePoints(std::vector<Controller*> controller, std::vector<int> axis)
     : controller(controller), axis(axis) {}
 
+int ReferencePoints::size() {
+    return referencePoint.size();
+}
+
 void ReferencePoints::add(std::string name, std::vector<double> position) {
     referencePoint.push_back(new ReferencePoint(referencePoint.size(), name, position));
 }

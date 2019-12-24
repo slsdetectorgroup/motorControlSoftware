@@ -894,6 +894,18 @@ string Initialize::executeCommand(vector<string> args) {
 
 		// ----- reference points ----------------------------------------------
 
+		else if (!strcasecmp(command.c_str(), "nref")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: nref");
+			}
+			if (referencePoints == NULL) {
+				oss << 0;
+			} else {
+				oss << referencePoints->size();
+			}
+			return oss.str();
+		}
+
 		else if (!strcasecmp(command.c_str(), "reflist")) {
 			if (nArg != 1) {
 				throw RuntimeError("Requires 1 parameters: reflist");

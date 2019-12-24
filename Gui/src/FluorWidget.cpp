@@ -19,8 +19,6 @@ std::string FluorWidget::GetName() {
 
 void FluorWidget::LayoutWindow() {
     groupbox->setTitle(name.c_str());
-    //comboHolder->lineEdit()->setAlignment(Qt::AlignHCenter);
-    //comboTarget->lineEdit()->setAlignment(Qt::AlignHCenter);
     LoadTargetHolders();
     motor = new MotorWidget(this, name, hostname);
     gridPageMotor->addWidget(motor, 0, 0);
@@ -33,23 +31,21 @@ void FluorWidget::LoadTargetHolders() {
 		return;
 	}
 	FILE_LOG(logDEBUG) << "numfl:" << result.first;
-    if (!result.first.empty()) {
-        try {
-            int numHolders = getInteger(result.first);
-            if (numHolders < 1) {
-                std::ostringstream oss;
-                oss << "Invalid number of target holders: " << numHolders;
-                throw RuntimeError (oss.str());
-            }
-            for (unsigned int i = 0; i < numHolders; ++i) {
-                std::ostringstream oss;
-                oss << "Holder " << i;
-                comboHolder->addItem(oss.str().c_str());
-            }
-            comboHolder->setCurrentIndex(0);
-        } catch (const std::exception& e) {
-            Message(WARNING, e.what(), "FluorWidget::LoadTargetHolders");
+    try {
+        int numHolders = getInteger(result.first);
+        if (numHolders < 1) {
+            std::ostringstream oss;
+            oss << "Invalid number of target holders: " << numHolders;
+            throw RuntimeError (oss.str());
         }
+        for (unsigned int i = 0; i < numHolders; ++i) {
+            std::ostringstream oss;
+            oss << "Holder " << i;
+            comboHolder->addItem(oss.str().c_str());
+        }
+        comboHolder->setCurrentIndex(0);
+    } catch (const std::exception& e) {
+        Message(WARNING, e.what(), "FluorWidget::LoadTargetHolders");
     }
 }
 

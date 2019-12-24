@@ -9,6 +9,7 @@ class Controller;
 class ReferencePoints {
     public:
     ReferencePoints(std::vector<Controller*> controller, std::vector<int> axis);
+    int size();
     void add(std::string name, std::vector<double> position);
     std::vector<double> getCurrentMotorPositions();
     std::vector<double> getPositions(std::string name);

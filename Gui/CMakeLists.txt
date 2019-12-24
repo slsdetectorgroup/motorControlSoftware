@@ -4,6 +4,7 @@ set(SOURCES
     src/gui_main.cpp
     src/Gui.cpp
     src/MotorWidget.cpp
+    src/ReferencePointsWidget.cpp
     src/FluorWidget.cpp
     src/SlitWidget.cpp
     src/FwheelWidget.cpp 
@@ -17,6 +18,7 @@ set(SOURCES
 set(FORMS
     forms/form_gui.ui
     forms/form_motorwidget.ui
+    forms/form_referencepointswidget.ui
     forms/form_fluorwidget.ui
     forms/form_slitwidget.ui
     forms/form_fwheelwidget.ui 
@@ -30,6 +32,7 @@ set(HEADERS
     include/GuiDefs.h
     include/Gui.h
     include/MotorWidget.h
+    include/ReferencePointsWidget.h
     include/FluorWidget.h
     include/SlitWidget.h
     include/FwheelWidget.h 

@@ -2,6 +2,7 @@
 
 #include "ui_form_gui.h"
 class MotorWidget;
+class ReferencePointsWidget;
 class FluorWidget;
 class SlitWidget;
 class FwheelWidget;
@@ -31,11 +32,13 @@ class Gui : public QMainWindow, private Ui::GuiObject {
     private:
     void LayoutWindow();
     void LoadMotorWidgets();
+    void LoadReferencePointsWidget();
     void LoadFwheelWidgets();
     void Initialization();
 
     std::string hostname;
     std::vector <MotorWidget*> motorWidgets;
+    ReferencePointsWidget* refpoints;
     std::vector <FluorWidget*> fluorWidgets;
     SlitWidget* slits;
     std::vector <FwheelWidget*> fwheelWidgets;

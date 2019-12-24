@@ -1,0 +1,102 @@
+#include "ReferencePointsWidget.h"
+#include "MotorWidget.h"
+#include "GuiDefs.h"
+
+#include <sstream>
+
+ReferencePointsWidget::ReferencePointsWidget(QWidget *parent, std::string hostname, MotorWidget* x, MotorWidget* y, MotorWidget* z)
+    : QWidget(parent), hostname(hostname), x(x), y(y), z(z) {
+    setupUi(this);
+    LayoutWindow();
+    Initialization();
+}
+
+ReferencePointsWidget::~ReferencePointsWidget() {}
+
+void ReferencePointsWidget::LayoutWindow() {
+    LoadReferencePoints();
+}
+
+void ReferencePointsWidget::LoadReferencePoints() {
+	std::pair <std::string, int> result = SendCommand(hostname, 1, "reflist ", "FwheelWidget::LoadReferencePoints");
+	if (result.first.empty()) {
+		return;
+	}
+	FILE_LOG(logDEBUG) << "reflist:" << result.first;
+    // parse values
+    std::istringstream iss(result.first);
+    std::vector<std::string> list = std::vector<std::string>(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>());
+    if (list.size() == 0) {
+        Message(CRITICAL, "Could not get referecne points list", "ReferencePointsWidget::LoadReferencePoints");
+        return;
+    }    
+    // add reference points to list
+    for (unsigned int i = 0; i < list.size(); ++i) {
+        comboReference->addItem(list[i].c_str());
+    }    
+    //add None
+    comboReference->addItem("None");
+    // disable none
+    QModelIndex index = comboReference->model()->index(comboReference->count() - 1, 0); 
+    QVariant v(0);
+    comboReference->model()->setData(index, v, Qt::UserRole - 1);    
+}
+
+void ReferencePointsWidget::Initialization() {
+    connect(comboReference, SIGNAL(currentIndexChanged(int)), this, SLOT(SetReferencePoint(int)));
+	connect(x, SIGNAL(MotorMovedSignal()), this, SLOT(GetReferencePoint()));
+	connect(y, SIGNAL(MotorMovedSignal()), this, SLOT(GetReferencePoint()));
+	connect(z, SIGNAL(MotorMovedSignal()), this, SLOT(GetReferencePoint()));
+}
+
+void ReferencePointsWidget::GetReferencePoint() {
+    disconnect(comboReference, SIGNAL(currentIndexChanged(int)), this, SLOT(SetReferencePoint(int)));
+    std::pair <std::string, int> result = SendCommand(hostname, 1, "getref ", "ReferencePointsWidget::GetReferencePoint");
+    if (!result.first.empty()) {
+		// loop through all the combo list items to find a match
+		bool found = false;
+		for (unsigned int i = 0; i < comboReference->count(); ++i) {
+			std::string text = std::string(comboReference->itemText(i).toAscii().data());
+			// found match
+			if (text == result.first) {
+				comboReference->setCurrentIndex(i);
+				found = true;
+			}
+		}
+		// error in matching
+		if (!found) {
+			std::ostringstream oss;
+			oss << "Could not match reference point " << result.first << " to any in combo list.";
+			Message(WARNING, oss.str(), "ReferencePointsWidget::GetReferencePoint");
+		}
+    }
+    connect(comboReference, SIGNAL(currentIndexChanged(int)), this, SLOT(SetReferencePoint(int)));
+    if (result.second) {
+        emit UpdateSignal();
+    }  
+}
+
+void ReferencePointsWidget::SetReferencePoint(int index) {
+    std::string ref = std::string(comboReference->currentText().toAscii().data());
+    FILE_LOG(logINFO) << "Moving to reference point " << ref;
+    std::ostringstream oss;
+    oss << "setref " << ref;
+    std::pair <std::string, int> result = SendCommand(hostname, 2, oss.str(), "ReferencePointsWidget::SetReferencePoint");
+    if (result.first.empty()) {
+        GetReferencePoint();
+    }
+    if (result.second) {
+        emit UpdateSignal();
+    } else {
+        x->Update();
+        y->Update();
+        z->Update();
+    }
+}
+
+void ReferencePointsWidget::Update() {
+    x->Update();
+    y->Update();
+    z->Update();
+    GetReferencePoint();
+}
