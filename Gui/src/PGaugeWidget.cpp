@@ -56,15 +56,15 @@ void PGaugeWidget::GetPressure() {
     timer->stop();
 
     try {
-        std::pair <std::string, int> result = SendCommand(hostname, 1, "pressure ", "PGaugeWidget::GetPressure");
+        std::string result = SendCommand(hostname, 1, "pressure ", "PGaugeWidget::GetPressure");
         std::string timestamp = GetTimeStamp();
         // error
         bool readError = false;
-        if (result.first.empty()) {
+        if (result.empty()) {
             readError = true;       
         } else {
-		//std::cout<<"result:"<<result.first<<std::endl;
-            std::string pressure = result.first;
+		//std::cout<<"result:"<<result<<std::endl;
+            std::string pressure = result;
             size_t startPos = pressure.find('[');
             size_t endPos = pressure.find(']');
             size_t comma = pressure.find(',');       
@@ -95,9 +95,6 @@ void PGaugeWidget::GetPressure() {
             pValueDisplay2->setText("Read Error");                 
         } else {
             lblUpdate->setText(("Last update:   " + timestamp).c_str());
-        }
-        if (result.second) {
-            emit UpdateSignal();
         }
 
     	// restart timer

@@ -615,7 +615,12 @@ string Initialize::executeCommand(vector<string> args) {
 				throw RuntimeError ("Cannot scan hv argument " + value);
 			}
 			xrayTube->setHVSwitch(on);
-			oss << (xrayTube->getHVSwitch() ? "on" : "off");
+			bool result = xrayTube->getHVSwitch();
+			if (result != on) {
+				oss << "Could not switch " << value << " hv. Hv is " << (result ? "on" : "off") << ". Warm up required.";
+				throw RuntimeError (oss.str());
+			}
+			oss << (result ? "on" : "off");
 			return oss.str();
 		}
 
@@ -640,7 +645,12 @@ string Initialize::executeCommand(vector<string> args) {
 				throw RuntimeError("Could not scan voltage argument " + args[1]);
 			}	
 			xrayTube->setVoltage(value);
-			oss << xrayTube->getVoltage() << " kV";
+			int result = xrayTube->getVoltage();
+			if (result != value) {
+				oss << "Could not set voltage to " << value << " kV. Votlage is at " << result << " kV.";
+				throw RuntimeError (oss.str());				
+			}
+			oss << result << " kV";
 			return oss.str();
 		}
 
@@ -665,7 +675,12 @@ string Initialize::executeCommand(vector<string> args) {
 				throw RuntimeError("Could not scan current argument " + args[1]);
 			}	
 			xrayTube->setCurrent(value);
-			oss << xrayTube->getCurrent() << " mA";
+			int result = xrayTube->getCurrent();
+			if (result != value) {
+				oss << "Could not set current to " << value << " mA. Current is at " << result << " mA.";
+				throw RuntimeError (oss.str());				
+			}
+			oss << result << " mA";
 			return oss.str();
 		}
 
@@ -691,8 +706,16 @@ string Initialize::executeCommand(vector<string> args) {
 				}			
 			}
 			xrayTube->setVoltageAndCurrent(voltage, current);
-			pair <int, int> values = xrayTube->getVoltageAndCurrent();
-			oss << values.first << " kV, " << values.second << " mA";
+			pair <int, int> result = xrayTube->getVoltageAndCurrent();
+			if (result.first != voltage) {
+				oss << "Could not set voltage to " << voltage << " kV. Voltage is at " << result.first << " kV.";
+				throw RuntimeError (oss.str());				
+			}
+			if (result.second != current) {
+				oss << "Could not set current to " << current << " mA. Current is at " << result.second << " mA.";
+				throw RuntimeError (oss.str());				
+			}
+			oss << result.first << " kV, " << result.second << " mA";
 			return oss.str();
 		}
 
@@ -754,10 +777,10 @@ string Initialize::executeCommand(vector<string> args) {
 				throw RuntimeError("Requires 1 parameters: getshutters ");
 			}
 			OnlyTubeCommand();
-			oss << "1:" << (xrayTube->getShutter(1) ? "on" : "off") << ' ';
-			oss << "2:" << (xrayTube->getShutter(2) ? "on" : "off") << ' ';
-			oss << "3:" << (xrayTube->getShutter(3) ? "on" : "off") << ' ';
-			oss << "4:" << (xrayTube->getShutter(4) ? "on" : "off");
+			oss << (xrayTube->getShutter(1) ? "on" : "off") << ' ';
+			oss << (xrayTube->getShutter(2) ? "on" : "off") << ' ';
+			oss << (xrayTube->getShutter(3) ? "on" : "off") << ' ';
+			oss << (xrayTube->getShutter(4) ? "on" : "off");
 			return oss.str();
 		}
 
@@ -766,10 +789,10 @@ string Initialize::executeCommand(vector<string> args) {
 				throw RuntimeError("Requires 1 parameters: connectedshutters ");
 			}
 			OnlyTubeCommand();
-			oss << "1:" << (xrayTube->isShutterConnected(1) ? "c" : "nc") << ' ';
-			oss << "2:" << (xrayTube->isShutterConnected(2) ? "c" : "nc") << ' ';
-			oss << "3:" << (xrayTube->isShutterConnected(3) ? "c" : "nc") << ' ';
-			oss << "4:" << (xrayTube->isShutterConnected(4) ? "c" : "nc");
+			oss << (xrayTube->isShutterConnected(1) ? "c" : "nc") << ' ';
+			oss << (xrayTube->isShutterConnected(2) ? "c" : "nc") << ' ';
+			oss << (xrayTube->isShutterConnected(3) ? "c" : "nc") << ' ';
+			oss << (xrayTube->isShutterConnected(4) ? "c" : "nc");
 			return oss.str();
 		}
 
@@ -793,7 +816,12 @@ string Initialize::executeCommand(vector<string> args) {
 				throw RuntimeError ("Cannot scan shutter value argument " + args[2]);
 			}
 			xrayTube->setShutter(index, on);
-			oss << (xrayTube->getShutter(index) ? "on" : "off");
+			bool result = xrayTube->getShutter(index);
+			if (result != on) {
+				oss << "Could not set shutter " << index << " to " << (on ? "on" : "off") << ". Shutter " << index << " is " << (result ? "on" : "off");
+				throw RuntimeError (oss.str());				
+			}
+			oss << (result ? "on" : "off");
 			return oss.str();
 		}
 

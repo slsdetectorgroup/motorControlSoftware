@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
 				if (lastCmdUnlock && clientType == "gui" && commandName != "list") {
 					proceed = false;
 					ret = FAIL;
-					sprintf(mess,"%s. So, your GUI is not updated.\nInitiating Update..",
+					sprintf(mess,"%s.\n\nYour previous command was unsuccessful. Please update your gui!",
 					ANOTHER_USER_ERROR_PHRASE);
 					FILE_LOG(logERROR) << mess;
 				}

@@ -26,7 +26,4 @@ class SlitWidget:public QWidget, private Ui::SlitWidgetObject {
     MotorWidget* motorx1;
     MotorWidget* motorx2;
     std::string hostname;
-
-    signals:
-    void UpdateSignal();
 };

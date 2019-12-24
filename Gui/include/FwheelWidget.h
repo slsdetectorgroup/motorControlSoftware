@@ -23,9 +23,4 @@ class FwheelWidget:public QWidget, private Ui::FwheelWidgetObject {
 
     std::string name;
     std::string hostname;
-
-    signals:
-    void UpdateSignal();   
-
-
 };

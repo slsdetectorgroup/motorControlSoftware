@@ -31,7 +31,4 @@ class FluorWidget:public QWidget, private Ui::FluorWidgetObject {
     std::string hostname;
     std::vector<std::string> energy;
     MotorWidget* motor;
-
-    signals:
-    void UpdateSignal();
 };

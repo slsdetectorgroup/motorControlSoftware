@@ -29,6 +29,5 @@ class PGaugeWidget:public QWidget, private Ui::PGaugeWidgetObject {
     pthread_mutex_t mutex;
 
     signals:
-    void UpdateSignal();
     void SwitchedOffSignal(bool);
 };

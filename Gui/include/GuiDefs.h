@@ -82,20 +82,16 @@ inline double getDouble(std::string result) {
     return value;
 };
 
-inline std::pair <std::string, bool> SendCommand(std::string hostname, int nCommand, std::string command, std::string source) {
-	std::pair <std::string, bool> result;
-    result.second = false;
+inline std::string SendCommand(std::string hostname, int nCommand, std::string command, std::string source) {
+	std::string result;
 
 	try {
 		Client client(hostname);
-		result.first = client.SendCommand(nCommand + 1, "gui " + command);
+		result = client.SendCommand(nCommand + 1, "gui " + command);
 	} 
     
     catch(const AnotherUserError& e) {
-        std::ostringstream oss;
-        oss << e.what() << "Your previous command was unsuccessful due to the update process.\nUpdating.";
-        Message(WARNING, oss.str(), source);
-        result.second = true;
+        Message(WARNING, e.what(), source);
 	}
     
     catch (const BoxInUseError& e) {
@@ -113,9 +109,8 @@ inline std::pair <std::string, bool> SendCommand(std::string hostname, int nComm
             try {
     			Client client(hostname);
 			    std::string res = client.SendCommand(2, "gui unlock");
-			    res += "\nUpdating GUI ...";
+			    res += "\nPlease update your gui!";
 			    Message(INFORMATION, res, source);
-			    result.second = true;
             } catch(const std::exception& e) {
                 Message(WARNING, e.what(), source);
             }

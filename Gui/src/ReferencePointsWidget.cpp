@@ -18,13 +18,13 @@ void ReferencePointsWidget::LayoutWindow() {
 }
 
 void ReferencePointsWidget::LoadReferencePoints() {
-	std::pair <std::string, int> result = SendCommand(hostname, 1, "reflist ", "FwheelWidget::LoadReferencePoints");
-	if (result.first.empty()) {
+	std::string result = SendCommand(hostname, 1, "reflist ", "FwheelWidget::LoadReferencePoints");
+	if (result.empty()) {
 		return;
 	}
-	FILE_LOG(logDEBUG) << "reflist:" << result.first;
+	FILE_LOG(logDEBUG) << "reflist:" << result;
     // parse values
-    std::istringstream iss(result.first);
+    std::istringstream iss(result);
     std::vector<std::string> list = std::vector<std::string>(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>());
     if (list.size() == 0) {
         Message(CRITICAL, "Could not get referecne points list", "ReferencePointsWidget::LoadReferencePoints");
@@ -51,14 +51,14 @@ void ReferencePointsWidget::Initialization() {
 
 void ReferencePointsWidget::GetReferencePoint() {
     disconnect(comboReference, SIGNAL(currentIndexChanged(int)), this, SLOT(SetReferencePoint(int)));
-    std::pair <std::string, int> result = SendCommand(hostname, 1, "getref ", "ReferencePointsWidget::GetReferencePoint");
-    if (!result.first.empty()) {
+    std::string result = SendCommand(hostname, 1, "getref ", "ReferencePointsWidget::GetReferencePoint");
+    if (!result.empty()) {
 		// loop through all the combo list items to find a match
 		bool found = false;
 		for (unsigned int i = 0; i < comboReference->count(); ++i) {
 			std::string text = std::string(comboReference->itemText(i).toAscii().data());
 			// found match
-			if (text == result.first) {
+			if (text == result) {
 				comboReference->setCurrentIndex(i);
 				found = true;
 			}
@@ -66,14 +66,11 @@ void ReferencePointsWidget::GetReferencePoint() {
 		// error in matching
 		if (!found) {
 			std::ostringstream oss;
-			oss << "Could not match reference point " << result.first << " to any in combo list.";
+			oss << "Could not match reference point " << result << " to any in combo list.";
 			Message(WARNING, oss.str(), "ReferencePointsWidget::GetReferencePoint");
 		}
     }
     connect(comboReference, SIGNAL(currentIndexChanged(int)), this, SLOT(SetReferencePoint(int)));
-    if (result.second) {
-        emit UpdateSignal();
-    }  
 }
 
 void ReferencePointsWidget::SetReferencePoint(int index) {
@@ -81,12 +78,9 @@ void ReferencePointsWidget::SetReferencePoint(int index) {
     FILE_LOG(logINFO) << "Moving to reference point " << ref;
     std::ostringstream oss;
     oss << "setref " << ref;
-    std::pair <std::string, int> result = SendCommand(hostname, 2, oss.str(), "ReferencePointsWidget::SetReferencePoint");
-    if (result.first.empty()) {
+    std::string result = SendCommand(hostname, 2, oss.str(), "ReferencePointsWidget::SetReferencePoint");
+    if (result.empty()) {
         GetReferencePoint();
-    }
-    if (result.second) {
-        emit UpdateSignal();
     } else {
         x->Update();
         y->Update();

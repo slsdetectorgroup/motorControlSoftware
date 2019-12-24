@@ -29,6 +29,5 @@ class MotorWidget:public QWidget, private Ui::MotorWidgetObject {
     std::string hostname;
 
     signals:
-    void UpdateSignal();
     void MotorMovedSignal();
 };

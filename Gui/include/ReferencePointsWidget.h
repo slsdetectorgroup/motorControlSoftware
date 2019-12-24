@@ -25,7 +25,4 @@ class ReferencePointsWidget:public QWidget, private Ui::ReferencePointsWidgetObj
     MotorWidget* x;
     MotorWidget* y;
     MotorWidget* z;
-
-    signals:
-    void UpdateSignal();
 };

@@ -29,31 +29,25 @@ void MotorWidget::Initialization() {
 
 void MotorWidget::GetPosition() {
     disconnect(spinAbsolute, SIGNAL(valueChanged(double)), this, SLOT(MoveAbsolute(double)));
-    std::pair <std::string, int> result = SendCommand(hostname, 2, "pos " + name, "MotorWidget::GetPosition");
-    if (!result.first.empty()) {
+    std::string result = SendCommand(hostname, 2, "pos " + name, "MotorWidget::GetPosition");
+    if (!result.empty()) {
         try {
-            double position = getDouble(result.first);
+            double position = getDouble(result);
             spinAbsolute->setValue(position);
         } catch (const std::exception& e) {
             Message(WARNING, e.what(), "MotorWidget::GetPosition");
         }
     }
     connect(spinAbsolute, SIGNAL(valueChanged(double)), this, SLOT(MoveAbsolute(double)));
-    if (result.second) {
-        emit UpdateSignal();
-    }  
 }
 
 void MotorWidget::MoveAbsolute(double value) {
     FILE_LOG(logINFO) << "Moving " << name << " to " << value;
     std::ostringstream oss;
     oss << "moveabs " << name << ' ' << value;
-    std::pair <std::string, int> result = SendCommand(hostname, 3, oss.str(), "MotorWidget::MoveAbsolute");
-    if (result.first.empty()) {
+    std::string result = SendCommand(hostname, 3, oss.str(), "MotorWidget::MoveAbsolute");
+    if (result.empty()) {
         GetPosition();
-    }
-    if (result.second) {
-        emit UpdateSignal();
     } else {
         emit MotorMovedSignal();
     }
@@ -71,11 +65,9 @@ void MotorWidget::MoveRelative(double value) {
     FILE_LOG(logINFO) << "Moving " << name << " by " << value;
     std::ostringstream oss;
     oss << "moverel " << name << ' ' << value;
-    std::pair <std::string, int> result = SendCommand(hostname, 3, oss.str(), "MotorWidget::MoveRelative");
+    std::string result = SendCommand(hostname, 3, oss.str(), "MotorWidget::MoveRelative");
     GetPosition();
-    if (result.second) {
-        emit UpdateSignal();
-    } else {
+    if (!result.empty()) {
         emit MotorMovedSignal();
     }
 }
@@ -91,12 +83,10 @@ void MotorWidget::Calibrate() {
     FILE_LOG(logINFO) << "Calibrating " << name;
     std::ostringstream oss;
     oss << "cal " << name;
-    std::pair <std::string, int> result = SendCommand(hostname, 2, oss.str(), "MotorWidget::Calibrate");
+    std::string result = SendCommand(hostname, 2, oss.str(), "MotorWidget::Calibrate");
     Message(INFORMATION, "Calibration Completed", "MotorWidget::Calibrate");
     GetPosition();
-    if (result.second) {
-        emit UpdateSignal();
-    } else {
+    if (!result.empty()) {
         emit MotorMovedSignal();
     }
     pushCal->setChecked(false);

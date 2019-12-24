@@ -28,31 +28,25 @@ void SlitWidget::Initialization() {
 
 void SlitWidget::GetSlitWidth() {
 	disconnect(spinSlitWidth, SIGNAL(valueChanged(double)), this, SLOT(SetSlitWidth(double)));
-    std::pair <std::string, int> result = SendCommand(hostname, 1, "getslitwidth", "SlitWidget::GetSlitWidth");
-    if (!result.first.empty()) {
+    std::string result = SendCommand(hostname, 1, "getslitwidth", "SlitWidget::GetSlitWidth");
+    if (!result.empty()) {
         try {
-            double value = getDouble(result.first); 
+            double value = getDouble(result); 
             spinSlitWidth->setValue(value);
         } catch (const std::exception& e) {
             Message(WARNING, e.what(), "SlitWidget::GetSlitWidth");
         }
     }
 	connect(spinSlitWidth, SIGNAL(valueChanged(double)), this, SLOT(SetSlitWidth(double)));
-    if (result.second) {
-        emit UpdateSignal();
-    }
 }
 
 void SlitWidget::SetSlitWidth(double value) {
     FILE_LOG(logINFO) << "Setting slit width to " << value;
     std::ostringstream oss;
     oss << "setslitwidth " << value;
-    std::pair <std::string, int> result = SendCommand(hostname, 2, oss.str(), "SlitWidget::SetSlitWidth");
-    if (result.first.empty()) {
+    std::string result = SendCommand(hostname, 2, oss.str(), "SlitWidget::SetSlitWidth");
+    if (result.empty()) {
         GetSlitWidth();
-    }
-    if (result.second) {
-        emit UpdateSignal();
     } else {
         motorx1->Update();
         motorx2->Update();        
@@ -61,31 +55,25 @@ void SlitWidget::SetSlitWidth(double value) {
 
 void SlitWidget::GetCenter() {
 	disconnect(spinCenter, SIGNAL(valueChanged(double)), this, SLOT(SetCenter(double)));
-    std::pair <std::string, int> result = SendCommand(hostname, 1, "getcenter", "SlitWidget::GetCenter");
-    if (!result.first.empty()) {
+    std::string result = SendCommand(hostname, 1, "getcenter", "SlitWidget::GetCenter");
+    if (!result.empty()) {
         try {
-            double value = getDouble(result.first); 
+            double value = getDouble(result); 
             spinCenter->setValue(value);
         } catch (const std::exception& e) {
             Message(WARNING, e.what(), "SlitWidget::GetSlitWidth");
         }
     } 
 	connect(spinCenter, SIGNAL(valueChanged(double)), this, SLOT(SetCenter(double)));
-    if (result.second) {
-        emit UpdateSignal();
-    }
 }
 
 void SlitWidget::SetCenter(double value) {
     FILE_LOG(logINFO) << "Setting center to " << value;
     std::ostringstream oss;
     oss << "setcenter " << value;
-    std::pair <std::string, int> result = SendCommand(hostname, 2, oss.str(), "SlitWidget::SetCenter");
-    if (result.first.empty()) {
+    std::string result = SendCommand(hostname, 2, oss.str(), "SlitWidget::SetCenter");
+    if (result.empty()) {
         GetCenter();
-    }
-    if (result.second) {
-        emit UpdateSignal();
     } else {
         motorx1->Update();
         motorx2->Update();        

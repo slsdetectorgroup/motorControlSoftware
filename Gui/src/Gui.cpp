@@ -31,7 +31,7 @@ void Gui::LayoutWindow() {
 #else
 	oss << "Vacuum Box Gui";
 #endif
-	oss << " - " << hostname;
+	oss << " - Motor Control Software (" << hostname << ")";
 	std::string title = oss.str();
 	FILE_LOG(logINFOBLUE) << title;
 	setWindowTitle(title.c_str());
@@ -53,14 +53,14 @@ void Gui::LayoutWindow() {
 
 void Gui::LoadMotorWidgets() {
 	
-	std::pair <std::string, int> result;
-	while (result.first.empty()) {
+	std::string result;
+	while (result.empty()) {
  		result = SendCommand(hostname, 1, "listmotors", "Gui::LayoutWindow");
 	}
-	FILE_LOG(logDEBUG) << "listmotors:" << result.first;
+	FILE_LOG(logDEBUG) << "listmotors:" << result;
 
 	// parse motor names
-	std::istringstream iss(result.first);
+	std::istringstream iss(result);
 	while (iss.good()) {
 		std::string motorName;
 		iss >> motorName;
@@ -104,13 +104,13 @@ void Gui::LoadMotorWidgets() {
 
 void Gui::LoadReferencePointsWidget() {
 	// get number of reference points
-	std::pair <std::string, int> result = SendCommand(hostname, 1, "nref", "Gui::LoadReferencePointsWidget");
-    if (result.first.empty()) {
+	std::string result = SendCommand(hostname, 1, "nref", "Gui::LoadReferencePointsWidget");
+    if (result.empty()) {
 		return;
 	}
 	try {
 		// if no refernce points, return
-		int nref = getInteger(result.first);
+		int nref = getInteger(result);
 		if (nref == 0) {
 			return;
 		}
@@ -147,13 +147,13 @@ void Gui::LoadReferencePointsWidget() {
 
 void Gui::LoadFwheelWidgets() {
 	// get number of filter wheels
-	std::pair <std::string, int> result = SendCommand(hostname, 1, "nfw", "Gui::LoadFwheelWidgets");
-    if (result.first.empty()) {
+	std::string result = SendCommand(hostname, 1, "nfw", "Gui::LoadFwheelWidgets");
+    if (result.empty()) {
 		return;
 	}
 	try {
 		// if no filter wheels, return
-		int nfwheel = getInteger(result.first);
+		int nfwheel = getInteger(result);
 		if (nfwheel == 0) {
 			return;
 		}
@@ -164,13 +164,13 @@ void Gui::LoadFwheelWidgets() {
 
 	// get list of filter wheel names
 	result = SendCommand(hostname, 1, "fwlist", "Gui::LoadFwheelWidgets");
-	if (result.first.empty()) {
+	if (result.empty()) {
 		return;
 	}
-	FILE_LOG(logDEBUG) << "fwlist:" << result.first;
+	FILE_LOG(logDEBUG) << "fwlist:" << result;
 
 	// parse filter wheel names
-	std::istringstream iss(result.first);
+	std::istringstream iss(result);
 	while (iss.good()) {
 		std::string name;
 		iss >> name;
@@ -194,32 +194,12 @@ void Gui::Initialization() {
 	connect(pushUpdate, SIGNAL(clicked()), this, SLOT(Update()));
 	connect(groupPressure, SIGNAL(toggled(bool)), this, SLOT(LoadPressureWidget()));
 	connect(groupTube, SIGNAL(toggled(bool)), this, SLOT(LoadTubeWidget()));
-	// motors
-	for (unsigned int i = 0; i < motorWidgets.size(); ++i) {
-		connect(motorWidgets[i], SIGNAL(UpdateSignal()), this, SLOT(Update()));
-	}
-	// reference points
-	if (refpoints != NULL) {
-		connect(refpoints, SIGNAL(UpdateSignal()), this, SLOT(Update()));		
-	}	
-	// slits
-	if (slits != NULL) {
-		connect(slits, SIGNAL(UpdateSignal()), this, SLOT(Update()));		
-	}
-	// fluorescence
-	for (unsigned int i = 0; i < fluorWidgets.size(); ++i) {
-		connect(fluorWidgets[i], SIGNAL(UpdateSignal()), this, SLOT(Update()));		
-	}
-	// fwheel 
-	for (unsigned int i = 0; i < fwheelWidgets.size(); ++i) {
-		connect(fwheelWidgets[i], SIGNAL(UpdateSignal()), this, SLOT(Update()));		
-	}	
 }
 
 void Gui::LoadPressureWidget(bool userClick) {
-	std::pair <std::string, int> result = SendCommand(hostname, 1, "ispressure", "Gui::LoadPressureWidget");
-    	if (!result.first.empty()) {
-			if (result.first == "on") {
+	std::string result = SendCommand(hostname, 1, "ispressure", "Gui::LoadPressureWidget");
+    	if (!result.empty()) {
+			if (result == "on") {
 				EnablePressureWidget(true);
 			} else {
 				if (userClick) {
@@ -233,7 +213,6 @@ void Gui::LoadPressureWidget(bool userClick) {
 void Gui::EnablePressureWidget(bool enable) {
 	disconnect(groupPressure, SIGNAL(toggled(bool)), this, SLOT(LoadPressureWidget()));
 	if (pgauge != NULL) {
-		disconnect(pgauge, SIGNAL(UpdateSignal()), this, SLOT(Update()));	
 		disconnect(pgauge, SIGNAL(SwitchedOffSignal(bool)), this, SLOT(EnablePressureWidget(bool)));
 	}
 	if (!enable) {
@@ -255,19 +234,18 @@ void Gui::EnablePressureWidget(bool enable) {
 	}
 	connect(groupPressure, SIGNAL(toggled(bool)), this, SLOT(LoadPressureWidget()));
 	if (pgauge != NULL) {
-		connect(pgauge, SIGNAL(UpdateSignal()), this, SLOT(Update()));	
 		connect(pgauge, SIGNAL(SwitchedOffSignal(bool)), this, SLOT(EnablePressureWidget(bool)));
 	}
 }
 
 void Gui::LoadTubeWidget(bool userClick) {
-	std::pair <std::string, int> result = SendCommand(hostname, 1, "istube", "Gui::LoadTubeWidget");
-    	if (!result.first.empty()) {
-			if (result.first == "on") {
+	std::string result = SendCommand(hostname, 1, "istube", "Gui::LoadTubeWidget");
+    	if (!result.empty()) {
+			if (result == "on") {
 				EnableTubeWidget(true);
 			} else {
 				if (userClick) {
-					if (result.first == "standby") {
+					if (result == "standby") {
 						Message(WARNING, "Xray Tube is on Stand-by.", "Gui::LoadTubeWidget");
 					} else {
 						Message(WARNING, "Xray Tube is switched off.", "Gui::LoadTubeWidget");
@@ -281,7 +259,6 @@ void Gui::LoadTubeWidget(bool userClick) {
 void Gui::EnableTubeWidget(bool enable) {
 	disconnect(groupTube, SIGNAL(toggled(bool)), this, SLOT(LoadTubeWidget()));
 	if (tube != NULL) {
-		disconnect(tube, SIGNAL(UpdateSignal()), this, SLOT(Update()));	
 		disconnect(tube, SIGNAL(SwitchedOffSignal(bool)), this, SLOT(EnableTubeWidget(bool)));
 	}
 	if (!enable) {
@@ -303,7 +280,6 @@ void Gui::EnableTubeWidget(bool enable) {
 	}
 	connect(groupTube, SIGNAL(toggled(bool)), this, SLOT(LoadTubeWidget()));
 	if (tube != NULL) {
-		connect(tube, SIGNAL(UpdateSignal()), this, SLOT(Update()));	
 		connect(tube, SIGNAL(SwitchedOffSignal(bool)), this, SLOT(EnableTubeWidget(bool)));
 	}
 }
@@ -356,11 +332,9 @@ void Gui::Update() {
 void Gui::Stop() {
     pushStop->setChecked(true);
     FILE_LOG(logINFO) << "Stopping all motors";
-    std::ostringstream oss;
-    oss << "stopall ";
-    std::pair <std::string, int> result = SendCommand(hostname, 1, oss.str(), "Gui::Stop");
-    Update();
+    std::string result = SendCommand(hostname, 1, "stopall", "Gui::Stop");
     pushStop->setChecked(false);
+	Update();
 }
 
 void Gui::closeEvent(QCloseEvent* event) {

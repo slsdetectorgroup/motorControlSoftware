@@ -24,6 +24,8 @@
 #define SHUTTER_4_OFST          (0)
 #define SHUTTER_4_MSK           (0xF << SHUTTER_4_OFST)
 
+
+#define SHUTTER_TRANSITION_VAL	(0x8)
 #define SHUTTER_ON_VALUE        (0xC)
 #define SHUTTER_NOT_CONNECTED   (0x5)
 
@@ -230,12 +232,12 @@ std::pair <int, int> Xray::getVoltageAndCurrent() {
  
 int Xray::getActualVoltage() {
     std::string result = interface->TubeSend("va ", true);
-    return getInteger(result);
+    return (getInteger(result) / 1000);
 }
  
 int Xray::getActualCurrent() {
     std::string result = interface->TubeSend("ca ", true);
-    return getInteger(result);
+    return (getInteger(result) / 1000);
 }
 
 std::pair <int, int> Xray::getActualVoltageAndCurrent() {
@@ -259,7 +261,7 @@ int Xray::getShutterStatus(int index) {
         case 2: 
             command = "sr:3 ";
             mask = SHUTTER_2_MSK;
-            offset = SHUTTER_3_OFST;
+            offset = SHUTTER_2_OFST;
             break;
         case 3:
             command = "sr:4 ";
@@ -303,7 +305,11 @@ void Xray::setShutter(int index, bool on)	{
 }
 
 bool Xray::getShutter(int index) {
-    int status = getShutterStatus(index);
+    int status = SHUTTER_TRANSITION_VAL;
+    while(status == SHUTTER_TRANSITION_VAL) {
+        status = getShutterStatus(index);
+    }
+    FILE_LOG(logINFO) << "Shutter " << index << ": " << status;
     if (status == SHUTTER_ON_VALUE) {
         return true;
     }

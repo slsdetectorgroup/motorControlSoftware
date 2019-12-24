@@ -11,6 +11,8 @@
         <file>../images/home.png</file>
         <file>../images/dontopen.png</file>
         <file>../images/highvoltage.png</file>
+        <file>../images/highvoltageoff.png</file>
         <file>../images/error.png</file>
+        <file>../images/erase.png</file>
     </qresource>
 </RCC>
