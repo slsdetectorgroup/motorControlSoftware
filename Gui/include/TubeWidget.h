@@ -33,6 +33,7 @@ class TubeWidget:public QWidget, private Ui::TubeWidgetObject {
     void GetCurrent();
     void GetActualVoltage();
     void GetActualCurrent();
+    void CheckWarmup();
 
     std::string hostname;
     std::vector<QCheckBox*> chkShutters;

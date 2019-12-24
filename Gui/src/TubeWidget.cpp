@@ -5,6 +5,9 @@
 
 #include <sstream>
 
+#define TUBE_ERROR_INITIAL_WARM_UP  (70)
+#define TUBE_ERROR_WARM_UP  (106)
+#define TUBE_ERROR_WARM_UP2  (109)
 
 TubeWidget::TubeWidget(QWidget *parent, std::string hostname)
     :   QWidget(parent), hostname(hostname) {
@@ -63,7 +66,7 @@ void TubeWidget::DisplayTubeError() {
         return;
     }
     try {
-        errorCode = getDouble(result);
+        errorCode = getInteger(result);
     } catch (const std::exception& e) {
         Message(WARNING, e.what(), "TubeWidget::DisplayTubeError");
     }
@@ -102,7 +105,8 @@ void TubeWidget::SetHighVoltage(bool enable) {
     oss << "hv " << (enable ? "on" : "off");
     std::string result = SendTubeCommand(hostname, 2, oss.str(), "TubeWidget::SetHighVoltage");
     if (result.empty()) {
-        GetHighVoltage(); // warmup
+        GetHighVoltage();
+        CheckWarmup();
     }
 }
 
@@ -177,6 +181,7 @@ void TubeWidget::SetVoltage(int value) {
     std::string result = SendTubeCommand(hostname, 2, oss.str(), "TubeWidget::SetVoltage");
     if (result.empty()) {
         GetVoltage();
+        CheckWarmup();
     } else {
         GetActualVoltage();
     }
@@ -204,6 +209,7 @@ void TubeWidget::SetCurrent(int value) {
     std::string result = SendTubeCommand(hostname, 2, oss.str(), "TubeWidget::SetCurrent");
     if (result.empty()) {
         GetCurrent();
+        CheckWarmup();
     } else {
         GetActualCurrent();
     }
@@ -221,6 +227,29 @@ void TubeWidget::GetActualCurrent() {
     if (!result.empty()) {
         dispCurrent->setText(result.c_str()); 
     }
+}
+
+void TubeWidget::CheckWarmup() {
+    int errorCode = -1;
+    std::string result = SendTubeCommand(hostname, 1, "geterr", "TubeWidget::CheckWarmup");
+    if (result.empty()) {
+        DisplayTubeError();
+        return;
+    }
+    try {
+        errorCode = getInteger(result);
+    } catch (const std::exception& e) {
+        Message(WARNING, e.what(), "TubeWidget::CheckWarmup");
+    }
+
+    // error code is warmup
+    bool warmup = false;
+    if (errorCode == TUBE_ERROR_INITIAL_WARM_UP || errorCode == TUBE_ERROR_WARM_UP || errorCode == TUBE_ERROR_WARM_UP2) {
+        if (Message(QUESTION, "Do you want to warm up?", "TubeWidget::CheckWarmup", "Warm-up?") == OK) {
+            warmup = true;
+        }
+    }
+    std::cout << "Warmup:" << warmup << std::endl;
 }
 
 std::string TubeWidget::SendTubeCommand(std::string hostname, int nCommand, std::string command, std::string source) {
@@ -243,6 +272,7 @@ void TubeWidget::Update() {
     GetCurrent();
     GetActualVoltage();
     GetActualCurrent();
+    CheckWarmup();
     DisplayTubeError();
 }
 
