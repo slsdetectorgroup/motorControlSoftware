@@ -33,8 +33,6 @@ class Xray {
    void startWarmup(int voltage);
    int getWarmupTimeRemaining();
    bool isAccessPossible();
-   void writeAllWarmupTimestamps();
-   std::string getWarmupTimestamp(int voltage);
 
    // advanced
    void sendCommand(std::string command);
@@ -48,12 +46,9 @@ class Xray {
    void validateVoltage(int voltage);
    void validateCurrent(int current);
    int getShutterStatus(int index);
-   void readAllWarmupTimestamps();
-   void setWarmupTimestamp(int voltage);
 
    Interface* interface;
    int maxTubePower;
-   std::vector <std::string> warmupTimings;
 
 }; 
 

@@ -1,12 +1,13 @@
 #pragma once
 
+class QStatusBar;
 #include "ui_form_referencepointswidget.h"
 class MotorWidget;
 
 class ReferencePointsWidget:public QWidget, private Ui::ReferencePointsWidgetObject {
     Q_OBJECT
     public: 
-    ReferencePointsWidget(QWidget *parent, std::string hostname, MotorWidget* x, MotorWidget* y, MotorWidget* z);
+    ReferencePointsWidget(QWidget *parent, std::string hostname, MotorWidget* x, MotorWidget* y, MotorWidget* z, QStatusBar* statusBar);
     ~ReferencePointsWidget();
 
     public:
@@ -25,4 +26,5 @@ class ReferencePointsWidget:public QWidget, private Ui::ReferencePointsWidgetObj
     MotorWidget* x;
     MotorWidget* y;
     MotorWidget* z;
+    QStatusBar* statusBar;
 };

@@ -1,12 +1,13 @@
 #pragma once
 
+class QStatusBar;
 #include "ui_form_slitwidget.h"
 class MotorWidget;
 
 class SlitWidget:public QWidget, private Ui::SlitWidgetObject {
     Q_OBJECT
     public: 
-    SlitWidget(QWidget *parent, std::string hostname);
+    SlitWidget(QWidget *parent, std::string hostname, QStatusBar* statusBar);
     ~SlitWidget();
 
     public slots:
@@ -26,4 +27,5 @@ class SlitWidget:public QWidget, private Ui::SlitWidgetObject {
     MotorWidget* motorx1;
     MotorWidget* motorx2;
     std::string hostname;
+    QStatusBar* statusBar;
 };

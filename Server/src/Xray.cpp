@@ -4,9 +4,6 @@
 #include <iostream>
 #include <stdio.h>
 #include <cstring>
-#include <fstream>
-#include <iomanip>
-#include <time.h>
 
 #define TUBE_STANDBY_VALUE      (76)
 #define TUBE_NUM_SHUTTERS       (4)
@@ -33,16 +30,10 @@
 
 #define TUBE_HV_TRANSITION_VAL	(12)
 
-#define WARMUP_FILE "warmupTimestamps.txt"
 
 Xray::Xray(Interface* interface) 
     : interface(interface),  maxTubePower(0) {
     FILE_LOG(logINFO) << "Tube: [usbPort:" << interface->getSerial() << "]";
-    try {
-        readAllWarmupTimestamps();
-    } catch (...) {
-        FILE_LOG(logWARNING) << "Continuing anyway...";
-    }
 }
 
 Xray::~Xray() {
@@ -63,7 +54,11 @@ int Xray::getMaxPower() {
 }
 
 int Xray::getInteger(std::string result) {
-    result.erase(result.begin());
+    size_t star = result.find("*");
+    while (star != std::string::npos) {
+        result.erase(star, 1);
+        star = result.find("*");
+    }
     std::istringstream iss(result);
     int value = -1;
     iss >> value;
@@ -76,7 +71,11 @@ int Xray::getInteger(std::string result) {
 }
 
 std::pair<int, int> Xray::getTwoIntegers(std::string result) {
-    result.erase(result.begin());
+    size_t star = result.find("*");
+    while (star != std::string::npos) {
+        result.erase(star, 1);
+        star = result.find("*");
+    }
     std::pair<int, int> values;
     // first value
     std::string p1 = result.substr(0, result.find(':'));
@@ -117,6 +116,7 @@ std::string Xray::getErrorMessage() {
 
 void Xray::clearErrorCode() {
     interface->TubeSend("cl ", false);
+    usleep (1 * 1000 * 1000);
 }
 
 bool Xray::isOnStandby() {
@@ -324,15 +324,9 @@ void Xray::startWarmup(int voltage) {
     }
     validateVoltage(voltage);
 
-    for (int i = 1; i <= TUBE_NUM_SHUTTERS; ++i) {
-        if (getShutter(i)) {
-            setShutter(i, false);
-        }
-    }
     oss << "wu:4," << voltage << ' ';
     interface->TubeSend(oss.str());
     setHVSwitch(true);
-    setWarmupTimestamp(voltage);
 }
 
 
@@ -358,82 +352,6 @@ void Xray::sendCommand(std::string command) {
 std::string Xray::sendCommandAndReadBack(std::string command) {
     FILE_LOG(logINFO) << "Sending command to read back: [" << command << "] to tube";
     return interface->TubeSend(command, true);
-}
-
-void Xray::readAllWarmupTimestamps() {
-    // initialize
-    warmupTimings.resize(TUBE_WARM_UP_MAX_SIZE);
-	for (unsigned int i = 0; i < warmupTimings.size(); ++i) {
-		warmupTimings[i].assign("unknown");
-	}   
-
-    FILE_LOG(logINFO) << "Reading all warm up time stamps from file";
-	std::ifstream inFile;
-	inFile.open(WARMUP_FILE, std::ifstream::in);
-	if (!inFile.is_open()) {
-        std::ostringstream oss;
-        oss << "Could not open warm up timestamps file " << WARMUP_FILE;
-        throw RuntimeError (oss.str());
-    }
-    while(inFile.good()) {
-        std::string line;
-        getline(inFile, line);
-        if (line.length() == 0) {
-            continue;
-        }
-        std::istringstream iss(line);
-        int voltage = -1;
-        iss >> voltage;
-        if (iss.fail()) {
-            std::ostringstream oss;
-            oss << "Cannot scan voltage " + line + " from file";
-            throw RuntimeError (oss.str());
-        }
-        line.erase(0, 15);	   
-        warmupTimings[voltage].assign(line);
-    }
-    inFile.close();
-}
-
-void Xray::writeAllWarmupTimestamps() {
-
-	std::ofstream outFile;
-	outFile.open(WARMUP_FILE);
-	if (!outFile.is_open()) {
-        std::ostringstream oss;
-        oss << "Could not open warm up timestamps file " << WARMUP_FILE;
-        throw RuntimeError (oss.str());
-    }
-	for (unsigned int i = 2; i < warmupTimings.size(); ++i) {
-		outFile << std::setw(15) << std::left << i << warmupTimings[i] << std::endl;
-    }
-	outFile.close();
-}
-
-std::string Xray::getWarmupTimestamp(int voltage) {
-    if (voltage < 2 || voltage >= TUBE_WARM_UP_MAX_SIZE) {
-        std::ostringstream oss;
-        oss << "Voltage " << voltage << " out of range. Range [2 - " << TUBE_WARM_UP_MAX_SIZE << ']';
-        throw RuntimeError (oss.str());
-    }
-    return warmupTimings[voltage];
-}
-
-void Xray::setWarmupTimestamp(int voltage) {
-    if (voltage < 2 || voltage >= TUBE_WARM_UP_MAX_SIZE) {
-        std::ostringstream oss;
-        oss << "Voltage " << voltage << " out of range. Range [2 - " << TUBE_WARM_UP_MAX_SIZE << ']';
-        throw RuntimeError (oss.str());
-    }
-
-    // get timestamp
-    time_t tdate;
-    time(&tdate);
-    std::string timestamp = ctime(&tdate);
-    timestamp.erase(timestamp.begin() + 24, timestamp.end());
-    for (int i = voltage; i >= 0; --i) {
-        warmupTimings[i] = timestamp;
-    }
 }
 
 void Xray::print() {

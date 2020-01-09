@@ -1,12 +1,13 @@
 #pragma once
 
+class QStatusBar;
 #include "ui_form_fluorwidget.h"
 class MotorWidget;
 
 class FluorWidget:public QWidget, private Ui::FluorWidgetObject {
     Q_OBJECT
     public: 
-    FluorWidget(QWidget *parent, std::string name, std::string hostname);
+    FluorWidget(QWidget *parent, std::string name, std::string hostname, QStatusBar* statusBar);
     ~FluorWidget();
     std::string GetName();
 
@@ -31,4 +32,5 @@ class FluorWidget:public QWidget, private Ui::FluorWidgetObject {
     std::string hostname;
     std::vector<std::string> energy;
     MotorWidget* motor;
+    QStatusBar* statusBar;
 };

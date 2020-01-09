@@ -41,7 +41,7 @@ struct RuntimeError : public std::runtime_error {
 	RuntimeError(): runtime_error("Motor Control Software Failed") {
 		FILE_LOG(logERROR) << "Motor Control Software Failed";
 	}
-  RuntimeError(std::string msg): runtime_error(msg) {
+  	RuntimeError(std::string msg): runtime_error(msg) {
 		FILE_LOG(logERROR) << msg;
 	}
 	RuntimeError(const char* msg): runtime_error(msg) {

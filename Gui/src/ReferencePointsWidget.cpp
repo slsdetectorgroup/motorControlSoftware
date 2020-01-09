@@ -2,10 +2,12 @@
 #include "MotorWidget.h"
 #include "GuiDefs.h"
 
+#include <QStatusBar>
+
 #include <sstream>
 
-ReferencePointsWidget::ReferencePointsWidget(QWidget *parent, std::string hostname, MotorWidget* x, MotorWidget* y, MotorWidget* z)
-    : QWidget(parent), hostname(hostname), x(x), y(y), z(z) {
+ReferencePointsWidget::ReferencePointsWidget(QWidget *parent, std::string hostname, MotorWidget* x, MotorWidget* y, MotorWidget* z, QStatusBar* statusBar)
+    : QWidget(parent), hostname(hostname), x(x), y(y), z(z), statusBar(statusBar)  {
     setupUi(this);
     LayoutWindow();
     Initialization();
@@ -76,9 +78,12 @@ void ReferencePointsWidget::GetReferencePoint() {
 void ReferencePointsWidget::SetReferencePoint(int index) {
     std::string ref = std::string(comboReference->currentText().toAscii().data());
     FILE_LOG(logINFO) << "Moving to reference point " << ref;
+    statusBar->showMessage("Moving ...");
+    statusBar->showMessage("Moving ...");
     std::ostringstream oss;
     oss << "setref " << ref;
     std::string result = SendCommand(hostname, 2, oss.str(), "ReferencePointsWidget::SetReferencePoint");
+    statusBar->clearMessage();
     if (result.empty()) {
         GetReferencePoint();
     } else {

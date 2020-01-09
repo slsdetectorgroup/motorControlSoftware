@@ -36,18 +36,31 @@ void Gui::LayoutWindow() {
 	FILE_LOG(logINFOBLUE) << title;
 	setWindowTitle(title.c_str());
 
+	// hide all widgets
+	groupMotors->hide();
+	groupReferencePoints->hide();
+	groupFluorescence->hide();
+	groupSlits->hide();
+	groupFilterWheels->hide();
+#ifndef VACUUMBOX	
+	groupPressure->hide();
+#endif
+#ifdef LASERBOX
+	widgetTube->hide();
+	resize(WINDOW_WIDTH_NO_TUBE, WINDOW_HEIGHT_REFERENCE);
+#else
+	resize(WINDOW_WIDTH_UNCHECK_TUBE, WINDOW_HEIGHT_REFERENCE);
+#endif
 	LoadMotorWidgets();
 	LoadReferencePointsWidget();
 	LoadFwheelWidgets();
 
-// takes a lot of time to look if pressure gauge port exists
 #ifdef VACUUMBOX
-	groupPressure->setChecked(true);
+	// one can check this later if they want, takes up too much time
+	//groupPressure->setChecked(true);
 #endif
-	groupTube->setChecked(true);
+	//groupTube->setChecked(true);
 
-	pushStop->hide();
-	
 	layoutDone = true;
 }
 
@@ -55,7 +68,7 @@ void Gui::LoadMotorWidgets() {
 	
 	std::string result;
 	while (result.empty()) {
- 		result = SendCommand(hostname, 1, "listmotors", "Gui::LayoutWindow");
+ 		result = SendCommand(hostname, 1, "listmotors", "Gui::LoadMotorWidgets");
 	}
 	FILE_LOG(logDEBUG) << "listmotors:" << result;
 
@@ -71,9 +84,10 @@ void Gui::LoadMotorWidgets() {
 		// create slit widget
 		if (motorName.find("Slit") != std::string::npos) {
 			if (slits == NULL) {
+				groupSlits->show();
 				groupSlits->setEnabled(true);
 				lblSlits->hide();
-				slits = new SlitWidget(this, hostname);
+				slits = new SlitWidget(this, hostname, statusbar);
 				gridSlits->addWidget(slits, 0, 0);
 			}
 			continue;
@@ -82,10 +96,11 @@ void Gui::LoadMotorWidgets() {
 		// create fluorescence widget
 		if (motorName.find("Fluorescence") != std::string::npos) {
 			if (fluorWidgets.size() == 0) {
+				groupFluorescence->show();
 				groupFluorescence->setEnabled(true);
 				lblFluors->hide();
 			}	
-			fluorWidgets.push_back(new FluorWidget(this, motorName, hostname));
+			fluorWidgets.push_back(new FluorWidget(this, motorName, hostname, statusbar));
 			int currentIndex = fluorWidgets.size() - 1;
 			gridFluorescence->addWidget(fluorWidgets[currentIndex], currentIndex, 0);
 			continue;
@@ -93,13 +108,22 @@ void Gui::LoadMotorWidgets() {
 
 		// create motor widget
 		if (motorWidgets.size() == 0) {
+			groupMotors->show();
 			groupMotors->setEnabled(true);
 			lblMotors->hide();
 		}	
-		motorWidgets.push_back(new MotorWidget(this, motorName, hostname));
+		motorWidgets.push_back(new MotorWidget(this, motorName, hostname, statusbar));
 		int currentIndex = motorWidgets.size() - 1;
 		gridMotors->addWidget(motorWidgets[currentIndex], currentIndex, 0);
+
 	}	
+
+	int mainWindowHeight = height() + 
+		motorWidgets.size() * WINDOW_HEIGHT_MOTOR +
+		fluorWidgets.size() * WINDOW_HEIGHT_FLUOR +
+		(slits == NULL ? 0 : WINDOW_HEIGHT_SLITS);
+	resize(width(), mainWindowHeight);
+	
 }
 
 void Gui::LoadReferencePointsWidget() {
@@ -139,10 +163,13 @@ void Gui::LoadReferencePointsWidget() {
 		Message(WARNING, "No reference points added as Detector_x, Detector_y or Detector_z is missing", "Gui::LoadReferencePointsWidget");
 		return;
 	}
+	groupReferencePoints->show();
 	groupReferencePoints->setEnabled(true);
 	lblReferencePoints->hide();
-	refpoints = new ReferencePointsWidget(this, hostname, x, y, z);
+	refpoints = new ReferencePointsWidget(this, hostname, x, y, z, statusbar);
 	gridReferencePoints->addWidget(refpoints, 0, 0);	
+
+	resize(width(), height() + WINDOW_HEIGHT_REF_POINTS);
 }
 
 void Gui::LoadFwheelWidgets() {
@@ -180,14 +207,18 @@ void Gui::LoadFwheelWidgets() {
 
 		// create filter wheel widget
 		if (fwheelWidgets.size() == 0) {
+			groupFilterWheels->show();
 			groupFilterWheels->setEnabled(true);
 			lblFilterWheels->hide();
 		}
 
-		fwheelWidgets.push_back(new FwheelWidget(this, name, hostname));
+		fwheelWidgets.push_back(new FwheelWidget(this, name, hostname, statusbar));
 		int currentIndex = fwheelWidgets.size() - 1;
 		gridFilterWheels->addWidget(fwheelWidgets[currentIndex], currentIndex, 0);
 	}
+
+	int mainWindowHeight = height() + fwheelWidgets.size() * WINDOW_HEIGHT_FWHEEL;
+	resize(width(), mainWindowHeight);
 }
 
 void Gui::Initialization() {
@@ -223,6 +254,7 @@ void Gui::EnablePressureWidget(bool enable) {
 			lblPressure->show();
 		}
 		groupPressure->setChecked(false);
+
 	} else {
 		if (pgauge == NULL) {
 			lblPressure->hide();
@@ -231,6 +263,7 @@ void Gui::EnablePressureWidget(bool enable) {
 		}
 		pgauge->Update();
 		groupPressure->setChecked(true);
+		resize(width(), height() + WINDOW_HEIGHT_PRESSURE);
 	}
 	connect(groupPressure, SIGNAL(toggled(bool)), this, SLOT(LoadPressureWidget()));
 	if (pgauge != NULL) {
@@ -269,14 +302,22 @@ void Gui::EnableTubeWidget(bool enable) {
 			lblTube->show();
 		}
 		groupTube->setChecked(false);
-	} else {
+	} 
+	// enable tube
+	else {
 		if (tube == NULL) {
 			lblTube->hide();
-			tube = new TubeWidget(this, hostname);
+			tube = new TubeWidget(this, hostname, statusbar);
 			gridTube->addWidget(tube, 0, 0);	
 		}
 		tube->Update();
 		groupTube->setChecked(true);
+		// resize width (maybe height)
+		if (height() < WINDOW_HEIGHT_TUBE) {
+			resize(WINDOW_WIDTH_TUBE, WINDOW_HEIGHT_TUBE);
+		} else {
+			resize(WINDOW_WIDTH_TUBE, height());
+		}
 	}
 	connect(groupTube, SIGNAL(toggled(bool)), this, SLOT(LoadTubeWidget()));
 	if (tube != NULL) {
@@ -288,6 +329,7 @@ void Gui::Update() {
 	if (!layoutDone) {
 		return;
 	}
+	FILE_LOG(logINFO) << "Updating ...";
 	statusbar->showMessage("Updating ..."); // gets replaced by temp explanations of tool tip texts (not permanent)
 
 	// update motors
@@ -329,13 +371,13 @@ void Gui::Update() {
 	statusbar->showMessage("Update completed", 2 * 1000);
 }
 
-void Gui::Stop() {
-    pushStop->setChecked(true);
-    FILE_LOG(logINFO) << "Stopping all motors";
-    std::string result = SendCommand(hostname, 1, "stopall", "Gui::Stop");
-    pushStop->setChecked(false);
-	Update();
-}
+// void Gui::Stop() {
+//     pushStop->setChecked(true);
+//     FILE_LOG(logINFO) << "Stopping all motors";
+//     std::string result = SendCommand(hostname, 1, "stopall", "Gui::Stop");
+//     pushStop->setChecked(false);
+// 	Update();
+// }
 
 void Gui::closeEvent(QCloseEvent* event) {
 	if (FAIL == Message(QUESTION,  
@@ -344,7 +386,6 @@ void Gui::closeEvent(QCloseEvent* event) {
 		"Quit Motor Control GUI")) {
 		event->ignore();
 	} else {
-		// warmuptimings write //TODO
 		SendCommand(hostname, 1, "unlock", "Gui::closeEvent");
 		event->accept();
 	}

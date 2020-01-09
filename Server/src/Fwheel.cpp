@@ -87,12 +87,23 @@ void Fwheel::setValue(double currentValue) {
 	for (unsigned int i = 0; i < valueList.size(); ++i) {
 		if (fabs(valueList[i] - currentValue) < FWHEEL_TOLERANCE) {
 			oss << "pos=" << i + 1 << '\r';
-			interface->FilterWheelSend(oss.str());
-			if (currentValue != getValue()) {
-				oss << "Filter wheel " << name << " could not be moved to " << currentValue << ". It is at " << this->currentValue;
-				throw RuntimeError(oss.str());
+			// repeat 5 times max if it reads weird 
+			int loop = 0;
+			for (;;) {
+				try {
+					interface->FilterWheelSend(oss.str());
+					if (currentValue != getValue()) {
+						oss << "Filter wheel " << name << " could not be moved to " << currentValue << ". It is at " << this->currentValue;
+						throw RuntimeError(oss.str());
+					}
+					return;
+				} catch (const RuntimeError& e) {
+					++loop;
+					if (loop == 5) {
+						throw;
+					}
+				}
 			}
-			return;
 		}
 	}
 	oss << "Invalid absorption value " << currentValue;

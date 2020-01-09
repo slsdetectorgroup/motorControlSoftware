@@ -1,12 +1,14 @@
 #include "FwheelWidget.h"
 #include "GuiDefs.h"
 
+#include <QStatusBar>
+
 #include <sstream>
 #include <math.h>
 #include <iterator>
 
-FwheelWidget::FwheelWidget(QWidget *parent, std::string name, std::string hostname)
-    : QWidget(parent), name(name), hostname(hostname) {
+FwheelWidget::FwheelWidget(QWidget *parent, std::string name, std::string hostname, QStatusBar* statusBar)
+    : QWidget(parent), name(name), hostname(hostname), statusBar(statusBar)  {
     setupUi(this);
     LayoutWindow();
     Initialization();
@@ -69,9 +71,12 @@ void FwheelWidget::GetValue() {
 void FwheelWidget::SetValue() {
 	std::string value = std::string(comboValue->currentText().toAscii().data());
 	FILE_LOG(logINFO) << "Setting absorption value of " << name << " to " << value;
+    statusBar->showMessage("Moving ...");
+    statusBar->showMessage("Moving ...");
 	std::ostringstream oss;
 	oss << "setfw " << name << ' ' << value;
 	std::string result = SendCommand(hostname, 3, oss.str(), "FwheelWidget::SetValue");
+    statusBar->clearMessage();
 	if (result.empty()) {
 		GetValue();
 	}

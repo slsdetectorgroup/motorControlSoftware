@@ -572,8 +572,7 @@ string Initialize::executeCommand(vector<string> args) {
 			}
 			OnlyTubeCommand();
 			xrayTube->clearErrorCode();
-			oss << xrayTube->getErrorCode();
-			return oss.str();
+			return "ok";
 		}
 
 		else if (!strcasecmp(command.c_str(), "istube")) {
@@ -617,7 +616,7 @@ string Initialize::executeCommand(vector<string> args) {
 			xrayTube->setHVSwitch(on);
 			bool result = xrayTube->getHVSwitch();
 			if (result != on) {
-				oss << "Could not switch " << value << " hv. Hv is " << (result ? "on" : "off") << ". Warm up required.";
+				oss << "Could not switch " << value << " hv. Hv is " << (result ? "on" : "off") << ". \n\nWarm up required.";
 				throw RuntimeError (oss.str());
 			}
 			oss << (result ? "on" : "off");
@@ -647,7 +646,7 @@ string Initialize::executeCommand(vector<string> args) {
 			xrayTube->setVoltage(value);
 			int result = xrayTube->getVoltage();
 			if (result != value) {
-				oss << "Could not set voltage to " << value << " kV. Votlage is at " << result << " kV.";
+				oss << "Could not set voltage to " << value << " kV. Voltage is at " << result << " kV.";
 				throw RuntimeError (oss.str());				
 			}
 			oss << result << " kV";
@@ -858,31 +857,6 @@ string Initialize::executeCommand(vector<string> args) {
 			oss << (xrayTube->isAccessPossible() ? "yes" : "no");
 			return oss.str();
 		}
-
-		else if (!strcasecmp(command.c_str(), "readwarmuptiming")) {
-			if (nArg != 2) {
-				throw RuntimeError("Requires 2 parameters: readwarmuptiming [voltage] ");
-			}
-			OnlyTubeCommand();
-			int voltage = 0;
-			istringstream iss (args[1].c_str());
-			iss >> voltage;
-			if (iss.fail()) {
-				throw RuntimeError("Could not scan timestamp voltage argument " + args[1]);
-			}
-			oss << xrayTube->getWarmupTimestamp(voltage);
-			return oss.str();
-		}
-
-		else if (!strcasecmp(command.c_str(), "writeallwarmuptiming")) {
-			if (nArg != 1) {
-				throw RuntimeError("Requires 1 parameters: writeallwarmuptiming");
-			}
-			OnlyTubeCommand();
-			xrayTube->writeAllWarmupTimestamps();
-			return "ok";
-		}
-
 
 		// ----- pressure ------------------------------------------------------
 

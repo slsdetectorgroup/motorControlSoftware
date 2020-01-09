@@ -1,11 +1,12 @@
 #pragma once
 
+class QStatusBar;
 #include "ui_form_motorwidget.h"
 
 class MotorWidget:public QWidget, private Ui::MotorWidgetObject {
     Q_OBJECT
     public: 
-    MotorWidget(QWidget *parent, std::string name, std::string hostname);
+    MotorWidget(QWidget *parent, std::string name, std::string hostname, QStatusBar* statusBar);
     ~MotorWidget();
     std::string GetName();
 
@@ -27,6 +28,7 @@ class MotorWidget:public QWidget, private Ui::MotorWidgetObject {
 
     std::string name;
     std::string hostname;
+    QStatusBar* statusBar;
 
     signals:
     void MotorMovedSignal();

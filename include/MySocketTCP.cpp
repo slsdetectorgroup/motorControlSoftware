@@ -232,27 +232,24 @@ void MySocketTCP::Disconnect(){
 }
 
 int MySocketTCP::SendDataOnly(void* buf,int length){//length in characters
-
-
-#ifdef VERY_VERBOSE
-
-  cout << "want to send "<< length << " Bytes" << endl; 
-#endif
-
   if (file_des<0) return -1;
+  if (length == 0) {
+    return 0;
+  }
   int total_sent=0;
   while(length>0){
     int nsending = (length>send_rec_max_size) ? send_rec_max_size:length;
     int nsent = write(file_des,(char*)buf+total_sent,nsending); 
-    if(!nsent) break;
+    if (nsent <= 0) {
+      if(!total_sent) {
+        cout << "Possible socket crash?" << endl;
+				return -1; //to handle it
+			}
+			break;
+    }
     length-=nsent;
     total_sent+=nsent;
-    //    cout<<"nsent: "<<nsent<<endl;
   }
-
-#ifdef VERY_VERBOSE
-  cout << "sent "<< total_sent << " Bytes" << endl; 
-#endif
   return total_sent;
 }
 
@@ -278,36 +275,19 @@ int MySocketTCP::SendDataAndKeepConnection(void* buf,int length){//length in cha
 int MySocketTCP::ReceiveDataOnly(void* buf,int length){//length in characters
   int total_received=0;
   if (file_des<0) return -1;
-#ifdef VERY_VERBOSE
-  cout << "want to receive "<< length << " Bytes" << endl; 
-#endif
-
   while(length>0){
     int nreceiving = (length>send_rec_max_size) ? send_rec_max_size:length;
-#ifdef VERY_VERBOSE
-  cout << "start to receive "<< nreceiving << " Bytes" << endl; 
-#endif
     int nreceived = read(file_des,(char*)buf+total_received,nreceiving);
-#ifdef VERY_VERBOSE
-    cout << "received "<< nreceived << " Bytes on fd " << file_des  << endl; 
-#endif 
-    if(nreceived<0) break;
+ 		if(nreceived <= 0){
+			if(!total_received) {
+        cout << "Possible socket crash?" << endl;
+				return -1; //to handle it
+			}
+			break;
+    }   
     length-=nreceived;
-#ifdef VERY_VERBOSE
-  cout << "length left "<< length << " Bytes" << endl; 
-#endif
     total_received+=nreceived;
-#ifdef VERY_VERBOSE
-  cout << "total "<< total_received << " Bytes" << endl; 
-#endif
-    //    cout<<"nrec: "<<nreceived<<" waiting for ("<<length<<")"<<endl;
   }
- 
-#ifdef VERY_VERBOSE
-  cout << "received "<< total_received << " Bytes" << endl;
-
-#endif
-  
   return total_received;
 }
 

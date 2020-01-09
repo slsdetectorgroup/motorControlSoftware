@@ -76,6 +76,9 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="toolTip">
+         <string>Absorption value</string>
+        </property>
         <property name="text">
          <string>Absoption Value</string>
         </property>

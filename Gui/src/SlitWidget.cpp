@@ -2,8 +2,10 @@
 #include "MotorWidget.h"
 #include "GuiDefs.h"
 
-SlitWidget::SlitWidget(QWidget *parent, std::string hostname)
-    : QWidget(parent), hostname(hostname), motorx1(NULL), motorx2(NULL) {
+#include <QStatusBar>
+
+SlitWidget::SlitWidget(QWidget *parent, std::string hostname, QStatusBar* statusBar)
+    : QWidget(parent), hostname(hostname), motorx1(NULL), motorx2(NULL), statusBar(statusBar)  {
     setupUi(this);
     LayoutWindow();
     Initialization();
@@ -12,10 +14,10 @@ SlitWidget::SlitWidget(QWidget *parent, std::string hostname)
 SlitWidget::~SlitWidget() {}
 
 void SlitWidget::LayoutWindow() {
-    motorx1 = new MotorWidget(this, "Slit_x1", hostname);
+    motorx1 = new MotorWidget(this, "Slit_x1", hostname, statusBar);
     gridSlitList->addWidget(motorx1, 0, 0);
 
-    motorx2 = new MotorWidget(this, "Slit_x2", hostname);
+    motorx2 = new MotorWidget(this, "Slit_x2", hostname, statusBar);
     gridSlitList->addWidget(motorx2, 1, 0);
 }
 
@@ -42,9 +44,12 @@ void SlitWidget::GetSlitWidth() {
 
 void SlitWidget::SetSlitWidth(double value) {
     FILE_LOG(logINFO) << "Setting slit width to " << value;
+    statusBar->showMessage("Moving ...");
+    statusBar->showMessage("Moving ...");
     std::ostringstream oss;
     oss << "setslitwidth " << value;
     std::string result = SendCommand(hostname, 2, oss.str(), "SlitWidget::SetSlitWidth");
+    statusBar->clearMessage();
     if (result.empty()) {
         GetSlitWidth();
     } else {
@@ -69,9 +74,12 @@ void SlitWidget::GetCenter() {
 
 void SlitWidget::SetCenter(double value) {
     FILE_LOG(logINFO) << "Setting center to " << value;
+    statusBar->showMessage("Moving ...");
+    statusBar->showMessage("Moving ...");
     std::ostringstream oss;
     oss << "setcenter " << value;
     std::string result = SendCommand(hostname, 2, oss.str(), "SlitWidget::SetCenter");
+    statusBar->clearMessage();
     if (result.empty()) {
         GetCenter();
     } else {

@@ -1,10 +1,12 @@
 #include "MotorWidget.h"
 #include "GuiDefs.h"
 
+#include <QStatusBar>
+
 #include <sstream>
 
-MotorWidget::MotorWidget(QWidget *parent, std::string name, std::string hostname)
-    : QWidget(parent), name(name), hostname(hostname) {
+MotorWidget::MotorWidget(QWidget *parent, std::string name, std::string hostname, QStatusBar* statusBar)
+    : QWidget(parent), name(name), hostname(hostname), statusBar(statusBar) {
     setupUi(this);
     LayoutWindow();
     Initialization();
@@ -43,9 +45,12 @@ void MotorWidget::GetPosition() {
 
 void MotorWidget::MoveAbsolute(double value) {
     FILE_LOG(logINFO) << "Moving " << name << " to " << value;
+    statusBar->showMessage("Moving ...");
+    statusBar->showMessage("Moving ...");
     std::ostringstream oss;
     oss << "moveabs " << name << ' ' << value;
     std::string result = SendCommand(hostname, 3, oss.str(), "MotorWidget::MoveAbsolute");
+    statusBar->clearMessage();
     if (result.empty()) {
         GetPosition();
     } else {
@@ -63,9 +68,12 @@ void MotorWidget::MoveRight() {
 
 void MotorWidget::MoveRelative(double value) {
     FILE_LOG(logINFO) << "Moving " << name << " by " << value;
+    statusBar->showMessage("Moving ...");
+    statusBar->showMessage("Moving ...");
     std::ostringstream oss;
     oss << "moverel " << name << ' ' << value;
     std::string result = SendCommand(hostname, 3, oss.str(), "MotorWidget::MoveRelative");
+    statusBar->clearMessage();
     GetPosition();
     if (!result.empty()) {
         emit MotorMovedSignal();
@@ -76,15 +84,17 @@ void MotorWidget::Calibrate() {
     if (Message(QUESTION, "Are you sure you want to calibrate the motor?", "MotorWidget::Calibrate", "Calibrate?") == FAIL) {
         return;
     }
+    statusBar->showMessage("Calibrating ...");
     pushCal->setChecked(true);
     lblPosition->setEnabled(false);
     spinAbsolute->setEnabled(false);
     spinRelative->setEnabled(false);
     FILE_LOG(logINFO) << "Calibrating " << name;
+    statusBar->showMessage("Calibrating ...");
     std::ostringstream oss;
     oss << "cal " << name;
     std::string result = SendCommand(hostname, 2, oss.str(), "MotorWidget::Calibrate");
-    Message(INFORMATION, "Calibration Completed", "MotorWidget::Calibrate");
+    statusBar->clearMessage();
     GetPosition();
     if (!result.empty()) {
         emit MotorMovedSignal();

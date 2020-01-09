@@ -62,12 +62,20 @@ int main(int argc, char *argv[]) {
 
 		// get number of arguments
 		int nArg = 0;
-		sock->ReceiveDataOnly(&nArg, sizeof(nArg));
+		if (sock->ReceiveDataOnly(&nArg, sizeof(nArg)) < 0 ) {
+			FILE_LOG(logERROR) << "Error reading from socket. Possible socket crash.";
+			sock->Disconnect();
+			continue;
+		}
 
 		// get all arguments
 		char args[TCP_PACKET_LENGTH];
 		memset(args, 0, sizeof(args));
-		sock->ReceiveDataOnly(args, sizeof(args));
+		if (sock->ReceiveDataOnly(args, sizeof(args)) < 0 ) {
+			FILE_LOG(logERROR) << "Error reading from socket. Possible socket crash.";
+			sock->Disconnect();
+			continue;		
+		}
 		std::cout << std::endl;
 		FILE_LOG(logINFO) << "Server Received: " << args;
 
@@ -176,7 +184,10 @@ int main(int argc, char *argv[]) {
 			FILE_LOG(logERROR) << mess;
 		}
 
-		sock->SendDataOnly(&ret, sizeof(ret));
+		if (sock->SendDataOnly(&ret, sizeof(ret)) < 0) {
+			sock->Disconnect();
+			continue;
+		}
 		FILE_LOG(logINFO) << "Server Sent: " << mess;
 		sock->SendDataOnly(mess, sizeof(mess));
 		sock->Disconnect();

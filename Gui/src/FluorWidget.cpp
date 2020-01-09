@@ -2,10 +2,12 @@
 #include "MotorWidget.h"
 #include "GuiDefs.h"
 
+#include <QStatusBar>
+
 #include <sstream>
 
-FluorWidget::FluorWidget(QWidget *parent, std::string name, std::string hostname)
-    : QWidget(parent), name(name), hostname(hostname) {
+FluorWidget::FluorWidget(QWidget *parent, std::string name, std::string hostname, QStatusBar* statusBar)
+    : QWidget(parent), name(name), hostname(hostname), statusBar(statusBar)  {
     setupUi(this);
     LayoutWindow();
     Initialization();
@@ -20,7 +22,7 @@ std::string FluorWidget::GetName() {
 void FluorWidget::LayoutWindow() {
     groupbox->setTitle(name.c_str());
     LoadTargetHolders();
-    motor = new MotorWidget(this, name, hostname);
+    motor = new MotorWidget(this, name, hostname, statusBar);
     gridPageMotor->addWidget(motor, 0, 0);
     stackedWidget->setCurrentIndex(0);
 }
@@ -160,10 +162,13 @@ void FluorWidget::SetTarget(int index) {
     FILE_LOG(logINFO) << "Moving " << name << " to target " << target;
     // display energy
     dispEnergy->setText(std::string(energy[index] + " KeV").c_str());
+    statusBar->showMessage("Moving ...");
+    statusBar->showMessage("Moving ...");
     // move to target
     std::ostringstream oss;
     oss << "movefl " << name << ' ' << target;
     std::string result = SendCommand(hostname, 3, oss.str(), "FluorWidget::SetTarget");
+    statusBar->clearMessage();
     if (result.empty()) {
         GetTarget();
     } else {
