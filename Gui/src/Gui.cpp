@@ -225,7 +225,7 @@ void Gui::LoadFwheelWidgets() {
 
 	int mainWindowHeight = height() + 
 		((fwheelWidgets.size() == 0) ? 0 : WINDOW_HEIGHT_FWHEEL_REF) +
-		3 * WINDOW_HEIGHT_FWHEEL;//fwheelWidgets.size() * WINDOW_HEIGHT_FWHEEL;
+		fwheelWidgets.size() * WINDOW_HEIGHT_FWHEEL;
 	resize(width(), mainWindowHeight);
 }
 
