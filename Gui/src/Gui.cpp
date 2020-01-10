@@ -123,6 +123,7 @@ void Gui::LoadMotorWidgets() {
 	}	
 
 	int mainWindowHeight = height() + 
+		((motorWidgets.size() == 0) ? 0 : WINDOW_HEIGHT_MOTOR_REF) +
 		motorWidgets.size() * WINDOW_HEIGHT_MOTOR + 
 		((fluorWidgets.size() == 0) ? 0 : WINDOW_HEIGHT_FLUOR_REF) +
 		fluorWidgets.size() * WINDOW_HEIGHT_FLUOR +
@@ -222,7 +223,9 @@ void Gui::LoadFwheelWidgets() {
 		gridFilterWheels->addWidget(fwheelWidgets[currentIndex], currentIndex, 0);
 	}
 
-	int mainWindowHeight = height() + fwheelWidgets.size() * WINDOW_HEIGHT_FWHEEL;
+	int mainWindowHeight = height() + 
+		((fwheelWidgets.size() == 0) ? 0 : WINDOW_HEIGHT_FWHEEL_REF) +
+		3 * WINDOW_HEIGHT_FWHEEL;//fwheelWidgets.size() * WINDOW_HEIGHT_FWHEEL;
 	resize(width(), mainWindowHeight);
 }
 
