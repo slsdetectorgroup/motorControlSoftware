@@ -45,15 +45,14 @@ void Gui::LayoutWindow() {
 	groupFluorescence->hide();
 	groupSlits->hide();
 	groupFilterWheels->hide();
-#ifndef VACUUMBOX	
-	groupPressure->hide();
-#endif
 #ifdef LASERBOX
+	groupPressure->hide();
 	widgetTube->hide();
 	resize(WINDOW_WIDTH_NO_TUBE, WINDOW_HEIGHT_REFERENCE);
 #elif XRAYBOX
+	groupPressure->hide();
 	resize(WINDOW_WIDTH_UNCHECK_TUBE, WINDOW_HEIGHT_REFERENCE);
-#else
+#elif VACUUMBOX
 	resize(WINDOW_WIDTH_UNCHECK_TUBE, WINDOW_HEIGHT_REFERENCE + WINDOW_HEIGHT_UNCHECK_PRESSURE);
 #endif
 	LoadMotorWidgets();
@@ -61,12 +60,13 @@ void Gui::LayoutWindow() {
 	LoadFwheelWidgets();
 	LoadOptionsWidget();
 
-#ifdef VACUUMBOX
+//#ifdef VACUUMBOX
 	// one can check this later if they want, takes up too much time
 	//groupPressure->setChecked(true);
+//#endif
+#ifndef LASERBOX
+	groupTube->setChecked(true);
 #endif
-	//groupTube->setChecked(true);
-
 	layoutDone = true;
 }
 
@@ -124,6 +124,7 @@ void Gui::LoadMotorWidgets() {
 
 	int mainWindowHeight = height() + 
 		motorWidgets.size() * WINDOW_HEIGHT_MOTOR + 
+		((fluorWidgets.size() == 0) ? 0 : WINDOW_HEIGHT_FLUOR_REF) +
 		fluorWidgets.size() * WINDOW_HEIGHT_FLUOR +
 		(slits == NULL ? 0 : WINDOW_HEIGHT_SLITS);
 	resize(width(), mainWindowHeight);
@@ -243,7 +244,11 @@ void Gui::LoadOptionsWidget() {
 		motorlist.push_back("Slit_x1");
 		motorlist.push_back("Slit_x2");
 	}
-	optionsWidget = new OptionsWidget(this, hostname, motorlist, reflist, fluorlist);
+	std::vector <std::string> fwheellist;
+	for (int i = 0; i < fwheelWidgets.size(); ++i) {
+		fwheellist.push_back(fwheelWidgets[i]->GetName());
+	}
+	optionsWidget = new OptionsWidget(this, hostname, motorlist, reflist, fluorlist, fwheellist);
 }
 
 void Gui::Initialization() {
@@ -271,6 +276,7 @@ void Gui::LoadPressureWidget(bool userClick) {
 }
 
 void Gui::EnablePressureWidget(bool enable) {
+	bool wasEnabled = (pgauge != NULL);
 	disconnect(groupPressure, SIGNAL(toggled(bool)), this, SLOT(LoadPressureWidget()));
 	if (pgauge != NULL) {
 		disconnect(pgauge, SIGNAL(SwitchedOffSignal(bool)), this, SLOT(EnablePressureWidget(bool)));
@@ -292,12 +298,15 @@ void Gui::EnablePressureWidget(bool enable) {
 		}
 		pgauge->Update();
 		groupPressure->setChecked(true);
-		resize(width(), height() + WINDOW_HEIGHT_PRESSURE);
+		if (!wasEnabled) {
+			resize(width(), height() + WINDOW_HEIGHT_PRESSURE);
+		}
 	}
 	connect(groupPressure, SIGNAL(toggled(bool)), this, SLOT(LoadPressureWidget()));
 	if (pgauge != NULL) {
 		connect(pgauge, SIGNAL(SwitchedOffSignal(bool)), this, SLOT(EnablePressureWidget(bool)));
 	}
+	optionsWidget->EnablePressure(enable);
 }
 
 void Gui::LoadTubeWidget(bool userClick) {
@@ -352,6 +361,7 @@ void Gui::EnableTubeWidget(bool enable) {
 	if (tube != NULL) {
 		connect(tube, SIGNAL(SwitchedOffSignal(bool)), this, SLOT(EnableTubeWidget(bool)));
 	}
+	optionsWidget->EnableTube(enable);
 }
 
 void Gui::ShowOptions() {
@@ -373,7 +383,6 @@ void Gui::Update() {
 	if (!layoutDone) {
 		return;
 	}
-	FILE_LOG(logINFO) << "Updating ...";
 	statusbar->showMessage("Updating ..."); // gets replaced by temp explanations of tool tip texts (not permanent)
 
 	// update motors

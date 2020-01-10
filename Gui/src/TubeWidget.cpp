@@ -28,6 +28,17 @@ void TubeWidget::LayoutWindow() {
     GetConnectedShutters();
     spinActualVoltage->setStyleSheet("color: darkBlue");
     spinActualCurrent->setStyleSheet("color: darkBlue");
+#ifdef XRAYBOX
+	chkShutter1->setText("Up");
+	chkShutter2->setText("-");
+	chkShutter3->setText("Right");
+	chkShutter4->setText("-");
+#elif VACUUMBOX
+	chkShutter1->setText("-");
+	chkShutter2->setText("Up");
+	chkShutter3->setText("Right");
+	chkShutter4->setText("Down");
+#endif
 }
 
 void TubeWidget::Initialization() {

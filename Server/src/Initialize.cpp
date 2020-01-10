@@ -170,6 +170,43 @@ string Initialize::executeCommand(vector<string> args) {
 			return oss.str();
 		}
 
+		else if (!strcasecmp(command.c_str(), "getcontserialnumber")) {
+			if (nArg != 2) {
+				throw RuntimeError("Requires 2 parameters: getcontserialnumber [name]");
+			}
+			string name = args[1];
+			int icontroller = GetControllerIndex(name);
+			oss << controller[icontroller]->getSerialNumber();
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "getcontinterface")) {
+			if (nArg != 2) {
+				throw RuntimeError("Requires 2 parameters: getcontinterface [name]");
+			}
+			string name = args[1];
+			int icontroller = GetControllerIndex(name);
+			oss << controller[icontroller]->getInterface()->getSerial();
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "getcontmotorlist")) {
+			if (nArg != 2) {
+				throw RuntimeError("Requires 2 parameters: getcontmotorlist [name]");
+			}
+			string name = args[1];
+			int icontroller = GetControllerIndex(name);
+			for (unsigned int i = 0; i < 3; ++i) {
+				Motor* m = controller[icontroller]->getMotor(i);
+				if (m == NULL) {
+					oss << "- ";
+				} else {
+					oss << m->getName() << ' ';
+				}
+			}
+			return oss.str();
+		}		
+
 		// ----- motor --------------------------------------------------------
 
 		else if (!strcasecmp(command.c_str(), "motorlist")) {
@@ -555,6 +592,15 @@ string Initialize::executeCommand(vector<string> args) {
 
 		// ----- tube ----------------------------------------------------------
 
+		if (!strcasecmp(command.c_str(), "gettubeinterface")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameter: gettubeinterface ");
+			}
+			OnlyTubeCommand();
+			oss << xrayTube->getInterface()->getSerial();
+			return oss.str();
+		}
+
 		if (!strcasecmp(command.c_str(), "sendtube")) {
 			if (nArg < 2) {
 				throw RuntimeError("Requires 2 parameters: sendtube [commands..]");
@@ -901,6 +947,21 @@ string Initialize::executeCommand(vector<string> args) {
 
 		// ----- pressure ------------------------------------------------------
 
+		else if (!strcasecmp(command.c_str(), "getpressureinterface")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameter: getpressureinterface ");
+			}
+			if (pgauge == NULL) {
+				try {
+					UpdateInterface(PRESSURE);
+				} catch (RuntimeError &e) {
+					throw;
+				}	
+			}
+			oss << pgauge->getInterface()->getSerial();
+			return oss.str();
+		}
+		
 		else if (!strcasecmp(command.c_str(), "pressure")) {
 			if (nArg != 1) {
 				throw RuntimeError("Requires 1 parameters: pressure");
@@ -1067,6 +1128,26 @@ string Initialize::executeCommand(vector<string> args) {
 			oss << fwheel[ifwheel]->getValue();
 			return oss.str();
 		}
+
+		else if (!strcasecmp(command.c_str(), "getfwserialnumber")) {
+			if (nArg != 2) {
+				throw RuntimeError("Requires 2 parameters: getfwserialnumber [name]");
+			}
+			string name = args[1];
+			int ifwheel = GetFwheelIndex(name);
+			oss << fwheel[ifwheel]->getSerialNumber();
+			return oss.str();
+		}
+
+		else if (!strcasecmp(command.c_str(), "getfwinterface")) {
+			if (nArg != 2) {
+				throw RuntimeError("Requires 2 parameters: getfwinterface [name]");
+			}
+			string name = args[1];
+			int ifwheel = GetFwheelIndex(name);
+			oss << fwheel[ifwheel]->getInterface()->getSerial();
+			return oss.str();
+		}	
 
 		// ----- unknown command -----------------------------------------------
 

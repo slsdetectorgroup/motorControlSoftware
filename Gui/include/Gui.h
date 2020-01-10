@@ -51,17 +51,18 @@ class Gui : public QMainWindow, private Ui::GuiObject {
     OptionsWidget* optionsWidget;
     bool layoutDone;
     static const int WINDOW_WIDTH_TUBE = 750;
-    static const int WINDOW_WIDTH_UNCHECK_TUBE = 460;
-    static const int WINDOW_WIDTH_NO_TUBE = 340;
-    static const int WINDOW_HEIGHT_TUBE = 520;
+    static const int WINDOW_WIDTH_UNCHECK_TUBE = 465;
+    static const int WINDOW_WIDTH_NO_TUBE = 345;
+    static const int WINDOW_HEIGHT_TUBE = 500;
 
-    static const int WINDOW_HEIGHT_REFERENCE = 165;
-    static const int WINDOW_HEIGHT_PRESSURE = 300;
-    static const int WINDOW_HEIGHT_UNCHECK_PRESSURE = 80;
+    static const int WINDOW_HEIGHT_REFERENCE = 110;
+    static const int WINDOW_HEIGHT_PRESSURE = 255;
+    static const int WINDOW_HEIGHT_UNCHECK_PRESSURE = 53;
 
     static const int WINDOW_HEIGHT_MOTOR = 103;
     static const int WINDOW_HEIGHT_REF_POINTS = 113;
     static const int WINDOW_HEIGHT_FWHEEL = 114;
+    static const int WINDOW_HEIGHT_FLUOR_REF = 75;
     static const int WINDOW_HEIGHT_FLUOR = 120;
     static const int WINDOW_HEIGHT_SLITS = 350;
 

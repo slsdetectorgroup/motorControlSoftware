@@ -712,6 +712,9 @@
            <property name="toolTip">
             <string>Voltage</string>
            </property>
+           <property name="frame">
+            <bool>false</bool>
+           </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
            </property>
@@ -757,6 +760,9 @@
            </property>
            <property name="toolTip">
             <string>Voltage</string>
+           </property>
+           <property name="frame">
+            <bool>false</bool>
            </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

@@ -211,10 +211,10 @@
               </size>
              </property>
              <property name="text">
-              <string>controller</string>
+              <string>-</string>
              </property>
              <property name="alignment">
-              <set>Qt::AlignCenter</set>
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
@@ -545,10 +545,10 @@
               </size>
              </property>
              <property name="text">
-              <string>number</string>
+              <string>-</string>
              </property>
              <property name="alignment">
-              <set>Qt::AlignCenter</set>
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
@@ -1202,10 +1202,10 @@
               </size>
              </property>
              <property name="text">
-              <string>axis 3</string>
+              <string>-</string>
              </property>
              <property name="alignment">
-              <set>Qt::AlignCenter</set>
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
@@ -1255,10 +1255,10 @@
               </size>
              </property>
              <property name="text">
-              <string>axis 1</string>
+              <string>-</string>
              </property>
              <property name="alignment">
-              <set>Qt::AlignCenter</set>
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
@@ -1308,10 +1308,10 @@
               </size>
              </property>
              <property name="text">
-              <string>axis 2</string>
+              <string>-</string>
              </property>
              <property name="alignment">
-              <set>Qt::AlignCenter</set>
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
@@ -1353,15 +1353,61 @@
              </property>
              <layout class="QGridLayout" name="gridContAdvanced_2">
               <item row="0" column="0">
-               <widget class="QLineEdit" name="dispContSend">
+               <widget class="QLineEdit" name="dispContResult">
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
                   <height>25</height>
                  </size>
                 </property>
+                <property name="palette">
+                 <palette>
+                  <active>
+                   <colorrole role="Text">
+                    <brush brushstyle="SolidPattern">
+                     <color alpha="255">
+                      <red>0</red>
+                      <green>0</green>
+                      <blue>161</blue>
+                     </color>
+                    </brush>
+                   </colorrole>
+                  </active>
+                  <inactive>
+                   <colorrole role="Text">
+                    <brush brushstyle="SolidPattern">
+                     <color alpha="255">
+                      <red>0</red>
+                      <green>0</green>
+                      <blue>161</blue>
+                     </color>
+                    </brush>
+                   </colorrole>
+                  </inactive>
+                  <disabled>
+                   <colorrole role="Text">
+                    <brush brushstyle="SolidPattern">
+                     <color alpha="255">
+                      <red>139</red>
+                      <green>142</green>
+                      <blue>142</blue>
+                     </color>
+                    </brush>
+                   </colorrole>
+                  </disabled>
+                 </palette>
+                </property>
+                <property name="focusPolicy">
+                 <enum>Qt::NoFocus</enum>
+                </property>
                 <property name="toolTip">
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Up arrow key picks up the previous command.&lt;/p&gt;&lt;p&gt;Down arrow key clears the current command.&lt;/p&gt;&lt;p&gt;Return or Enter key executes the current command&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="frame">
+                 <bool>false</bool>
+                </property>
+                <property name="readOnly">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
@@ -1385,6 +1431,9 @@
                   <height>25</height>
                  </size>
                 </property>
+                <property name="toolTip">
+                 <string>Send Command to Controller. Do not read.</string>
+                </property>
                 <property name="text">
                  <string/>
                 </property>
@@ -1404,7 +1453,7 @@
                </widget>
               </item>
               <item row="1" column="0">
-               <widget class="QLineEdit" name="dispContSendRead">
+               <widget class="QLineEdit" name="dispCont">
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
@@ -1413,6 +1462,9 @@
                 </property>
                 <property name="toolTip">
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Up arrow key picks up the previous command.&lt;/p&gt;&lt;p&gt;Down arrow key clears the current command.&lt;/p&gt;&lt;p&gt;Return or Enter key executes the current command&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="placeholderText">
+                 <string>Commands to controller</string>
                 </property>
                </widget>
               </item>
@@ -1435,6 +1487,9 @@
                   <width>25</width>
                   <height>25</height>
                  </size>
+                </property>
+                <property name="toolTip">
+                 <string>Send and read commands to controller. &lt;br&gt; You must be sure it can read, else server will wait for ever and think it is switched off.</string>
                 </property>
                 <property name="text">
                  <string/>
@@ -1528,10 +1583,10 @@
               </size>
              </property>
              <property name="text">
-              <string>interface</string>
+              <string>-</string>
              </property>
              <property name="alignment">
-              <set>Qt::AlignCenter</set>
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
@@ -1581,10 +1636,10 @@
               </size>
              </property>
              <property name="text">
-              <string>serial number</string>
+              <string>-</string>
              </property>
              <property name="alignment">
-              <set>Qt::AlignCenter</set>
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
@@ -1711,10 +1766,10 @@
               </size>
              </property>
              <property name="text">
-              <string>position</string>
+              <string>-</string>
              </property>
              <property name="alignment">
-              <set>Qt::AlignCenter</set>
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
@@ -1739,10 +1794,10 @@
               </size>
              </property>
              <property name="text">
-              <string>position</string>
+              <string>-</string>
              </property>
              <property name="alignment">
-              <set>Qt::AlignCenter</set>
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
@@ -1817,10 +1872,10 @@
               </size>
              </property>
              <property name="text">
-              <string>position</string>
+              <string>-</string>
              </property>
              <property name="alignment">
-              <set>Qt::AlignCenter</set>
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
@@ -1852,7 +1907,7 @@
           </property>
           <layout class="QGridLayout" name="gridFilterWheels_2">
            <item row="0" column="0">
-            <widget class="QLabel" name="lblFwheel_2">
+            <widget class="QLabel" name="lblFwheel">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -1877,7 +1932,7 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QComboBox" name="comboFwheel_2">
+            <widget class="QComboBox" name="comboFilterWheel">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -1902,7 +1957,7 @@
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QLabel" name="lblFwheelController_2">
+            <widget class="QLabel" name="lblFwheelSerialNumber">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -1922,12 +1977,12 @@
               </size>
              </property>
              <property name="text">
-              <string>Controller</string>
+              <string>Serial Number</string>
              </property>
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QLabel" name="lblFwheelControllerValue_2">
+            <widget class="QLabel" name="lblFwheelSerialNumberValue">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -1947,15 +2002,15 @@
               </size>
              </property>
              <property name="text">
-              <string>controller</string>
+              <string>-</string>
              </property>
              <property name="alignment">
-              <set>Qt::AlignCenter</set>
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
            <item row="2" column="0">
-            <widget class="QLabel" name="lblFwheelInterface_2">
+            <widget class="QLabel" name="lblFwheelInterface">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -1980,7 +2035,7 @@
             </widget>
            </item>
            <item row="2" column="1">
-            <widget class="QLabel" name="lblFwheelInterfaceValue_2">
+            <widget class="QLabel" name="lblFwheelInterfaceValue">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -2000,10 +2055,10 @@
               </size>
              </property>
              <property name="text">
-              <string>interface</string>
+              <string>-</string>
              </property>
              <property name="alignment">
-              <set>Qt::AlignCenter</set>
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
@@ -2055,10 +2110,10 @@
               </size>
              </property>
              <property name="text">
-              <string>interface</string>
+              <string>-</string>
              </property>
              <property name="alignment">
-              <set>Qt::AlignCenter</set>
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
@@ -2075,15 +2130,61 @@
              </property>
              <layout class="QGridLayout" name="gridTubeAdvanced">
               <item row="0" column="0">
-               <widget class="QLineEdit" name="dispTubeSend">
+               <widget class="QLineEdit" name="dispTubeResult">
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
                   <height>25</height>
                  </size>
                 </property>
+                <property name="palette">
+                 <palette>
+                  <active>
+                   <colorrole role="Text">
+                    <brush brushstyle="SolidPattern">
+                     <color alpha="255">
+                      <red>0</red>
+                      <green>0</green>
+                      <blue>161</blue>
+                     </color>
+                    </brush>
+                   </colorrole>
+                  </active>
+                  <inactive>
+                   <colorrole role="Text">
+                    <brush brushstyle="SolidPattern">
+                     <color alpha="255">
+                      <red>0</red>
+                      <green>0</green>
+                      <blue>161</blue>
+                     </color>
+                    </brush>
+                   </colorrole>
+                  </inactive>
+                  <disabled>
+                   <colorrole role="Text">
+                    <brush brushstyle="SolidPattern">
+                     <color alpha="255">
+                      <red>139</red>
+                      <green>142</green>
+                      <blue>142</blue>
+                     </color>
+                    </brush>
+                   </colorrole>
+                  </disabled>
+                 </palette>
+                </property>
+                <property name="focusPolicy">
+                 <enum>Qt::NoFocus</enum>
+                </property>
                 <property name="toolTip">
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Up arrow key picks up the previous command.&lt;/p&gt;&lt;p&gt;Down arrow key clears the current command.&lt;/p&gt;&lt;p&gt;Return or Enter key executes the current command&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="frame">
+                 <bool>false</bool>
+                </property>
+                <property name="readOnly">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
@@ -2107,6 +2208,9 @@
                   <height>25</height>
                  </size>
                 </property>
+                <property name="toolTip">
+                 <string>Send commands to tube. Do not read.</string>
+                </property>
                 <property name="text">
                  <string/>
                 </property>
@@ -2126,7 +2230,7 @@
                </widget>
               </item>
               <item row="1" column="0">
-               <widget class="QLineEdit" name="dispTubeSendRead">
+               <widget class="QLineEdit" name="dispTube">
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
@@ -2135,6 +2239,9 @@
                 </property>
                 <property name="toolTip">
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Up arrow key picks up the previous command.&lt;/p&gt;&lt;p&gt;Down arrow key clears the current command.&lt;/p&gt;&lt;p&gt;Return or Enter key executes the current command&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="placeholderText">
+                 <string>Commands to tube</string>
                 </property>
                </widget>
               </item>
@@ -2157,6 +2264,9 @@
                   <width>25</width>
                   <height>25</height>
                  </size>
+                </property>
+                <property name="toolTip">
+                 <string>Send and read commands to tube. &lt;br&gt; You must be sure it can read, else server will wait for ever and think it is switched off.</string>
                 </property>
                 <property name="text">
                  <string/>
@@ -2277,39 +2387,14 @@
               </size>
              </property>
              <property name="text">
-              <string>interface</string>
+              <string>-</string>
              </property>
              <property name="alignment">
-              <set>Qt::AlignCenter</set>
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
           </layout>
-         </widget>
-        </item>
-        <item row="4" column="1" alignment="Qt::AlignRight|Qt::AlignBottom">
-         <widget class="QLabel" name="lblUpdate">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>250</width>
-            <height>25</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>250</width>
-            <height>25</height>
-           </size>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
          </widget>
         </item>
         <item row="4" column="2" alignment="Qt::AlignRight|Qt::AlignBottom">
@@ -2358,7 +2443,6 @@
        <zorder>groupTube</zorder>
        <zorder>groupPressure</zorder>
        <zorder>pushUpdate</zorder>
-       <zorder>lblUpdate</zorder>
        <zorder>groupFluor</zorder>
       </widget>
      </widget>

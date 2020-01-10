@@ -12,38 +12,61 @@ class OptionsWidget : public QMainWindow, private Ui::OptionsWidgetObject {
     OptionsWidget(QWidget *parent, std::string hostname, 
         std::vector <std::string> motors,
         std::vector <std::string> refpoints,
-        std::vector <std::string> fluor);
-    ~OptionsWidget();    
+        std::vector <std::string> fluor,
+        std::vector <std::string> fwheels
+        );
+    ~OptionsWidget();  
+
+    void EnableTube(bool enable);
+    void EnablePressure(bool enable);
     
     protected:
     void closeEvent(QCloseEvent* event);
+
+    public slots:
+    void Update();
 
     private slots:
     void SetMotor(int index);
     void SetPosition(double value);
     void SetUpperLimit(double value);
     void SetLowerLimit(double value);   
+    void SetController(int index);
+    void SendCommandToController();
+    void SendandReadCommandToController();
     void SetRefPoint(int index);
     void SetFluor(int index);
     void DeleteHolder();
     void AddHolder();
     void ClearHolderContents();
-
-    public slots:
-    void Update();
-
+    void SetFwheel(int index);
+    void SetTube();
+    void SetPressure();
+    void SendCommandToTube();
+    void SendandReadCommandToTube();
+    
     private:
     void LayoutWindow(
         std::vector <std::string> motors,
         std::vector <std::string> refpoints,
-        std::vector <std::string> fluor);
+        std::vector <std::string> fluor,
+        std::vector <std::string> fwheels
+        );
+    void LoadControllers();
     void Initialization();
 
     void GetMotorController();
     void GetPosition();
     void GetUpperLimit();
     void GetLowerLimit();
+    void GetControllerSerialNumber();
+    void GetControllerInterface();
+    void GetControllerMotors();
     void GetNumFluorHolders();
+    void GetFwheelSerialNumber();
+    void GetFwheelInterface();
+    void GetTubeInterface();
+    void GetPressureInterface();
 
     std::string hostname;
     std::vector <QLineEdit*> targets;

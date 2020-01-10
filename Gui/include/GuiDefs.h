@@ -4,6 +4,7 @@
 #include "Client.h"
 
 #include <QMessageBox>
+#include <QIcon>
 
 enum MessageIndex { 
     WARNING, 
@@ -51,9 +52,11 @@ inline int Message(MessageIndex index, std::string message, std::string source, 
     int ret = OK;
     if (icon == QMessageBox::Question) {
         QMessageBox msgBox(icon, title.c_str(), message.c_str(), QMessageBox::Ok | QMessageBox::Cancel);
+        msgBox.setWindowIcon( QIcon ( ":/icons/images/motorIcon.png" ) );
         ret = msgBox.exec();
     } else {
         QMessageBox msgBox(icon, title.c_str(), message.c_str(), QMessageBox::Ok);
+        msgBox.setWindowIcon( QIcon ( ":/icons/images/motorIcon.png" ) );
         ret = msgBox.exec();
     }
     if (ret == QMessageBox::Ok) {

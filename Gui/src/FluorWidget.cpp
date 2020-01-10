@@ -20,7 +20,6 @@ std::string FluorWidget::GetName() {
 }
 
 void FluorWidget::UpdateHolderList() {
-    std::cout<<"uypdating hodler list"<< std::endl;
     disconnect(comboHolder, SIGNAL(currentIndexChanged(int)), this, SLOT(SetHolder(int)));
     comboHolder->clear();
     LoadTargetHolders();
@@ -36,8 +35,6 @@ void FluorWidget::LayoutWindow() {
 }
 
 void FluorWidget::LoadTargetHolders() {
-    std::cout<<"LoadTargetHolders"<< std::endl;
-
 	std::string result = SendCommand(hostname, 2, "numflist " + name, "FwheelWidget::LoadTargetHolders");
 	if (result.empty()) {
 		return;
