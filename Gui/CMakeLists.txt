@@ -10,7 +10,7 @@ set(SOURCES
     src/FwheelWidget.cpp 
     src/PGaugeWidget.cpp 
     src/TubeWidget.cpp 
-#    src/OptionsWidget.cpp
+    src/OptionsWidget.cpp
     ../Client/src/Client.cpp
     ../include/MySocketTCP.cpp
 )
@@ -24,7 +24,7 @@ set(FORMS
     forms/form_fwheelwidget.ui 
     forms/form_pgaugewidget.ui 
     forms/form_tubewidget.ui 
-#    forms/form_optionsgui.ui
+    forms/form_optionswidget.ui
 )
 
 
@@ -38,7 +38,7 @@ set(HEADERS
     include/FwheelWidget.h 
     include/PGaugeWidget.h 
     include/TubeWidget.h 
-#    include/OptionsWidget.h
+    include/OptionsWidget.h
     ../Client/include/Client.h
     ../include/MySocketTCP.h
     ../include/commonDefs.h

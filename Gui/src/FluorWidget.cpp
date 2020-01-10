@@ -19,6 +19,14 @@ std::string FluorWidget::GetName() {
     return name;
 }
 
+void FluorWidget::UpdateHolderList() {
+    std::cout<<"uypdating hodler list"<< std::endl;
+    disconnect(comboHolder, SIGNAL(currentIndexChanged(int)), this, SLOT(SetHolder(int)));
+    comboHolder->clear();
+    LoadTargetHolders();
+    connect(comboHolder, SIGNAL(currentIndexChanged(int)), this, SLOT(SetHolder(int)));
+}
+
 void FluorWidget::LayoutWindow() {
     groupbox->setTitle(name.c_str());
     LoadTargetHolders();
@@ -28,6 +36,8 @@ void FluorWidget::LayoutWindow() {
 }
 
 void FluorWidget::LoadTargetHolders() {
+    std::cout<<"LoadTargetHolders"<< std::endl;
+
 	std::string result = SendCommand(hostname, 2, "numflist " + name, "FwheelWidget::LoadTargetHolders");
 	if (result.empty()) {
 		return;
@@ -67,7 +77,7 @@ void FluorWidget::SetStackedWidget() {
 
 void FluorWidget::GetHolder() {
     disconnect(comboHolder, SIGNAL(currentIndexChanged(int)), this, SLOT(SetHolder(int)));
-    std::string result = SendCommand(hostname, 2, "whichflist " + name, "FluorWidget::GetHolder");
+    std::string result = SendCommand(hostname, 2, "getholder " + name, "FluorWidget::GetHolder");
     if (!result.empty()) {
         try {
             int index = getInteger(result);
@@ -122,7 +132,7 @@ void FluorWidget::GetTargetList() {
 void FluorWidget::SetHolder(int index) {
     FILE_LOG(logINFO) << "Setting " << name << "'s target holder to " << index;
     std::ostringstream oss;
-    oss << "loadflist " << name << ' ' << index;
+    oss << "setholder " << name << ' ' << index;
     std::string result = SendCommand(hostname, 3, oss.str(), "FluorWidget::SetHolder");
     if (result.empty()) {
         GetHolder();
@@ -166,7 +176,7 @@ void FluorWidget::SetTarget(int index) {
     statusBar->showMessage("Moving ...");
     // move to target
     std::ostringstream oss;
-    oss << "movefl " << name << ' ' << target;
+    oss << "setfl " << name << ' ' << target;
     std::string result = SendCommand(hostname, 3, oss.str(), "FluorWidget::SetTarget");
     statusBar->clearMessage();
     if (result.empty()) {

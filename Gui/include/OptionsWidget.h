@@ -1,105 +1,54 @@
- /********************************************//**
- * @file OptionsWidget.h
- * @short creates the menu and widgets for the options menu
- * @author Dhanya
- ***********************************************/
-#ifndef OPTIONSWIDGET_H
-#define OPTIONSWIDGET_H
+#pragma once
 
-#include<QtGui>
-#include "ui_form_optionsgui.h"
-#include "MotorWidget.h"
+#include "ui_form_optionswidget.h"
+class MotorWidget;
 
-/**
- *@short creates the menu and widgets for the options menu
- */
 
-class OptionsWidget:public QFrame, private Ui::OptionsObject
-{ 
-  Q_OBJECT
-  
-    public: 
+#include <QMainWindow>
+class OptionsWidget : public QMainWindow, private Ui::OptionsWidgetObject {
+    Q_OBJECT
 
-  /**Constructor
-     creates the options menu and the optionWidget
-     @param parent the parent widget is set to this value
-     @param list list of motors in the config file
-  */
-  OptionsWidget(QWidget *parent,vector<string> list);
+    public:
+    OptionsWidget(QWidget *parent, std::string hostname, 
+        std::vector <std::string> motors,
+        std::vector <std::string> refpoints,
+        std::vector <std::string> fluor);
+    ~OptionsWidget();    
+    
+    protected:
+    void closeEvent(QCloseEvent* event);
 
-  /**updates the drop down menu with the list of motors
-  */		
-  void LayoutWindow();
+    private slots:
+    void SetMotor(int index);
+    void SetPosition(double value);
+    void SetUpperLimit(double value);
+    void SetLowerLimit(double value);   
+    void SetRefPoint(int index);
+    void SetFluor(int index);
+    void DeleteHolder();
+    void AddHolder();
+    void ClearHolderContents();
 
-  /**sets the validators for the input parameters and makes all the connectiosn to the slots
-  */		
-  void Initialization();
+    public slots:
+    void Update();
 
- protected:
+    private:
+    void LayoutWindow(
+        std::vector <std::string> motors,
+        std::vector <std::string> refpoints,
+        std::vector <std::string> fluor);
+    void Initialization();
 
-  /**emits OptionsClosed() signal when this window is closed
-     @param event when the window is closed, this method is executed
-  */		
-  void closeEvent(QCloseEvent* event);
+    void GetMotorController();
+    void GetPosition();
+    void GetUpperLimit();
+    void GetLowerLimit();
+    void GetNumFluorHolders();
 
-  /**moves the motor absolutely when enter or return key is pressed
-     @param event when enter or return key is pressed
-  */		
-  void  keyPressEvent(QKeyEvent* event);
- 
- private:
+    std::string hostname;
+    std::vector <QLineEdit*> targets;
+    std::vector <QDoubleSpinBox*> energy;
 
-  /**maximum number of motor widget objects to show in the menu
-  */		
-  static const int  NumOptionWidgets=8;
-
-  /**list of motorWidget object pointers
-  */		
-  MotorWidget *optionWidgets[NumOptionWidgets];
-
-  /**the value of the current item in drop down menu
-  */		
-  int current;
-
-  /**list of the motors in the config file
-  */		
-  vector<string> list;
- 
-  private slots:
-
-  /**called when a different motor is selected from the drop down menu
-     @param index the value of the item on the drop down menu
-  */		
-  void ChangeMotorWidget(int index);
-
-  /**if the input for absolute movement is modified, moves it and updates position
-  */		
-  void MoveAbsolute();
-
-  /**calibrates the motor to the lower limit switch and sets the position to zero
-  */		
-  void MoveToHome();
-
-  /**if either set position,speed, limits are selected, this is called.Whenever a limit is changed,
-     an appropriate signal is emitted
-  */		
-  void SetOption();
-
- signals:
-
-  /**emitted when the options window is closed
-  */		
-  void OptionsClosed();
-
-#ifndef LASERBOX
-  /**emited when the lower limit is changed
-  */		
-  void LowerLimitChanged();
-
-  /**emitted when the upper limit is changed
-  */		
-  void UpperLimitChanged();
-#endif
+    signals:
+    void ClosedSignal();
 };
-
-#endif

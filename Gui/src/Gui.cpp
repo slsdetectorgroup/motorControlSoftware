@@ -6,12 +6,15 @@
 #include "FwheelWidget.h"
 #include "PGaugeWidget.h"
 #include "TubeWidget.h"
+#include "OptionsWidget.h"
 #include "GuiDefs.h"
 
-#include <QtGui>
+#include <QCloseEvent>
+
+#include <iterator>
 
 Gui::Gui(std::string hostname)
-	: QMainWindow(0), hostname(hostname), refpoints(NULL), slits(NULL), pgauge(NULL), tube(NULL) {
+	: QMainWindow(0), hostname(hostname), refpoints(NULL), slits(NULL), pgauge(NULL), tube(NULL), optionsWidget(NULL) {
 	setupUi(this);
 	LayoutWindow();
 	Initialization();
@@ -48,12 +51,15 @@ void Gui::LayoutWindow() {
 #ifdef LASERBOX
 	widgetTube->hide();
 	resize(WINDOW_WIDTH_NO_TUBE, WINDOW_HEIGHT_REFERENCE);
-#else
+#elif XRAYBOX
 	resize(WINDOW_WIDTH_UNCHECK_TUBE, WINDOW_HEIGHT_REFERENCE);
+#else
+	resize(WINDOW_WIDTH_UNCHECK_TUBE, WINDOW_HEIGHT_REFERENCE + WINDOW_HEIGHT_UNCHECK_PRESSURE);
 #endif
 	LoadMotorWidgets();
 	LoadReferencePointsWidget();
 	LoadFwheelWidgets();
+	LoadOptionsWidget();
 
 #ifdef VACUUMBOX
 	// one can check this later if they want, takes up too much time
@@ -68,18 +74,16 @@ void Gui::LoadMotorWidgets() {
 	
 	std::string result;
 	while (result.empty()) {
- 		result = SendCommand(hostname, 1, "listmotors", "Gui::LoadMotorWidgets");
+ 		result = SendCommand(hostname, 1, "motorlist", "Gui::LoadMotorWidgets");
 	}
-	FILE_LOG(logDEBUG) << "listmotors:" << result;
+	FILE_LOG(logDEBUG) << "motorlist:" << result;
 
 	// parse motor names
 	std::istringstream iss(result);
-	while (iss.good()) {
-		std::string motorName;
-		iss >> motorName;
-		if (motorName.empty()) {
-			continue;
-		}
+	std::vector<std::string> args = std::vector<std::string>(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>());
+
+	for (size_t i = 0; i < args.size(); ++i) {
+		std::string motorName = args[i];
 
 		// create slit widget
 		if (motorName.find("Slit") != std::string::npos) {
@@ -119,7 +123,7 @@ void Gui::LoadMotorWidgets() {
 	}	
 
 	int mainWindowHeight = height() + 
-		motorWidgets.size() * WINDOW_HEIGHT_MOTOR +
+		motorWidgets.size() * WINDOW_HEIGHT_MOTOR + 
 		fluorWidgets.size() * WINDOW_HEIGHT_FLUOR +
 		(slits == NULL ? 0 : WINDOW_HEIGHT_SLITS);
 	resize(width(), mainWindowHeight);
@@ -221,10 +225,35 @@ void Gui::LoadFwheelWidgets() {
 	resize(width(), mainWindowHeight);
 }
 
+void Gui::LoadOptionsWidget() {
+	std::vector <std::string> motorlist;
+	for (int i = 0; i < motorWidgets.size(); ++i) {
+		motorlist.push_back(motorWidgets[i]->GetName());
+	}
+	std::vector <std::string> reflist;
+	if (refpoints != NULL){
+		reflist = refpoints->GetList();
+	}
+	std::vector <std::string> fluorlist;
+	for (int i = 0; i < fluorWidgets.size(); ++i) {
+		fluorlist.push_back(fluorWidgets[i]->GetName());
+		motorlist.push_back(fluorWidgets[i]->GetName());
+	}	
+	if (slits != NULL) {
+		motorlist.push_back("Slit_x1");
+		motorlist.push_back("Slit_x2");
+	}
+	optionsWidget = new OptionsWidget(this, hostname, motorlist, reflist, fluorlist);
+}
+
 void Gui::Initialization() {
 	connect(pushUpdate, SIGNAL(clicked()), this, SLOT(Update()));
 	connect(groupPressure, SIGNAL(toggled(bool)), this, SLOT(LoadPressureWidget()));
 	connect(groupTube, SIGNAL(toggled(bool)), this, SLOT(LoadTubeWidget()));
+	// options
+	connect(pushOptions, SIGNAL(clicked()), this, SLOT(ShowOptions()));
+	connect(optionsWidget,SIGNAL(ClosedSignal()), this,SLOT(OptionsClosed()));
+
 }
 
 void Gui::LoadPressureWidget(bool userClick) {
@@ -323,6 +352,21 @@ void Gui::EnableTubeWidget(bool enable) {
 	if (tube != NULL) {
 		connect(tube, SIGNAL(SwitchedOffSignal(bool)), this, SLOT(EnableTubeWidget(bool)));
 	}
+}
+
+void Gui::ShowOptions() {
+	optionsWidget->show();
+	optionsWidget->Update();
+}
+
+void Gui::OptionsClosed() {
+	optionsWidget->hide();
+	for (int i = 0; i < fluorWidgets.size(); ++i) {
+		if (fluorWidgets[i]->GetName() != "Fluorescence_wheel") {
+			fluorWidgets[i]->UpdateHolderList();
+		}
+	}
+	Update();
 }
 
 void Gui::Update() {

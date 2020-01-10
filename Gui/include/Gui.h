@@ -8,6 +8,7 @@ class SlitWidget;
 class FwheelWidget;
 class PGaugeWidget;
 class TubeWidget;
+class OptionsWidget;
 
 #include <QMainWindow>
 
@@ -27,6 +28,8 @@ class Gui : public QMainWindow, private Ui::GuiObject {
     void LoadTubeWidget(bool userClick = true);
     void EnableTubeWidget(bool enable);
     void Update();
+    void ShowOptions();
+    void OptionsClosed();
     //void Stop();
 
     private:
@@ -34,6 +37,7 @@ class Gui : public QMainWindow, private Ui::GuiObject {
     void LoadMotorWidgets();
     void LoadReferencePointsWidget();
     void LoadFwheelWidgets();
+    void LoadOptionsWidget();
     void Initialization();
 
     std::string hostname;
@@ -44,22 +48,22 @@ class Gui : public QMainWindow, private Ui::GuiObject {
     std::vector <FwheelWidget*> fwheelWidgets;
     PGaugeWidget* pgauge;
     TubeWidget* tube;
+    OptionsWidget* optionsWidget;
     bool layoutDone;
     static const int WINDOW_WIDTH_TUBE = 750;
     static const int WINDOW_WIDTH_UNCHECK_TUBE = 460;
     static const int WINDOW_WIDTH_NO_TUBE = 340;
     static const int WINDOW_HEIGHT_TUBE = 520;
 
-    static const int WINDOW_HEIGHT_REFERENCE = 180;
+    static const int WINDOW_HEIGHT_REFERENCE = 165;
     static const int WINDOW_HEIGHT_PRESSURE = 300;
+    static const int WINDOW_HEIGHT_UNCHECK_PRESSURE = 80;
+
     static const int WINDOW_HEIGHT_MOTOR = 103;
     static const int WINDOW_HEIGHT_REF_POINTS = 113;
     static const int WINDOW_HEIGHT_FWHEEL = 114;
     static const int WINDOW_HEIGHT_FLUOR = 120;
-    static const int WINDOW_HEIGHT_SLITS = 120;
-
-
-
+    static const int WINDOW_HEIGHT_SLITS = 350;
 
 };
 

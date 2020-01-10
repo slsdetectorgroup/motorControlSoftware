@@ -18,6 +18,8 @@ class Fluorescence {
   int getNumTargetHolders();
   void setCurrentTargetHolder(int index);
   int getCurrentTargetHolder();
+  void deleteLastTargetHolder();
+  void addHolder(std::vector <std::string> name, std::vector <std::string> energy);
   void addTarget(std::string name, std::string energy);
   std::string getList(int index);
   std::string updateAndGetCurrentTargetName();

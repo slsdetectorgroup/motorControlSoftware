@@ -10,8 +10,7 @@ class FluorWidget:public QWidget, private Ui::FluorWidgetObject {
     FluorWidget(QWidget *parent, std::string name, std::string hostname, QStatusBar* statusBar);
     ~FluorWidget();
     std::string GetName();
-
-    public:
+    void UpdateHolderList();
     void Update();
 
     private slots:

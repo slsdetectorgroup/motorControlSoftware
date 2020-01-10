@@ -14,5 +14,9 @@
         <file>../images/highvoltageoff.png</file>
         <file>../images/error.png</file>
         <file>../images/erase.png</file>
+        <file>../images/twoway.png</file>
+        <file>../images/oneway.png</file>
+        <file>../images/setup.png</file>
+        <file>../images/add.png</file>
     </qresource>
 </RCC>

@@ -18,6 +18,10 @@ std::string MotorWidget::GetName() {
     return name;
 }
 
+double MotorWidget::GetPositionFromWidget() {
+    return spinAbsolute->value();
+}
+
 void MotorWidget::LayoutWindow() {
     groupbox->setTitle(name.c_str());
 }

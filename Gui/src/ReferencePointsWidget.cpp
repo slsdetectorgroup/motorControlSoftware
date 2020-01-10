@@ -15,6 +15,16 @@ ReferencePointsWidget::ReferencePointsWidget(QWidget *parent, std::string hostna
 
 ReferencePointsWidget::~ReferencePointsWidget() {}
 
+std::vector <std::string> ReferencePointsWidget::GetList() {
+    std::vector <std::string> result;
+    for (int i = 0; i < comboReference->count(); ++i) {
+        std::string name = comboReference->itemText(i).toAscii().data();
+        if (name != "None") {
+            result.push_back(name);
+        }
+    }
+    return result;
+}
 void ReferencePointsWidget::LayoutWindow() {
     LoadReferencePoints();
 }
@@ -29,7 +39,7 @@ void ReferencePointsWidget::LoadReferencePoints() {
     std::istringstream iss(result);
     std::vector<std::string> list = std::vector<std::string>(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>());
     if (list.size() == 0) {
-        Message(CRITICAL, "Could not get referecne points list", "ReferencePointsWidget::LoadReferencePoints");
+        Message(CRITICAL, "Could not get reference points list", "ReferencePointsWidget::LoadReferencePoints");
         return;
     }    
     // add reference points to list

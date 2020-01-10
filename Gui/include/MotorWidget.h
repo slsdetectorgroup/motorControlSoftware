@@ -9,8 +9,7 @@ class MotorWidget:public QWidget, private Ui::MotorWidgetObject {
     MotorWidget(QWidget *parent, std::string name, std::string hostname, QStatusBar* statusBar);
     ~MotorWidget();
     std::string GetName();
-
-    public:
+    double GetPositionFromWidget();
     void Update();
 
     private slots:

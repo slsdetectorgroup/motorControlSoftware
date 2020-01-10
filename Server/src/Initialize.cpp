@@ -157,10 +157,22 @@ string Initialize::executeCommand(vector<string> args) {
 			return controller[icontroller]->sendCommandAndReadBack(advancedCommand);
 		}
 
+		else if (!strcasecmp(command.c_str(), "controllerlist")) {
+			if (nArg != 1) {
+				throw RuntimeError("Requires 1 parameters: controllerlist");
+			}
+			for (unsigned int i = 0; i < controller.size(); ++i) {
+				oss << controller[i]->getName();
+				if (i < controller.size() - 1) {
+					oss << ' ';
+				}
+			}
+			return oss.str();
+		}
 
 		// ----- motor --------------------------------------------------------
 
-		else if (!strcasecmp(command.c_str(), "listmotors")) {
+		else if (!strcasecmp(command.c_str(), "motorlist")) {
 			if (nArg != 1 ) {
 				throw RuntimeError("Requires 1 parameters: list");
 			}	
@@ -239,7 +251,7 @@ string Initialize::executeCommand(vector<string> args) {
 			return oss.str();
 		}
 
-		else if (!strcasecmp(command.c_str(), "getLower")) {
+		else if (!strcasecmp(command.c_str(), "getlower")) {
 			if (nArg != 2) {
 				throw RuntimeError("Requires 2 parameters: getLower [motor]");
 			}
@@ -249,7 +261,7 @@ string Initialize::executeCommand(vector<string> args) {
 			return oss.str();
 		}
 
-		else if (!strcasecmp(command.c_str(), "setLower")) {
+		else if (!strcasecmp(command.c_str(), "setlower")) {
 			if (nArg != 3) {
 				throw RuntimeError("Requires 3 parameters: setLower [motor] [limit]");
 			}
@@ -390,9 +402,9 @@ string Initialize::executeCommand(vector<string> args) {
 			return oss.str();
 		}
 
-		else if (!strcasecmp(command.c_str(), "whichflist")) {
+		else if (!strcasecmp(command.c_str(), "getholder")) {
 			if (nArg != 2) {
-				throw RuntimeError("Requires 2 parameters: whichflist [fluorescence motor]");
+				throw RuntimeError("Requires 2 parameters: getholder [fluorescence motor]");
 			}
 			string name = args[1];
 			OnlyFluorescenceCommand(name);
@@ -401,9 +413,9 @@ string Initialize::executeCommand(vector<string> args) {
 			return oss.str();
 		}
 
-		else if (!strcasecmp(command.c_str(), "loadflist")) {
+		else if (!strcasecmp(command.c_str(), "setholder")) {
 			if (nArg != 3) {
-				throw RuntimeError("Requires 3 parameters: loadflist [fluorescence motor] [index]");
+				throw RuntimeError("Requires 3 parameters: setholder [fluorescence motor] [index]");
 			}
 			string name = args[1];
 			OnlyFluorescenceCommand(name);
@@ -418,6 +430,35 @@ string Initialize::executeCommand(vector<string> args) {
 			oss << value;
 			return oss.str();
 		}
+
+		else if (!strcasecmp(command.c_str(), "dellastholder")) {
+			if (nArg != 2) {
+				throw RuntimeError("Requires 2 parameters: dellastholder [fluorescence motor]");
+			}
+			string name = args[1];
+			OnlyFluorescenceCommand(name);
+			int ifluor = GetFluorescenceIndex(name);
+			fluorescence[ifluor]->deleteLastTargetHolder();
+			return "ok";
+		}	
+ 
+		else if (!strcasecmp(command.c_str(), "addholder")) {
+			if (nArg != 2 + MAX_FLUOR_VALUES * 2) {
+				throw RuntimeError("Requires 18 parameters: addholder [fluorescence motor] [Target1] [Energy 1] ..[Target8] [Energy 8]");
+			}
+			string name = args[1];
+			OnlyFluorescenceCommand(name);
+			int ifluor = GetFluorescenceIndex(name);
+			std::vector <std::string> target;
+			std::vector <std::string> energy;
+			for (int i = 2; i < nArg; ++i) {
+				target.push_back(args[i]);
+				++i;
+				energy.push_back(args[i]);
+			}
+			fluorescence[ifluor]->addHolder(target, energy);
+			return "ok";
+		}					
 
 		else if (!strcasecmp(command.c_str(), "fllist")) {
 			if (nArg != 3) {
@@ -446,9 +487,9 @@ string Initialize::executeCommand(vector<string> args) {
 			return oss.str();
 		}		
 
-		else if (!strcasecmp(command.c_str(), "movefl")) {
+		else if (!strcasecmp(command.c_str(), "setfl")) {
 			if (nArg != 3) {
-				throw RuntimeError("Requires 3 parameters: movefl [fluorescence motor] [target name]");
+				throw RuntimeError("Requires 3 parameters: setfl [fluorescence motor] [target name]");
 			}
 			string name = args[1];
 			OnlyFluorescenceCommand(name);

@@ -10,7 +10,7 @@ class ReferencePointsWidget:public QWidget, private Ui::ReferencePointsWidgetObj
     ReferencePointsWidget(QWidget *parent, std::string hostname, MotorWidget* x, MotorWidget* y, MotorWidget* z, QStatusBar* statusBar);
     ~ReferencePointsWidget();
 
-    public:
+    std::vector <std::string> GetList();
     void Update();
 
     private slots:

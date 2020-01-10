@@ -190,18 +190,18 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>50</width>
+          <width>52</width>
           <height>30</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>50</width>
+          <width>52</width>
           <height>30</height>
          </size>
         </property>
         <property name="text">
-         <string>Position</string>
+         <string>Position </string>
         </property>
        </widget>
       </item>

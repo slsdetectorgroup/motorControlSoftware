@@ -67,6 +67,26 @@ int Fluorescence::getCurrentTargetHolder() {
     return currentTargetHolder;
 }
 
+void Fluorescence::deleteLastTargetHolder() {
+    if (name == "Fluorescence_wheel") {
+        throw RuntimeError("Cannot delete target holders for this motor. It cannot be changed.");
+    }
+    if (targetHolder.size()  <= 1) {
+        throw RuntimeError("Cannot delete target holder. Minimum 1 holder is required.");
+    }
+    targetHolder.pop_back();
+    if (currentTargetHolder >= (int)targetHolder.size()) {
+        currentTargetHolder = (int)targetHolder.size() - 1; 
+    }
+}
+
+void Fluorescence::addHolder(std::vector <std::string> name, std::vector <std::string> energy) {
+    targetHolder.push_back(new TargetHolder(targetHolder.size()));
+    for (size_t i = 0; i < name.size(); ++i) {
+        targetHolder[targetHolder.size() - 1]->addTarget(name[i], energy[i]);
+    }
+}
+
 void Fluorescence::addTarget(std::string name, std::string energy) {
     // 1st time or previous target holder is full, create a new one
     if (targetHolder.size() == 0 || targetHolder[targetHolder.size() - 1]->isFull()) {
