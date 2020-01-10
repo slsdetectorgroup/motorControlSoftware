@@ -12,13 +12,13 @@ set(HEADERS
 
 #options
 if (USE_BIG_XRAY)
-    set(bin_name  "xrayClient")
+    set(bin_name  "xrayClient_sl7")
 endif (USE_BIG_XRAY)
 if (USE_LASER)
-    set(bin_name  "laserClient")
+    set(bin_name  "laserClient_sl7")
 endif (USE_LASER)
 if (USE_VACUUM)
-    set(bin_name  "vacuumClient")
+    set(bin_name  "vacuumClient_sl7")
 endif (USE_VACUUM)
 
 add_definitions(

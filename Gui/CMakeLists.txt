@@ -47,15 +47,15 @@ set(HEADERS
 
 #options
 if (USE_BIG_XRAY)
-    set(bin_name  "XRayBoxGui64_sl7")
+    set(bin_name  "XRayBoxGui_sl7")
 endif (USE_BIG_XRAY)
 
 if (USE_LASER)
-    set(bin_name  "LaserBoxGui64_sl7")
+    set(bin_name  "LaserBoxGui_sl7")
 endif (USE_LASER)
 
 if (USE_VACUUM)
-    set(bin_name  "VacuumBoxGui64_sl7")
+    set(bin_name  "VacuumBoxGui_sl7")
 endif (USE_VACUUM)
 
 
