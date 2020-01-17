@@ -88,7 +88,7 @@ target_link_libraries(${bin_name} PUBLIC
     ${QT_QTGUI_LIBRARIES}
     pthread
     rt
-    png
+#    png
     z
     Qt4::QtOpenGL
     Qt4::QtSvg
