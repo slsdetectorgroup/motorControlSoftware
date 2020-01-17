@@ -583,15 +583,19 @@ void Interface::FilterWheelInterface() {
 
 void Interface::ValidateFilterWheel() { 
 	FILE_LOG(logINFO) << "\tValidating Filter Wheel";
+	int attempts = 0;
 	try {
 		std::string result = FilterWheelSendCommand(FILTER_WHEEL_IDENTIFY_CMD, true);
 		if (result.find(std::string(FILTER_WHEEL_MODEL_RESPONSE)) == std::string::npos) {
 			throw std::runtime_error("Not identified as filter wheel port");
 		}
 	} catch (const std::exception& e) {
-		close(serialfd);
-		FILE_LOG(logWARNING) << "Fail";
-		throw;
+		++attempts;
+		if (attempts == FILTER_WHEEL_MAX_REPEAT_ATTEMPTS) {
+			close(serialfd);
+			FILE_LOG(logWARNING) << "Fail";
+			throw;
+		}
 	}
 	FILE_LOG(logINFO) << "\tFound filter wheel port";
 }

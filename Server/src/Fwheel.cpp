@@ -34,6 +34,8 @@ bool Fwheel::CheckFWSerialNumber(int usbport, std::string serialNumber) {
         FILE_LOG(logINFOGREEN) << "\tSuccess";
 		return true;
 	}
+    FILE_LOG(logINFO) << "Expected to find [" << serialNumber << "] in [" << output << ']';
+    FILE_LOG(logWARNING) << "Fail";	
 	return false;
 }
 
