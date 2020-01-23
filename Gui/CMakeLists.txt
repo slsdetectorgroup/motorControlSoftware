@@ -45,20 +45,31 @@ set(HEADERS
     ../include/logger.h
 )
 
-#options
+#Variable to hold the names of the binaries we want to build
+set(bin_names)
+
+#Variable to hold the compile time defenitions needed for the build
+set(defenitions)
+
+#Append the correct names and defenitions to the list
 if (USE_BIG_XRAY)
-    set(bin_name  "XRayBoxGui_sl7")
+    list(APPEND bin_names XRayBoxGui)
+    list(APPEND defenitions XRAYBOX)
 endif (USE_BIG_XRAY)
 
 if (USE_LASER)
-    set(bin_name  "LaserBoxGui_sl7")
-endif (USE_LASER)
+    list(APPEND bin_names LaserBoxGui)
+    list(APPEND defenitions LASERBOX)
+endif(USE_LASER)
 
 if (USE_VACUUM)
-    set(bin_name  "VacuumBoxGui_sl7")
-endif (USE_VACUUM)
+    list(APPEND bin_names VacuumBoxGui)
+    list(APPEND defenitions VACUUMBOX)
+endif(USE_VACUUM)
 
-
+#Calculate the length for doing the iteration
+list(LENGTH bin_names tmp)
+math(EXPR len "${tmp} - 1")
 
 qt4_wrap_ui(FORMS_H ${FORMS})
 
@@ -67,33 +78,44 @@ set(RESOURCES
 )
 qt4_add_resources(RESOURCES_SRCS ${RESOURCES})
 
-add_executable(${bin_name}
-    ${SOURCES}
-    ${HEADERS}
-    ${FORMS_H}
-    ${RESOURCES_SRCS}
-)
-target_include_directories(${bin_name} PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Client/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/../include
-    ${CMAKE_INSTALL_INCLUDEDIR}
-    ${QT_INCLUDE_DIR}
-    ${QT_QTCORE_INCLUDE_DIR}
-    ${QT_QTGUI_INCLUDE_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}
-)
-target_link_libraries(${bin_name} PUBLIC
-    ${QT_QTCORE_LIBRARIES}
-    ${QT_QTGUI_LIBRARIES}
-    pthread
-    rt
-#    png
-    z
-    Qt4::QtOpenGL
-    Qt4::QtSvg
-)   
-set_target_properties(${bin_name} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-)
-install(TARGETS ${bin_name} RUNTIME DESTINATION bin)
+#Iterate over the lists to add targets
+foreach(val RANGE ${len})
+
+    list(GET bin_names ${val} exename)
+    list(GET defenitions ${val} defname)
+    # message("Adding: ${exename} with ${defname} defined")
+
+    add_executable(${exename}
+        ${SOURCES}
+        ${HEADERS}
+        ${FORMS_H}
+        ${RESOURCES_SRCS}
+    )
+
+    target_include_directories(${exename} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../Client/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../include
+        ${CMAKE_INSTALL_INCLUDEDIR}
+        ${QT_INCLUDE_DIR}
+        ${QT_QTCORE_INCLUDE_DIR}
+        ${QT_QTGUI_INCLUDE_DIR}
+        ${CMAKE_CURRENT_BINARY_DIR}
+    )
+    target_link_libraries(${exename} PUBLIC
+        ${QT_QTCORE_LIBRARIES}
+        ${QT_QTGUI_LIBRARIES}
+        pthread
+        rt
+        z
+        Qt4::QtOpenGL
+        Qt4::QtSvg
+    )  
+    set_target_properties(${exename} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+        COMPILE_DEFINITIONS ${defname}=1 
+    )
+    install(TARGETS ${exename}  DESTINATION bin)
+endforeach()
+
+
