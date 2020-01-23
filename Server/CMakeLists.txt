@@ -34,31 +34,56 @@ set(HEADERS
     ../include/logger.h
 )
 
-#options
+
+#Variable to hold the names of the binaries we want to build
+set(bin_names)
+
+#Variable to hold the compile time defenitions needed for the build
+set(defenitions)
+
+#Append the correct names and defenitions to the list
 if (USE_BIG_XRAY)
-    set(bin_name  "xrayServer")
+    list(APPEND bin_names xrayServer)
+    list(APPEND defenitions XRAYBOX)
 endif (USE_BIG_XRAY)
 
 if (USE_LASER)
-    set(bin_name  "laserServer")
-endif (USE_LASER)
+    list(APPEND bin_names laserServer)
+    list(APPEND defenitions LASERBOX)
+endif(USE_LASER)
 
 if (USE_VACUUM)
-    set(bin_name  "vacuumServer")
-endif (USE_VACUUM)
+    list(APPEND bin_names vacuumServer)
+    list(APPEND defenitions VACUUMBOX)
+endif(USE_VACUUM)
 
-add_executable(${bin_name}
-    ${SOURCES}
-    ${HEADERS}
-)
 
-target_include_directories(${bin_name} PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/../include
-)
 
-set_target_properties(${bin_name} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-)
+#Calculate the length for doing the iteration
+list(LENGTH bin_names tmp)
+math(EXPR len "${tmp} - 1")
 
-install(TARGETS ${bin_name} DESTINATION bin)
+#Iterate over the lists to add targets
+foreach(val RANGE ${len})
+    list(GET bin_names ${val} exename)
+    list(GET defenitions ${val} defname)
+    # message("Adding: ${exename} with ${defname} defined")
+
+
+    add_executable(${exename}
+        ${SOURCES}
+        ${HEADERS}
+    )
+    target_include_directories(${exename} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../include
+    )
+    set_target_properties(${exename} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+        COMPILE_DEFINITIONS ${defname}=1 
+        COMPILE_DEFINITIONS REMOTE=1 
+    )
+    install(TARGETS ${exename}  DESTINATION bin)
+endforeach()
+
+
