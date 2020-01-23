@@ -99,7 +99,7 @@ fi
 
 # server only
 if [ $SERVER -eq 1 ]; then
-	CMAKE_POST+=" -DUSE_SERVER=ON "
+	CMAKE_POST+=" -DUSE_SERVER=ON -DUSE_CLIENT=OFF "
 	echo "Enabling Compile Option: Server Only"
 fi
 
