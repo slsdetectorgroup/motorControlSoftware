@@ -27,19 +27,19 @@ class OptionsWidget : public QMainWindow, private Ui::OptionsWidgetObject {
     void Update();
 
     private slots:
-    void SetMotor(int index);
+    void SetMotor();
     void SetPosition(double value);
     void SetUpperLimit(double value);
     void SetLowerLimit(double value);   
-    void SetController(int index);
+    void SetController();
     void SendCommandToController();
     void SendandReadCommandToController();
-    void SetRefPoint(int index);
-    void SetFluor(int index);
+    void SetRefPoint();
+    void SetFluor();
     void DeleteHolder();
     void AddHolder();
     void ClearHolderContents();
-    void SetFwheel(int index);
+    void SetFwheel();
     void SetTube();
     void SetPressure();
     void SendCommandToTube();

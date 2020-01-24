@@ -55,14 +55,14 @@ void ReferencePointsWidget::LoadReferencePoints() {
 }
 
 void ReferencePointsWidget::Initialization() {
-    connect(comboReference, SIGNAL(currentIndexChanged(int)), this, SLOT(SetReferencePoint(int)));
+    connect(comboReference, SIGNAL(currentIndexChanged(int)), this, SLOT(SetReferencePoint()));
 	connect(x, SIGNAL(MotorMovedSignal()), this, SLOT(GetReferencePoint()));
 	connect(y, SIGNAL(MotorMovedSignal()), this, SLOT(GetReferencePoint()));
 	connect(z, SIGNAL(MotorMovedSignal()), this, SLOT(GetReferencePoint()));
 }
 
 void ReferencePointsWidget::GetReferencePoint() {
-    disconnect(comboReference, SIGNAL(currentIndexChanged(int)), this, SLOT(SetReferencePoint(int)));
+    disconnect(comboReference, SIGNAL(currentIndexChanged(int)), this, SLOT(SetReferencePoint()));
     std::string result = SendCommand(hostname, 1, "getref ", "ReferencePointsWidget::GetReferencePoint");
     if (!result.empty()) {
 		// loop through all the combo list items to find a match
@@ -82,10 +82,10 @@ void ReferencePointsWidget::GetReferencePoint() {
 			Message(WARNING, oss.str(), "ReferencePointsWidget::GetReferencePoint");
 		}
     }
-    connect(comboReference, SIGNAL(currentIndexChanged(int)), this, SLOT(SetReferencePoint(int)));
+    connect(comboReference, SIGNAL(currentIndexChanged(int)), this, SLOT(SetReferencePoint()));
 }
 
-void ReferencePointsWidget::SetReferencePoint(int index) {
+void ReferencePointsWidget::SetReferencePoint() {
     std::string ref = std::string(comboReference->currentText().toAscii().data());
     FILE_LOG(logINFO) << "Moving to reference point " << ref;
     statusBar->showMessage("Moving ...");

@@ -15,7 +15,7 @@ class ReferencePointsWidget:public QWidget, private Ui::ReferencePointsWidgetObj
 
     private slots:
     void GetReferencePoint();
-    void SetReferencePoint(int index);
+    void SetReferencePoint();
 
     private:
     void LayoutWindow();
