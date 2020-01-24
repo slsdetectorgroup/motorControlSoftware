@@ -74,7 +74,7 @@ std::string Client::SendCommand(int nCommand, std::string command) {
 
     // disconnect
     sock.Disconnect();
-    return string(message);
+    return std::string(message);
 }
 
 

@@ -75,7 +75,7 @@ Motor* Controller::getMotor(int axis) const {
 }
 
 void Controller::updateAxisEnabled() {
-    for (int i = 0; i < motor.size(); ++i) {
+    for (size_t i = 0; i < motor.size(); ++i) {
         int axis = i + 1;
         int enable = motor[i] == NULL ? 0 : 1;
         std::ostringstream oss;

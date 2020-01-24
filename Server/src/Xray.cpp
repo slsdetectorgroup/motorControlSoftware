@@ -274,7 +274,9 @@ int Xray::getShutterStatus(int index) {
             offset = SHUTTER_4_OFST;
             break;
         default:
-            throw RuntimeError ("Invalid shutter index " + index);
+            std::ostringstream oss;
+            oss << "Invalid shutter index " << index;
+            throw RuntimeError (oss.str());
     }
     std::string result = interface->TubeSend(command, true);
     int value = getInteger(result);

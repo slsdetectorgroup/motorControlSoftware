@@ -67,7 +67,7 @@ void ReferencePointsWidget::GetReferencePoint() {
     if (!result.empty()) {
 		// loop through all the combo list items to find a match
 		bool found = false;
-		for (unsigned int i = 0; i < comboReference->count(); ++i) {
+		for (int i = 0; i < comboReference->count(); ++i) {
 			std::string text = std::string(comboReference->itemText(i).toAscii().data());
 			// found match
 			if (text == result) {

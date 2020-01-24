@@ -49,7 +49,7 @@ void FwheelWidget::GetValue() {
     if (!result.empty()) {
 		// loop through all the combo list items to find a match
 		bool found = false;
-		for (unsigned int i = 0; i < comboValue->count(); ++i) {
+		for (int i = 0; i < comboValue->count(); ++i) {
 			std::string text = std::string(comboValue->itemText(i).toAscii().data());
 			// found match
 			if (text == result) {

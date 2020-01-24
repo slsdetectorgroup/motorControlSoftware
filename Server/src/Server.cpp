@@ -90,8 +90,8 @@ int main(int argc, char *argv[]) {
 			--nArg;
 
 			// scan remaining arguments
-			istringstream iss(args);
-			std::vector<string> command = std::vector<std::string>(istream_iterator<std::string>(iss), istream_iterator<std::string>());
+			std::istringstream iss(args);
+			std::vector<std::string> command = std::vector<std::string>(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>());
 			std::string clientType = command[0];
 			std::string commandName = command[1];
 

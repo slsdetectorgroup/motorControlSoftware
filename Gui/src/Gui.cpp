@@ -231,7 +231,7 @@ void Gui::LoadFwheelWidgets() {
 
 void Gui::LoadOptionsWidget() {
 	std::vector <std::string> motorlist;
-	for (int i = 0; i < motorWidgets.size(); ++i) {
+	for (size_t i = 0; i < motorWidgets.size(); ++i) {
 		motorlist.push_back(motorWidgets[i]->GetName());
 	}
 	std::vector <std::string> reflist;
@@ -239,7 +239,7 @@ void Gui::LoadOptionsWidget() {
 		reflist = refpoints->GetList();
 	}
 	std::vector <std::string> fluorlist;
-	for (int i = 0; i < fluorWidgets.size(); ++i) {
+	for (size_t i = 0; i < fluorWidgets.size(); ++i) {
 		fluorlist.push_back(fluorWidgets[i]->GetName());
 		motorlist.push_back(fluorWidgets[i]->GetName());
 	}	
@@ -248,7 +248,7 @@ void Gui::LoadOptionsWidget() {
 		motorlist.push_back("Slit_x2");
 	}
 	std::vector <std::string> fwheellist;
-	for (int i = 0; i < fwheelWidgets.size(); ++i) {
+	for (size_t i = 0; i < fwheelWidgets.size(); ++i) {
 		fwheellist.push_back(fwheelWidgets[i]->GetName());
 	}
 	optionsWidget = new OptionsWidget(this, hostname, motorlist, reflist, fluorlist, fwheellist);
@@ -374,7 +374,7 @@ void Gui::ShowOptions() {
 
 void Gui::OptionsClosed() {
 	optionsWidget->hide();
-	for (int i = 0; i < fluorWidgets.size(); ++i) {
+	for (size_t i = 0; i < fluorWidgets.size(); ++i) {
 		if (fluorWidgets[i]->GetName() != "Fluorescence_wheel") {
 			fluorWidgets[i]->UpdateHolderList();
 		}

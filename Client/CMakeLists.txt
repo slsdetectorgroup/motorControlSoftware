@@ -44,7 +44,7 @@ math(EXPR len "${tmp} - 1")
 foreach(val RANGE ${len})
     list(GET bin_names ${val} exename)
     list(GET defenitions ${val} defname)
-    message("Adding: ${exename} with ${defname} defined")
+    # message("Adding: ${exename} with ${defname} defined")
 
 
     add_executable(${exename}
