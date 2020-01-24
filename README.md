@@ -168,8 +168,8 @@ setcenter [value] | moves both slits such that center of both slits at value (ba
             Your first command locks you to the server and noone else can control the server.
                 If the server is locked by someone else, it will provide you with username,pcname,pid and 
                 timestamp of last command sent by this user. Please check with the concerned person if 
-                they are still using the xray box or decide based on timestamp. Then, you can use the "unlock" 
-                command yourself to get server control.
+                they are still using the xray box or decide based on timestamp. Then, you can use the 
+                "unlock" command yourself to get server control.
             Use the "unlock" command when you're done using the xray box. Makes it convenient for others 
                 to use it, without having to contact you. 
         GUI: ./XRayBoxGui_sl7 starts the GUI.
@@ -209,7 +209,8 @@ setcenter [value] | moves both slits such that center of both slits at value (ba
         To change voltage, enter a value in the appropriate field and click on "Set Voltage" button. 
             If HV is off, it changes the voltage, but checks for warm-up only when HV is switched on next. 
             If HV was already on and if warm-up is necessary, it switches off HV and back on to warm up. 
-            If the warm-up wasn't necessary, it will just ramp up to the new voltage. The same goes for current.
+            If the warm-up wasn't necessary, it will just ramp up to the new voltage. The same goes for 
+                current.
             The gui does not let you enter values greater than 60kV for voltage and greater than 
             (2400/current voltage)mA for current. If you decide to not initiate the warm-up, it will return 
             to previous operating voltage and current, even if the HV was switched on. 
