@@ -47,8 +47,7 @@ Motor control software to control various motors for xray box, laser box and vac
 
 ## List of command line arguments
 
-### Tube
-Basic | Comments
+Tube Basic | Comments
 --- | --- 
 getHV | returns "on/off" for high voltage
 hv [on/off] | switches on/off high voltage
@@ -70,7 +69,7 @@ getemess | returns error message from tube
 geterr | returns error code from tube
 clear | clears error code in tube
 
-Advanced | Comments
+Tube Advanced | Comments
 --- | --- 
 gettubeinterface | returns the usb port
 sendtube [Commands..] | sends tube commands
@@ -80,15 +79,14 @@ istube | returns "[on/off/standby]"
 connectedshutters | "[c/nc] [c/nc] [c/nc] [c/nc]" nc=not connected, c=connected
 issafe | returns "[yes/no]" to open door 
 
-### Motor
-Basic | Comments
+Motor Basic | Comments
 --- | --- 
 pos [motor] | returns position
 cal [motor] | calibrates motor to starting hard switch and sets position to 0 
 moverel [motor] [relative position] | moves motor to relative position, returns current position 
 moveabs [motor] [absolute position] | moves motor to absolute position, returns current position 
 
-Advanced Motor| Comments
+Motor Advanced | Comments
 --- | --- 
 motorlist | list of motors
 getcontroller [motor] | controller of that motor
@@ -101,7 +99,7 @@ setlower [motor] [position] | set soft lower limit
 rangemeasure [motor] | moves motor to end hard switch to measure complete range of motor, returns final position
 setpos [motor] [position] | set position of motor to that position (recommended to stick to position 0) 
 
-Advanced Controller | Comments
+Controller Advanced | Comments
 --- | --- 
 sendcontroller [controller] [Commands..] | send controller commands
 readcontroller [controller] [Commands..] | send controller commands and read back result (beware it should have result)
@@ -110,8 +108,7 @@ getcontserialnumber [controller] | returns controller serial number
 getcontinterface [controller] | returns controller serial interface
 getcontmotorlist [controller] | returns list of Motors connected to its axes (- if nothing connected) 
 
-### Fluorescence
-Basic | Comments
+Fluorescence Basic | Comments
 --- | --- 
 getholder [fluorscence motor] | get holder index
 setholder [fluorscence motor] [holder index] | set holder to index
@@ -119,50 +116,46 @@ fllist [fluorscence motor] [holder index] | list of targets of holder (index) se
 getfl [fluorscence motor] | returns current target name
 setfl [fluorscence motor] [target name] | moves motor to target name
 
-Advanced | Comments
+Fluorescence Advanced | Comments
 --- | --- 
 numflist [fluorscence motor] | number of holders
 dellastholder [fluorscence motor] | delete last holder and its targets
 addholder [fluorscence motor] [Target1] [Energy 1] ..[Target8] [Energy 8] | add new holder with 8 target names and corresponding energies 
 
-### Pressure Gauges
-Basic | Comments
+Pressure Gauges Basic | Comments
 --- | --- 
 pressure | "1:[[status of gauge1], [pressure of gauge 1]]\n2: [[status of gauge2], [pressure of gauge 2]]"
 
-Advanced | Comments
+Pressure Gauges Advanced | Comments
 --- | --- 
 getpressureinterface | get pressure serial port
 ispressure | returns "[on/off]" 
 
-### Reference Points (Laserbox)
-Basic | Comments
+Reference Points Basic | Comments
 --- | --- 
 reflist | lists reference points
 refvals [name] | x, y and z motor positions
 getref | get reference point name if x, y and z at that position, else "None"
 setref [name] | move x, y and z to that position (if -1, do not move)
 
-Advanced | Comments
+Reference Points Advanced | Comments
 --- | --- 
 nref | number of reference points 
 
-### Filter Wheels (Laserbox)
-Basic | Comments
+Filter Wheels Basic | Comments
 --- | --- 
 fwvals [name] | absoption values of that filter wheel
 getfw [name] | current value of that wheel
 setfw [name] [value] | move/set to that value
 
-Advanced | Comments
+Filter Wheels Advanced | Comments
 --- | --- 
 nfw | number of filter wheels
 fwlist | list of filter wheel names
 getfwserialnumber [name] | serial number of that wheel
 getfwinterface [name] | serial interface of that wheel 
 
-### Slits
-Basic | Comments
+Slits Basic | Comments
 --- | --- 
 getslitwidth | get slit width
 setslitwidth [value] | moves both slits to match slit width
