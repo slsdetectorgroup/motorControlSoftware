@@ -35,10 +35,10 @@ install:
   # Replace dep1 dep2 ... with your dependencies
   - conda create -q -n test-environment python=$CONDA_PY
   - source activate test-environment
-  - conda-build .
+  # - conda-build .
 
-# script:
-#  - CTEST_OUTPUT_ON_FAILURE=1 ctest -j 2
+script:
+  - conda-build .
 
 
 deploy:
