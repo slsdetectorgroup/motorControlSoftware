@@ -50,124 +50,124 @@ Motor control software to control various motors for xray box, laser box and vac
 ### Tube
 Basic | Comments
 --- | --- 
-***getHV*** | returns "on/off" for high voltage
-***hv*** [on/off] | switches on/off high voltage
-***getv*** | returns "[voltage] kV" (not actual if hv off)
-***setv*** [voltage value in kV] | sets voltage
-***getc*** | returns "[current] mA" (not actual if hv off)
-***setc*** [current value in mA] | sets current
-***getvc*** | returns "[voltage] kV, [current] mA" (not actual if hv off)
-***setvc*** [voltage value in kV] [current value in mA] | sets voltage and current
-***getactualv*** | returns "[actual voltage] kV"
-***getactualc*** | returns "[actual current] mA"
-***getactualvc*** | returns "[actual voltage] kV, [actual current] mA"
-***getshutter*** [1/2/3/4] | returns "on/off"
-***getshutters*** | returns "[on/off] [on/off] [on/off] [on/off]"
-***shutter*** [1/2/3/4] | switches "on/off" shutter [1/2/3/4]
-***warmup*** [warm-up voltage in kV] | starts the warm-up to the the voltage
-***getwtime*** | "[warm up time remaining] s"
-***getemess*** | returns error message from tube
-***geterr*** | returns error code from tube
-***clear*** | clears error code in tube
+getHV | returns "on/off" for high voltage
+hv [on/off] | switches on/off high voltage
+getv | returns "[voltage] kV" (not actual if hv off)
+setv [voltage value in kV] | sets voltage
+getc | returns "[current] mA" (not actual if hv off)
+setc [current value in mA] | sets current
+getvc | returns "[voltage] kV, [current] mA" (not actual if hv off)
+setvc [voltage value in kV] [current value in mA] | sets voltage and current
+getactualv | returns "[actual voltage] kV"
+getactualc | returns "[actual current] mA"
+getactualvc | returns "[actual voltage] kV, [actual current] mA"
+getshutter [1/2/3/4] | returns "on/off"
+getshutters | returns "[on/off] [on/off] [on/off] [on/off]"
+shutter [1/2/3/4] | switches "on/off" shutter [1/2/3/4]
+warmup [warm-up voltage in kV] | starts the warm-up to the the voltage
+getwtime | "[warm up time remaining] s"
+getemess | returns error message from tube
+geterr | returns error code from tube
+clear | clears error code in tube
 
 Advanced | Comments
 --- | --- 
-***gettubeinterface*** | returns the usb port
-***sendtube*** [Commands..] | sends tube commands
-***readtube*** [Commands..] | sends tube command and reads result from tube (beware that it should have a result)
-***getpower*** | returns "[power] W"
-***istube*** | returns "[on/off/standby]"
-***connectedshutters*** | "[c/nc] [c/nc] [c/nc] [c/nc]" nc=not connected, c=connected
-***issafe*** | returns "[yes/no]" to open door 
+gettubeinterface | returns the usb port
+sendtube [Commands..] | sends tube commands
+readtube [Commands..] | sends tube command and reads result from tube (beware that it should have a result)
+getpower | returns "[power] W"
+istube | returns "[on/off/standby]"
+connectedshutters | "[c/nc] [c/nc] [c/nc] [c/nc]" nc=not connected, c=connected
+issafe | returns "[yes/no]" to open door 
 
 ### Motor
 Basic | Comments
 --- | --- 
-***pos*** [motor] | returns position
-***cal*** [motor] | calibrates motor to starting hard switch and sets position to 0 
-***moverel*** [motor] [relative position] | moves motor to relative position, returns current position 
-***moveabs*** [motor] [absolute position] | moves motor to absolute position, returns current position 
+pos [motor] | returns position
+cal [motor] | calibrates motor to starting hard switch and sets position to 0 
+moverel [motor] [relative position] | moves motor to relative position, returns current position 
+moveabs [motor] [absolute position] | moves motor to absolute position, returns current position 
 
 Advanced Motor| Comments
 --- | --- 
-***motorlist*** | list of motors
-***getcontroller*** [motor] | controller of that motor
-***getaxis*** [motor] | axis of that motor
-***depos*** [motor] | debug position
-***getupper*** [motor] | get soft upper limit
-***setupper*** [motor] [position] | set soft upper limit
-***getlower*** [motor] | get soft lower limit
-***setlower*** [motor] [position] | set soft lower limit
-***rangemeasure*** [motor] | moves motor to end hard switch to measure complete range of motor, returns final position
-***setpos*** [motor] [position] | set position of motor to that position (recommended to stick to position 0) 
+motorlist | list of motors
+getcontroller [motor] | controller of that motor
+getaxis [motor] | axis of that motor
+depos [motor] | debug position
+getupper [motor] | get soft upper limit
+setupper [motor] [position] | set soft upper limit
+getlower [motor] | get soft lower limit
+setlower [motor] [position] | set soft lower limit
+rangemeasure [motor] | moves motor to end hard switch to measure complete range of motor, returns final position
+setpos [motor] [position] | set position of motor to that position (recommended to stick to position 0) 
 
 Advanced Controller | Comments
 --- | --- 
-***sendcontroller*** [controller] [Commands..] | send controller commands
-***readcontroller*** [controller] [Commands..] | send controller commands and read back result (beware it should have result)
-***controllerlist*** | list of controllers
-***getcontserialnumber*** [controller] | returns controller serial number
-***getcontinterface*** [controller] | returns controller serial interface
-***getcontmotorlist*** [controller] | returns list of Motors connected to its axes (- if nothing connected) 
+sendcontroller [controller] [Commands..] | send controller commands
+readcontroller [controller] [Commands..] | send controller commands and read back result (beware it should have result)
+controllerlist | list of controllers
+getcontserialnumber [controller] | returns controller serial number
+getcontinterface [controller] | returns controller serial interface
+getcontmotorlist [controller] | returns list of Motors connected to its axes (- if nothing connected) 
 
 ### Fluorescence
 Basic | Comments
 --- | --- 
-***getholder*** [fluorscence motor] | get holder index
-***setholder*** [fluorscence motor] [holder index] | set holder to index
-***fllist*** [fluorscence motor] [holder index] | list of targets of holder (index) separated by space
-***getfl*** [fluorscence motor] | returns current target name
-***setfl*** [fluorscence motor] [target name] | moves motor to target name
+getholder [fluorscence motor] | get holder index
+setholder [fluorscence motor] [holder index] | set holder to index
+fllist [fluorscence motor] [holder index] | list of targets of holder (index) separated by space
+getfl [fluorscence motor] | returns current target name
+setfl [fluorscence motor] [target name] | moves motor to target name
 
 Advanced | Comments
 --- | --- 
-***numflist*** [fluorscence motor] | number of holders
-***dellastholder*** [fluorscence motor] | delete last holder and its targets
-***addholder*** [fluorscence motor] [Target1] [Energy 1] ..[Target8] [Energy 8] | add new holder with 8 target names and corresponding energies 
+numflist [fluorscence motor] | number of holders
+dellastholder [fluorscence motor] | delete last holder and its targets
+addholder [fluorscence motor] [Target1] [Energy 1] ..[Target8] [Energy 8] | add new holder with 8 target names and corresponding energies 
 
 ### Pressure Gauges
 Basic | Comments
 --- | --- 
-***pressure*** | "1:[[status of gauge1], [pressure of gauge 1]]\n2: [[status of gauge2], [pressure of gauge 2]]"
+pressure | "1:[[status of gauge1], [pressure of gauge 1]]\n2: [[status of gauge2], [pressure of gauge 2]]"
 
 Advanced | Comments
 --- | --- 
-***getpressureinterface*** | get pressure serial port
-***ispressure*** | returns "[on/off]" 
+getpressureinterface | get pressure serial port
+ispressure | returns "[on/off]" 
 
 ### Reference Points (Laserbox)
 Basic | Comments
 --- | --- 
-***reflist*** | lists reference points
-***refvals*** [name] | x, y and z motor positions
-***getref*** | get reference point name if x, y and z at that position, else "None"
-***setref*** [name] | move x, y and z to that position (if -1, do not move)
+reflist | lists reference points
+refvals [name] | x, y and z motor positions
+getref | get reference point name if x, y and z at that position, else "None"
+setref [name] | move x, y and z to that position (if -1, do not move)
 
 Advanced | Comments
 --- | --- 
-***nref*** | number of reference points 
+nref | number of reference points 
 
 ### Filter Wheels (Laserbox)
 Basic | Comments
 --- | --- 
-***fwvals*** [name] | absoption values of that filter wheel
-***getfw*** [name] | current value of that wheel
-***setfw*** [name] [value] | move/set to that value
+fwvals [name] | absoption values of that filter wheel
+getfw [name] | current value of that wheel
+setfw [name] [value] | move/set to that value
 
 Advanced | Comments
 --- | --- 
-***nfw*** | number of filter wheels
-***fwlist*** | list of filter wheel names
-***getfwserialnumber*** [name] | serial number of that wheel
-***getfwinterface*** [name] | serial interface of that wheel 
+nfw | number of filter wheels
+fwlist | list of filter wheel names
+getfwserialnumber [name] | serial number of that wheel
+getfwinterface [name] | serial interface of that wheel 
 
 ### Slits
 Basic | Comments
 --- | --- 
-***getslitwidth*** | get slit width
-***setslitwidth*** [value] | moves both slits to match slit width
-***getcenter*** | get center of both slits
-***setcenter*** [value] | moves both slits such that center of both slits at value (based on x1) 
+getslitwidth | get slit width
+setslitwidth [value] | moves both slits to match slit width
+getcenter | get center of both slits
+setcenter [value] | moves both slits such that center of both slits at value (based on x1) 
 
 ## Points to remember while using X-Ray Box Software:
     Client: executables can be copied and executed from anywhere. 2 types of executables:
