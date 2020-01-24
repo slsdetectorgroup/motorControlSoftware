@@ -21,19 +21,17 @@ int main(int argc, char* argv[]) {
     strcat(args, "client ");
     int nArg = 1;
     for (int i = 1; i < argc; ++i) {
-        if (argv[i] == "-server") {
+        if (strncmp(argv[i], "-server", 8) == 0) {
             if (i + 1 == argc) {
                 throw RuntimeError("Cannot scan server hostname option");    
             }
-            serverHostname.assign(argv[i + 1]);
-            ++i;
-            continue;
-        }
-        strcat(args, argv[i]);
-        strcat(args, " ");
-        ++nArg;
+            serverHostname = argv[++i];
+        }else{
+            strcat(args, argv[i]);
+            strcat(args, " ");
+            ++nArg;
+        }  
     }
-
     std::cout << "serverHostname: [" << serverHostname << ']' << std::endl;
 
     Client client = Client(serverHostname);
