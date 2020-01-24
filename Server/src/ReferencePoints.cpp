@@ -20,9 +20,8 @@ void ReferencePoints::add(std::string name, std::vector<double> position) {
 }
 
 std::vector<double> ReferencePoints::getCurrentMotorPositions() {
-    int size = controller.size();
-    std::vector <double> positions(size);
-    for (unsigned int i = 0; i < size; ++i) {
+    std::vector <double> positions(controller.size());
+    for (size_t i = 0; i < controller.size(); ++i) {
         positions[i] = controller[i]->getMotor(axis[i])->getPosition();
     }
     return positions;

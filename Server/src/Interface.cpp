@@ -493,7 +493,7 @@ std::string Interface::PressureGaugeSendCommand(std::string command) {
 		if (!strncmp(result, PRESSURE_NACK_RESPONSE, strlen(PRESSURE_NACK_RESPONSE))) {
 			oss << "negative acknowledge";
 		} else {
-			for (int i = 0; i < strlen(result); ++i) {
+			for (size_t i = 0; i < strlen(result); ++i) {
 				oss << std::hex << result[i] << std::dec;
 			}
 		}
@@ -667,7 +667,7 @@ std::string Interface::FilterWheelSendCommand(std::string command, bool readBack
 
 	// error
 	if (strstr(result, FILTER_WHEEL_UNDEFINED_CMD) != NULL) {
-		for (int i = 0; i < strlen(result); ++i) {
+		for (size_t i = 0; i < strlen(result); ++i) {
 			if (result[i] == '\r') {
 				result[i] = 'R';
 			} else if (result[i] == '\n') {
@@ -684,7 +684,7 @@ std::string Interface::FilterWheelSendCommand(std::string command, bool readBack
 
 	// no need to parse result (just read it off the buffer)
 	if (!readBack) {
-		for (int i = 0; i < strlen(result); ++i) {
+		for (size_t i = 0; i < strlen(result); ++i) {
 			if (result[i] == '\r') {
 				result[i] = 'R';
 			} else if (result[i] == '\n') {

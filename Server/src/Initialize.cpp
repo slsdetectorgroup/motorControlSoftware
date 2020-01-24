@@ -1504,7 +1504,7 @@ void Initialize::FwheelMode(vector<string> args) {
 		int numPositionMotors = 3;
 		const char* motorNames[] = {"Detector_x", "Detector_y", "Detector_z"};
 		try {
-			for (unsigned int i = 0; i < numPositionMotors; ++i) {
+			for (int i = 0; i < numPositionMotors; ++i) {
 				int imotor =  GetMotorIndex(motorNames[i]);
 				refController.push_back(controller[motor[imotor]->getController()]);
 				axis.push_back(motor[imotor]->getAxis());

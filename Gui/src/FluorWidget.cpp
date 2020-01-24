@@ -47,7 +47,7 @@ void FluorWidget::LoadTargetHolders() {
             oss << "Invalid number of target holders: " << numHolders;
             throw RuntimeError (oss.str());
         }
-        for (unsigned int i = 0; i < numHolders; ++i) {
+        for (int i = 0; i < numHolders; ++i) {
             std::ostringstream oss;
             oss << "Holder " << i;
             comboHolder->addItem(oss.str().c_str());
@@ -145,7 +145,7 @@ void FluorWidget::GetTarget() {
     if (!result.empty()) {
 		// loop through all the combo list items to find a match
 		bool found = false;
-		for (unsigned int i = 0; i < comboTarget->count(); ++i) {
+		for (int i = 0; i < comboTarget->count(); ++i) {
 			std::string text = std::string(comboTarget->itemText(i).toAscii().data());
 			// found match
 			if (text == result) {

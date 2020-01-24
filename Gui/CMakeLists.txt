@@ -113,8 +113,8 @@ foreach(val RANGE ${len})
     )  
     set_target_properties(${exename} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-        COMPILE_DEFINITIONS ${defname}=1 
     )
+    target_compile_definitions(${exename} PRIVATE ${defname})
     install(TARGETS ${exename}  DESTINATION bin)
 endforeach()
 
