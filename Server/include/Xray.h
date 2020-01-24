@@ -10,7 +10,7 @@ class Xray {
    Xray(Interface* interface);
    ~Xray();
    Interface* getInterface();
-   int setMaxPower(int power);
+   void setMaxPower(int power);
    int getMaxPower();
    int getErrorCode();
    std::string getErrorMessage();

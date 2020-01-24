@@ -24,8 +24,8 @@ class SlitWidget:public QWidget, private Ui::SlitWidgetObject {
     void GetSlitWidth();
     void GetCenter();
 
+    std::string hostname;
     MotorWidget* motorx1;
     MotorWidget* motorx2;
-    std::string hostname;
     QStatusBar* statusBar;
 };

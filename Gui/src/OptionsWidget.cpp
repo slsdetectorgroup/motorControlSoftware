@@ -97,24 +97,24 @@ void OptionsWidget::LoadControllers() {
 
 void OptionsWidget::Initialization() {
     connect(pushUpdate, SIGNAL(clicked()), this, SLOT(Update()));
-    connect(comboMotor, SIGNAL(currentIndexChanged(int)), this, SLOT(SetMotor(int)));
+    connect(comboMotor, SIGNAL(currentIndexChanged(int)), this, SLOT(SetMotor()));
     connect(spinPosition, SIGNAL(valueChanged(double)), this, SLOT(SetPosition(double)));
     connect(spinUpper, SIGNAL(valueChanged(double)), this, SLOT(SetUpperLimit(double)));
     connect(spinLower, SIGNAL(valueChanged(double)), this, SLOT(SetLowerLimit(double)));
-    connect(comboController, SIGNAL(currentIndexChanged(int)), this, SLOT(SetController(int)));
+    connect(comboController, SIGNAL(currentIndexChanged(int)), this, SLOT(SetController()));
     connect(pushContSend, SIGNAL(clicked()), this, SLOT(SendCommandToController()));
     connect(pushContSendRead, SIGNAL(clicked()), this, SLOT(SendandReadCommandToController()));
-    connect(comboReferencePoint, SIGNAL(currentIndexChanged(int)), this, SLOT(SetRefPoint(int)));
-    connect(comboFluor, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFluor(int)));
+    connect(comboReferencePoint, SIGNAL(currentIndexChanged(int)), this, SLOT(SetRefPoint()));
+    connect(comboFluor, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFluor()));
     connect(pushDeleteHolder, SIGNAL(clicked()), this, SLOT(DeleteHolder()));
     connect(pushAddHolder, SIGNAL(clicked()), this, SLOT(AddHolder()));
     connect(pushClear, SIGNAL(clicked()), this, SLOT(ClearHolderContents()));
-    connect(comboFilterWheel, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFwheel(int)));
+    connect(comboFilterWheel, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFwheel()));
     connect(pushTubeSend, SIGNAL(clicked()), this, SLOT(SendCommandToTube()));
     connect(pushTubeSendRead, SIGNAL(clicked()), this, SLOT(SendandReadCommandToTube()));
 }
 
-void OptionsWidget::SetMotor(int index) {
+void OptionsWidget::SetMotor() {
     GetMotorController();
     GetPosition();
     GetUpperLimit();
@@ -218,7 +218,7 @@ void OptionsWidget::SetLowerLimit(double value) {
     }
 }
 
-void OptionsWidget::SetController(int index) {
+void OptionsWidget::SetController() {
     GetControllerSerialNumber();
     GetControllerInterface();
     GetControllerMotors();
@@ -295,7 +295,7 @@ void OptionsWidget::SendandReadCommandToController() {
     }    
 }
 
-void OptionsWidget::SetRefPoint(int index) {
+void OptionsWidget::SetRefPoint() {
     std::string name = std::string(comboReferencePoint->currentText().toAscii().data());
     std::string result = SendCommand(hostname, 2, "refvals " + name, "OptionsWidget::SetRefPoint");
     if (!result.empty()) {
@@ -311,7 +311,7 @@ void OptionsWidget::SetRefPoint(int index) {
     }    
 }
 
-void OptionsWidget::SetFluor(int index) {
+void OptionsWidget::SetFluor() {
     std::string name = std::string(comboFluor->currentText().toAscii().data());
     bool enableHolderEdit = (name == "Fluorescence_wheel" ? false : true);
     pushDeleteHolder->setEnabled(enableHolderEdit);
@@ -359,7 +359,7 @@ void OptionsWidget::ClearHolderContents() {
     }  
 }
 
-void OptionsWidget::SetFwheel(int index) {
+void OptionsWidget::SetFwheel() {
     GetFwheelSerialNumber();
     GetFwheelInterface();
 }
@@ -440,18 +440,18 @@ void OptionsWidget::GetPressureInterface() {
 }
 
 void OptionsWidget::Update() {
-    SetMotor(comboMotor->currentIndex());
+    SetMotor();
     if (groupControllers->isEnabled()) {
-        SetController(comboController->currentIndex());
+        SetController();
     } 
     if (groupReferencePoints->isEnabled()) {
-        SetRefPoint(comboReferencePoint->currentIndex());
+        SetRefPoint();
     }
     if (groupFluor->isEnabled()) {
-        SetFluor(comboFluor->currentIndex());
+        SetFluor();
     }
     if (groupFilterWheels->isEnabled()) {
-        SetFwheel(comboFilterWheel->currentIndex());
+        SetFwheel();
     }  
     if (groupTube->isEnabled()) {
         SetTube();

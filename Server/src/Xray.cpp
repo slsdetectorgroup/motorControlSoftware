@@ -45,7 +45,7 @@ Interface* Xray::getInterface() {
     return interface;
 }
 
-int Xray::setMaxPower(int power) {
+void Xray::setMaxPower(int power) {
     maxTubePower = power;
 }
 
