@@ -107,7 +107,7 @@ foreach(val RANGE ${len})
         ${QT_QTGUI_LIBRARIES}
         pthread
         rt
-        z
+        # z
         Qt4::QtOpenGL
         Qt4::QtSvg
     )  
