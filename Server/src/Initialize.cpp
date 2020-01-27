@@ -1364,7 +1364,7 @@ void Initialize::UpdateInterface(InterfaceIndex index) {
 					pgauge = new Pgauge(interface);
 					return;
 				case CONTROLLER:
-					if (Controller::CheckControllerSerialNumber(i, interface, controller[lastIndex]->getSerialNumber())) {
+					if (Controller::CheckControllerSerialNumber(interface, controller[lastIndex]->getSerialNumber())) {
 						usbSerialPortsUsed[i] = true;
 						controller[lastIndex]->setInterface(interface);
 						return;
