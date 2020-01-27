@@ -699,7 +699,6 @@ std::string Interface::FilterWheelSendCommand(std::string command, bool readBack
 	// if segfault here, it needs more time to read (increase FILTER_WHEEL_READ_WAIT_US)
 	char* firstCR = strchr(result,'\r');
 	char* secondCR = strchr(firstCR + 1,'\r');
-	char* nextCR = strchr(secondCR + 1,'\r');
 	char output[COMMAND_BUFFER_LENGTH];
 	memset(output, 0, sizeof(output));
 	memcpy(output, firstCR + 1, secondCR - firstCR);
