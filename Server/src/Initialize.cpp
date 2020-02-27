@@ -481,7 +481,7 @@ string Initialize::executeCommand(vector<string> args) {
  
 		else if (!strcasecmp(command.c_str(), "addholder")) {
 			if (nArg != 2 + MAX_FLUOR_VALUES * 2) {
-				throw RuntimeError("Requires 18 parameters: addholder [fluorescence motor] [Target1] [Energy 1] ..[Target8] [Energy 8]");
+				throw RuntimeError("Requires 18 parameters: addholder [fluorescence motor] [Target8] [Energy 8] ..[Target1] [Energy 1]");
 			}
 			string name = args[1];
 			OnlyFluorescenceCommand(name);

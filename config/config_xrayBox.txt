@@ -19,25 +19,24 @@ motor	Fluorescence	3	    corvus_2	0		    251.8267
 
 
 #mode 		    name    energy(KeV) 
-# 1st set for random use
-fluorescence    1       - 
-fluorescence    2       - 
-fluorescence    3       - 
-fluorescence    4       - 
-fluorescence    5       - 
-fluorescence    6       - 
-fluorescence    7       - 
+# 1st set for random use (please write target 8 first)
 fluorescence    8       - 
+fluorescence    7       - 
+fluorescence    6       - 
+fluorescence    5       - 
+fluorescence    4       - 
+fluorescence    3       - 
+fluorescence    2       - 
+fluorescence    1       - 
 
-# second defined set
-fluorescence    Ti      4.5  
-fluorescence	Cr	    5.4  
-fluorescence	Fe	    6.4  
-fluorescence	Cu	    8.0  
-fluorescence	Ge	    9.9  
-fluorescence	Mo	    17.5 
-fluorescence    Screen	0    
+# second defined set (please write target 8 first)
 fluorescence    Bla     -    
-
+fluorescence    Screen	0    
+fluorescence	Mo	    17.5 
+fluorescence	Ge	    9.9  
+fluorescence	Cu	    8.0  
+fluorescence	Fe	    6.4  
+fluorescence	Cr	    5.4  
+fluorescence    Ti      4.5  
 
 power 2400

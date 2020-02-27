@@ -340,6 +340,7 @@ void OptionsWidget::DeleteHolder() {
 void OptionsWidget::AddHolder() {
     std::string name = std::string(comboFluor->currentText().toAscii().data());
     std::ostringstream oss;
+    // already backwards from the gui (target 8 to target 1)
     oss << "addholder " << name << ' ';
     for (size_t i = 0; i < targets.size(); ++i) {
         oss << targets[i]->text().toAscii().data() << ' ';

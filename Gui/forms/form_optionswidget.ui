@@ -631,6 +631,9 @@
                 <property name="text">
                  <string/>
                 </property>
+                <property name="placeholderText">
+                 <string>Target 8</string>
+                </property>
                </widget>
               </item>
               <item row="0" column="1">
@@ -686,6 +689,9 @@
                 </property>
                 <property name="text">
                  <string/>
+                </property>
+                <property name="placeholderText">
+                 <string>Target 7</string>
                 </property>
                </widget>
               </item>
@@ -743,6 +749,9 @@
                 <property name="text">
                  <string/>
                 </property>
+                <property name="placeholderText">
+                 <string>Target 6</string>
+                </property>
                </widget>
               </item>
               <item row="2" column="1">
@@ -798,6 +807,9 @@
                 </property>
                 <property name="text">
                  <string/>
+                </property>
+                <property name="placeholderText">
+                 <string>Target 5</string>
                 </property>
                </widget>
               </item>
@@ -855,6 +867,9 @@
                 <property name="text">
                  <string/>
                 </property>
+                <property name="placeholderText">
+                 <string>Target 4</string>
+                </property>
                </widget>
               </item>
               <item row="4" column="1">
@@ -910,6 +925,9 @@
                 </property>
                 <property name="text">
                  <string/>
+                </property>
+                <property name="placeholderText">
+                 <string>Target 3</string>
                 </property>
                </widget>
               </item>
@@ -967,6 +985,9 @@
                 <property name="text">
                  <string/>
                 </property>
+                <property name="placeholderText">
+                 <string>Target 2</string>
+                </property>
                </widget>
               </item>
               <item row="6" column="1">
@@ -1022,6 +1043,9 @@
                 </property>
                 <property name="text">
                  <string/>
+                </property>
+                <property name="placeholderText">
+                 <string>Target 1</string>
                 </property>
                </widget>
               </item>
