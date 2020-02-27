@@ -632,7 +632,7 @@
                  <string/>
                 </property>
                 <property name="placeholderText">
-                 <string>Target 8</string>
+                 <string>Target 1</string>
                 </property>
                </widget>
               </item>
@@ -691,7 +691,7 @@
                  <string/>
                 </property>
                 <property name="placeholderText">
-                 <string>Target 7</string>
+                 <string>Target 2</string>
                 </property>
                </widget>
               </item>
@@ -750,7 +750,7 @@
                  <string/>
                 </property>
                 <property name="placeholderText">
-                 <string>Target 6</string>
+                 <string>Target 3</string>
                 </property>
                </widget>
               </item>
@@ -809,7 +809,7 @@
                  <string/>
                 </property>
                 <property name="placeholderText">
-                 <string>Target 5</string>
+                 <string>Target 4</string>
                 </property>
                </widget>
               </item>
@@ -868,7 +868,7 @@
                  <string/>
                 </property>
                 <property name="placeholderText">
-                 <string>Target 4</string>
+                 <string>Target 5</string>
                 </property>
                </widget>
               </item>
@@ -927,7 +927,7 @@
                  <string/>
                 </property>
                 <property name="placeholderText">
-                 <string>Target 3</string>
+                 <string>Target 6</string>
                 </property>
                </widget>
               </item>
@@ -986,7 +986,7 @@
                  <string/>
                 </property>
                 <property name="placeholderText">
-                 <string>Target 2</string>
+                 <string>Target 7</string>
                 </property>
                </widget>
               </item>
@@ -1045,7 +1045,7 @@
                  <string/>
                 </property>
                 <property name="placeholderText">
-                 <string>Target 1</string>
+                 <string>Target 8</string>
                 </property>
                </widget>
               </item>

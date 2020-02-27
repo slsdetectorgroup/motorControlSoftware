@@ -9,7 +9,7 @@ motor   Fluorescence        2       corvus_1    0           251
 
 
 #mode 		        name	energy(KeV)
-# first defined set 
+# first defined set
 fluorescence_wheel	In	    24.2
 fluorescence_wheel	Mo	    17.5
 fluorescence_wheel	Ni	    7.5	
@@ -29,26 +29,25 @@ fluorescence_wheel	Mo	    17.5
 fluorescence_wheel	In	    24.2
 
 #mode 		    name    energy(KeV) 
-# 1st set for random use (please write target 8 first)
-fluorescence    8       - 
-fluorescence    7       - 
-fluorescence    6       - 
-fluorescence    5       - 
-fluorescence    4       - 
-fluorescence    3       - 
-fluorescence    2       - 
+# 1st set for random use (please use target 1 first)
 fluorescence    1       - 
+fluorescence    2       - 
+fluorescence    3       - 
+fluorescence    4       - 
+fluorescence    5       - 
+fluorescence    6       - 
+fluorescence    7       - 
+fluorescence    8       - 
 
-# second defined set (please write target 8 first)
-fluorescence    Bla     -
-fluorescence    Screen	0    
-fluorescence	Mo	    17.5 
-fluorescence	Ge	    9.9  
-fluorescence	Cu	    8.0  
-fluorescence	Fe	    6.4  
-fluorescence	Cr	    5.4  
+# second defined set (please use target 1 first)
 fluorescence    Ti      4.5  
-
+fluorescence	Cr	    5.4  
+fluorescence	Fe	    6.4  
+fluorescence	Cu	    8.0  
+fluorescence	Ge	    9.9  
+fluorescence	Mo	    17.5 
+fluorescence    Screen	0    
+fluorescence    Bla     -    
 
 power 1900
 
