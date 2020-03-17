@@ -41,10 +41,12 @@ outputs:
 
   - name: slsdetbox
     script: build_pylib.sh
+
     requirements:
       build:
-        - setuptools
         - python
+        - setuptools
+        
 
       host:
         - python
