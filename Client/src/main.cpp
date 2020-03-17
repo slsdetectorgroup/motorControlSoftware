@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
             ++nArg;
         }  
     }
-    std::cout << ' [' << serverHostname;
+    std::cout << " ["<< serverHostname;
 
     Client client = Client(serverHostname);
     try {
