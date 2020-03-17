@@ -10,7 +10,7 @@ class Controller {
     public:
     
     Controller(const int index, const std::string name, const std::string serialNumber);
-    static bool CheckControllerSerialNumber(int usbport, Interface* interface, std::string serialNumber);
+    static bool CheckControllerSerialNumber(Interface* interface, std::string serialNumber);
     std::string getName() const;
     std::string getSerialNumber() const;
 

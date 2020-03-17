@@ -481,7 +481,13 @@ string Initialize::executeCommand(vector<string> args) {
  
 		else if (!strcasecmp(command.c_str(), "addholder")) {
 			if (nArg != 2 + MAX_FLUOR_VALUES * 2) {
-				throw RuntimeError("Requires 18 parameters: addholder [fluorescence motor] [Target1] [Energy 1] ..[Target8] [Energy 8]");
+#ifdef XRAYBOX
+				throw RuntimeError("Requires 18 parameters: addholder [fluorescence motor] [Target 8] [Energy 8] ..[Target 1] [Energy 1]");
+
+#else
+				throw RuntimeError("Requires 18 parameters: addholder [fluorescence motor] [Target 1] [Energy 1] ..[Target 8] [Energy 8]");
+
+#endif
 			}
 			string name = args[1];
 			OnlyFluorescenceCommand(name);
@@ -1364,7 +1370,7 @@ void Initialize::UpdateInterface(InterfaceIndex index) {
 					pgauge = new Pgauge(interface);
 					return;
 				case CONTROLLER:
-					if (Controller::CheckControllerSerialNumber(i, interface, controller[lastIndex]->getSerialNumber())) {
+					if (Controller::CheckControllerSerialNumber(interface, controller[lastIndex]->getSerialNumber())) {
 						usbSerialPortsUsed[i] = true;
 						controller[lastIndex]->setInterface(interface);
 						return;

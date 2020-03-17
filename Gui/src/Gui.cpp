@@ -265,7 +265,10 @@ void Gui::Initialization() {
 }
 
 void Gui::LoadPressureWidget(bool userClick) {
-	std::string result = SendCommand(hostname, 1, "ispressure", "Gui::LoadPressureWidget");
+	try {
+		statusbar->showMessage("Checking. Please be patient ...");
+		statusbar->showMessage("Checking. Please be patient ...");
+		std::string result = SendCommand(hostname, 1, "ispressure", "Gui::LoadPressureWidget");
     	if (!result.empty()) {
 			if (result == "on") {
 				EnablePressureWidget(true);
@@ -276,6 +279,11 @@ void Gui::LoadPressureWidget(bool userClick) {
 				EnablePressureWidget(false);
 			}
     	}
+	} catch (const PressureOffError& e) {
+		Message(WARNING, e.what(), "Gui::LoadPressureWidget");
+		EnablePressureWidget(false);		
+	}
+	statusbar->clearMessage();
 }
 
 void Gui::EnablePressureWidget(bool enable) {
@@ -313,7 +321,10 @@ void Gui::EnablePressureWidget(bool enable) {
 }
 
 void Gui::LoadTubeWidget(bool userClick) {
-	std::string result = SendCommand(hostname, 1, "istube", "Gui::LoadTubeWidget");
+	try {
+		statusbar->showMessage("Checking. Please be patient ...");
+		statusbar->showMessage("Checking. Please be patient ...");
+		std::string result = SendCommand(hostname, 1, "istube", "Gui::LoadTubeWidget");
     	if (!result.empty()) {
 			if (result == "on") {
 				EnableTubeWidget(true);
@@ -328,6 +339,11 @@ void Gui::LoadTubeWidget(bool userClick) {
 				EnableTubeWidget(false);
 			}
     	}
+	} catch (const TubeOffError& e) {
+		Message(WARNING, e.what(), "Gui::LoadTubeWidget");
+		EnableTubeWidget(false);
+	}
+	statusbar->clearMessage();
 }
 
 void Gui::EnableTubeWidget(bool enable) {

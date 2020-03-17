@@ -698,8 +698,15 @@ std::string Interface::FilterWheelSendCommand(std::string command, bool readBack
 	// extract result
 	// if segfault here, it needs more time to read (increase FILTER_WHEEL_READ_WAIT_US)
 	char* firstCR = strchr(result,'\r');
+	if (firstCR == NULL) {
+		throw RuntimeError("Could not scan first \r in result");
+		//throw std::runtime_error(oss.str());
+	}
 	char* secondCR = strchr(firstCR + 1,'\r');
-	char* nextCR = strchr(secondCR + 1,'\r');
+	if (secondCR == NULL) {
+		throw RuntimeError("Could not scan second \r in result");
+		//throw std::runtime_error(oss.str());
+	}
 	char output[COMMAND_BUFFER_LENGTH];
 	memset(output, 0, sizeof(output));
 	memcpy(output, firstCR + 1, secondCR - firstCR);

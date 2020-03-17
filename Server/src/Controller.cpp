@@ -19,7 +19,7 @@ Controller::Controller(const int index, const std::string name, const std::strin
     FILE_LOG(logINFO) << "Contoller  [" << index << "]: [name:" << name << ", serialNumber:" << serialNumber << "]";
 }
 
-bool Controller::CheckControllerSerialNumber(int usbport, Interface* interface, std::string serialNumber) {
+bool Controller::CheckControllerSerialNumber(Interface* interface, std::string serialNumber) {
     std::string result = interface->ControllerSend("getserialno ", true);
     interface->ControllerWaitForIdle();
     std::istringstream iss(result);

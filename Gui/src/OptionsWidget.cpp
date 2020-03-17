@@ -53,6 +53,16 @@ void OptionsWidget::LayoutWindow(
     if (comboFluor->count() == 0) {
         groupFluor->setEnabled(false);
     }  
+#ifdef XRAYBOX
+    dispTarget1.setPlaceholderText("Target 8");
+    dispTarget2.setPlaceholderText("Target 7");
+    dispTarget3.setPlaceholderText("Target 6");
+    dispTarget4.setPlaceholderText("Target 5");
+    dispTarget5.setPlaceholderText("Target 4");
+    dispTarget6.setPlaceholderText("Target 3");
+    dispTarget7.setPlaceholderText("Target 2");
+    dispTarget8.setPlaceholderText("Target 1");
+#endif
     targets.push_back(dispTarget1);
     targets.push_back(dispTarget2);
     targets.push_back(dispTarget3);
@@ -340,6 +350,7 @@ void OptionsWidget::DeleteHolder() {
 void OptionsWidget::AddHolder() {
     std::string name = std::string(comboFluor->currentText().toAscii().data());
     std::ostringstream oss;
+    // already backwards from the gui (target 8 to target 1)
     oss << "addholder " << name << ' ';
     for (size_t i = 0; i < targets.size(); ++i) {
         oss << targets[i]->text().toAscii().data() << ' ';
