@@ -4,12 +4,7 @@ import sys
 import setuptools
 import os
 
-def get_version():
-    with open('../conda-recepie/meta.yaml', 'r') as f:
-        l = f.readline()
-        return l.split("\"")[-2]
-
-__version__ = get_version()
+__version__ = os.environ.get('GIT_DESCRIBE_TAG', 'master')
 
 setup(
     name='slsdetbox',
