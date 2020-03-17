@@ -9,3 +9,4 @@ objs
 mocs
 qrc_icons.cpp
 ui_form*.h
+*.pyc
