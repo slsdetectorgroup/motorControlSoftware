@@ -6,11 +6,11 @@
 
 int main(int argc, char* argv[]) {
 #ifdef XRAYBOX
-	  std::cout << "XRay Box Client" << std::endl;
+	  std::cout << "XRay Box Client";
 #elif LASERBOX
-	  std::cout << "Laser Box Client" << std::endl;
+	  std::cout << "Laser Box Client";
 #else
-	  std::cout << "Vacuum Box Client" << std::endl;
+	  std::cout << "Vacuum Box Client";
 #endif
 
     char args[TCP_PACKET_LENGTH];
@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
             ++nArg;
         }  
     }
-    std::cout << "serverHostname: [" << serverHostname << ']' << std::endl;
+    std::cout << ' [' << serverHostname;
 
     Client client = Client(serverHostname);
     try {
