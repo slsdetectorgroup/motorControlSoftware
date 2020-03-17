@@ -8,7 +8,6 @@ env:
   matrix: 
      - CONDA_PY=3
 
-
 dist: trusty
 
 install:
@@ -35,7 +34,6 @@ install:
   # Replace dep1 dep2 ... with your dependencies
   - conda create -q -n test-environment python=$CONDA_PY
   - source activate test-environment
-  # - conda-build .
 
 script:
   - conda-build .
@@ -46,4 +44,5 @@ deploy:
   script: find $HOME/miniconda/conda-bld/${TRAVIS_OS_NAME}-64 -name "*.tar.bz2" -exec anaconda -t $CONDA_TOKEN upload {} \;
   on:
     branch: master
+    tags: true
 

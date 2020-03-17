@@ -1,8 +1,6 @@
-{% set version = "2020.02.14.dev0" %}
-
 package:
   name: xrayboxsoftware
-  version: {{ version }}
+  version: {{ environ.get('GIT_DESCRIBE_TAG', '') }}
 
 source:
   - path: ..
