@@ -48,10 +48,10 @@ outputs:
 
       host:
         - python
-        
+
       run: 
         - python
-        - {{ pin_subpackage('slsdetlib', exact=True) }}
+        - {{ pin_subpackage('slsdetboxlib', exact=True) }}
 
 
 #     test:
