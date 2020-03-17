@@ -20,10 +20,10 @@ install:
 
   - conda create -q -n testenv conda-build anaconda-client conda-verify
   - conda activate testenv
-  - conda-build .
+  # - conda-build .
 
-# script:
-#   - conda-build .
+script:
+  - conda-build .
 
 
 deploy:
