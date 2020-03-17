@@ -4,7 +4,7 @@ import sys
 import setuptools
 import os
 
-__version__ = os.environ.get('GIT_DESCRIBE_TAG', 'master')
+__version__ = os.environ.get('GIT_DESCRIBE_TAG', 'developer')
 
 setup(
     name='slsdetbox',
