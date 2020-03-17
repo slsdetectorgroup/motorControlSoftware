@@ -29,14 +29,8 @@ requirements:
 
 
 outputs:
-  - name: slsdetbox
+  - name: slsdetboxlib
     script: copy_client.sh
-    requirements:
-      build:
-        - python
-      run:
-        - python
-
 
   - name: slsdetboxgui
     script: copy_gui.sh
@@ -44,6 +38,21 @@ outputs:
     requirements:
       run:
         - qt 4.8.*
+
+  - name: slsdetbox
+    script: build_pylib.sh
+    requirements:
+      build:
+        - setuptools
+        - python
+
+      host:
+        - python
+        
+      run: 
+        - python
+        - {{ pin_subpackage('slsdetlib', exact=True) }}
+
 
 #     test:
 #       imports:
