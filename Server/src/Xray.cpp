@@ -28,7 +28,8 @@
 
 #define TUBE_WARM_UP_MAX_SIZE   (61)
 
-#define TUBE_HV_TRANSITION_VAL	(12)
+#define TUBE_HV_ON              (64)
+//#define TUBE_HV_TRANSITION_VAL	(12)
 
 
 Xray::Xray(Interface* interface) 
@@ -157,8 +158,8 @@ void Xray::setHVSwitch(bool on) {
 }
 
 bool Xray::getHVSwitch() {
-    int hv = TUBE_HV_TRANSITION_VAL;
-    while(hv == TUBE_HV_TRANSITION_VAL) {
+    int hv = 1;
+    while(hv != TUBE_HV_ON && hv != 0) {
         while (true) {
             try {
                 std::string result = interface->TubeSend("sr:1 ", true);
