@@ -136,7 +136,9 @@ void TubeWidget::SetHighVoltage(bool enable) {
     std::string result = SendTubeCommand(hostname, 2, oss.str(), "TubeWidget::SetHighVoltage");
     if (result.empty()) {
         GetHighVoltage();
-        CheckWarmup();
+        if (CheckWarmup()) {
+            return;
+        }
     }
     GetHighVoltage();
     if (pushHighVoltage->isChecked()) {
@@ -210,6 +212,7 @@ void TubeWidget::GetVoltage() {
         } 
     }
     connect(spinVoltage, SIGNAL(valueChanged(int)), this, SLOT(SetVoltage(int)));
+    GetActualVoltage();
 }
 
 void TubeWidget::SetVoltage(int value) {
@@ -218,7 +221,9 @@ void TubeWidget::SetVoltage(int value) {
     oss << "setv " << value;
     std::string result = SendTubeCommand(hostname, 2, oss.str(), "TubeWidget::SetVoltage");
     if (result.empty()) {
-        CheckWarmup();
+        if (CheckWarmup()) {
+            return;
+        }
     } 
     GetHighVoltage();
     GetVoltage();
@@ -250,7 +255,9 @@ void TubeWidget::SetCurrent(int value) {
     oss << "setc " << value;
     std::string result = SendTubeCommand(hostname, 2, oss.str(), "TubeWidget::SetCurrent");
     if (result.empty()) {
-        CheckWarmup();
+        if (CheckWarmup()) {
+            return;
+        }
     } 
     GetHighVoltage();
     GetCurrent();
@@ -313,23 +320,10 @@ int TubeWidget::CheckWarmup() {
     // error code is warmup
     if (errorCode == TUBE_ERROR_WARM_UP || errorCode == TUBE_ERROR_WARM_UP2) {
         int voltage = spinVoltage->value();
-        // get last warm up timing
-        std::string lastWarmupTimeStamp;
-        {
-            std::ostringstream oss;
-            oss << "readwarmuptiming " << voltage;
-            std::string result = SendTubeCommand(hostname, 2, oss.str(), "TubeWidget::CheckWarmup");
-            if (result.empty()) {
-                Message(WARNING, "Could not warm up.", "TubeWidget::CheckWarmup");
-                DisplayTubeError();
-                return 0;
-            }    
-            lastWarmupTimeStamp = result;    
-        }
-
         // warm up question
         std::ostringstream oss;
-        oss << "Initiate warm up? \nLast warm-up at " << voltage << " kV at " << lastWarmupTimeStamp;
+        oss << "Initiate warm up for " << voltage << " kV? \n";
+        FILE_LOG(logINFO) << oss.str();
         if (Message(QUESTION, oss.str(), "TubeWidget::CheckWarmup", "Warm-up?") != OK) {
             DeclineWarmup();
         } else {
@@ -345,15 +339,14 @@ int TubeWidget::CheckWarmup() {
 }
 
 void TubeWidget::AcceptWarmup() {
+    FILE_LOG(logINFO) << "Warm up accepted";
     int voltage = spinVoltage->value();
-    int current = spinCurrent->value();
+    //int current = spinCurrent->value();
 
     // switch off voltage and set voltage and current again
-    pushHighVoltage->setChecked(false);
-    GetVoltage();
-    GetCurrent();
-    spinVoltage->setValue(voltage);
-    spinCurrent->setValue(current);
+    SetHighVoltage(false);
+    //SetVoltage(voltage);
+    //SetCurrent(current);
 
     // start warm up
     std::ostringstream oss;
@@ -364,7 +357,14 @@ void TubeWidget::AcceptWarmup() {
         DisplayTubeError();
         return;
     }   
-    // check error code
+
+    // successful
+    if (GetWarmupTimeRemaining() > 0) {
+        UpdateWarmupTiming();
+        return;
+    } 
+
+    // warm up failed, check error code
     int errorCode = -1;
     result = SendTubeCommand(hostname, 1, "geterr", "TubeWidget::CheckWarmup");
     if (result.empty()) {
@@ -377,21 +377,16 @@ void TubeWidget::AcceptWarmup() {
         Message(WARNING, "Warm up failed. " + std::string(e.what()), "TubeWidget::CheckWarmup");
         return;
     }
-
-    // warm up failed
     if (errorCode != 0) {
         std::ostringstream oss;
         oss << "Warm up failed.  Error Code: " << errorCode << ". Check error message field.";
         Message(WARNING, oss.str(), "TubeWidget::CheckWarmup");    
-        UpdateValues();
     } 
-    // warm up successful
-    else {
-        UpdateWarmupTiming();
-    }
+    UpdateValues();
 }
 
 void TubeWidget::DeclineWarmup() {
+    FILE_LOG(logINFO) << "Warmup declined";
     Message(INFORMATION, "You have chosen not to proceed with warming up. \nClearing error message and updating values ...", "TubeWidget::CheckWarmup");
     statusBar->showMessage("Updating ...");
     // clear the warm up necessary error with time to recover
@@ -468,7 +463,7 @@ void TubeWidget::UpdateWarmupTiming() {
 }
 
 void TubeWidget::UpdateValues() {
-    FILE_LOG(logINFO) << "Updating Tube Values";
+   FILE_LOG(logINFO) << "Updating Tube Values";
 
     statusBar->showMessage("Updating ...");
     DisplayTubeError();

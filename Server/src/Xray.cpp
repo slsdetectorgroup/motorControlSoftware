@@ -106,8 +106,17 @@ std::pair<int, int> Xray::getTwoIntegers(std::string result) {
 }
 
 int Xray::getErrorCode() {
-    std::string result = interface->TubeSend("sr:12 ", true);
-    return getInteger(result);
+    while (true) {
+        try {
+            std::string result = interface->TubeSend("sr:12 ", true);
+            return getInteger(result);
+        } catch (std::exception &e) {
+            // not a conversion problem
+            if (strstr(e.what(), "Cannot scan ") == NULL) {
+                throw;
+            }
+        }
+    }
 }
 
 std::string Xray::getErrorMessage() {
@@ -120,12 +129,21 @@ void Xray::clearErrorCode() {
 }
 
 bool Xray::isOnStandby() {
-    std::string result = interface->TubeSend("sr:12 ", true);
-    int value = getInteger(result);
-    if (value == TUBE_STANDBY_VALUE) {
-        return true;
+    while (true) {
+        try {
+            std::string result = interface->TubeSend("sr:12 ", true);
+            int value = getInteger(result);
+            if (value == TUBE_STANDBY_VALUE) {
+                return true;
+            }
+            return false;
+        } catch (std::exception &e) {
+            // not a conversion problem
+            if (strstr(e.what(), "Cannot scan ") == NULL) {
+                throw;
+            }
+        }
     }
-    return false;
 }
 
 void Xray::setHVSwitch(bool on) {
@@ -141,8 +159,18 @@ void Xray::setHVSwitch(bool on) {
 bool Xray::getHVSwitch() {
     int hv = TUBE_HV_TRANSITION_VAL;
     while(hv == TUBE_HV_TRANSITION_VAL) {
-        std::string result = interface->TubeSend("sr:1 ", true);
-        hv = getInteger(result);
+        while (true) {
+            try {
+                std::string result = interface->TubeSend("sr:1 ", true);
+                hv = getInteger(result);
+                break;
+            } catch (std::exception &e) {
+                // not a conversion problem
+                if (strstr(e.what(), "Cannot scan ") == NULL) {
+                    throw;
+                }
+            }
+        }
     }
     if (hv == 0) {
         return false;
@@ -180,8 +208,17 @@ void Xray::setVoltage(int value) {
 }
 
 int Xray::getVoltage() {
-    std::string result = interface->TubeSend("vn ", true);
-    return (getInteger(result) / 1000);
+    while (true) {
+        try {
+            std::string result = interface->TubeSend("vn ", true);
+            return (getInteger(result) / 1000);
+        } catch (std::exception &e) {
+            // not a conversion problem
+            if (strstr(e.what(), "Cannot scan ") == NULL) {
+                throw;
+            }
+        }
+    }
 }
 
 void Xray::validateCurrent(int current) {
@@ -205,8 +242,17 @@ void Xray::setCurrent(int value)  {
 }
 
 int Xray::getCurrent() {
-    std::string result = interface->TubeSend("cn ", true);
-    return (getInteger(result) / 1000);
+    while (true) {
+        try {
+            std::string result = interface->TubeSend("cn ", true);
+            return (getInteger(result) / 1000);
+        } catch (std::exception &e) {
+            // not a conversion problem
+            if (strstr(e.what(), "Cannot scan ") == NULL) {
+                throw;
+            }
+        }
+    }
 }
 
 void Xray::setVoltageAndCurrent(int v, int c)	{
@@ -223,29 +269,65 @@ void Xray::setVoltageAndCurrent(int v, int c)	{
 }
 
 std::pair <int, int> Xray::getVoltageAndCurrent() {
-    std::string result = interface->TubeSend("gn ", true);
-    std::pair <int, int> values = getTwoIntegers(result);
-    values.first /= 1000;
-    values.second /= 1000;
-    return values;
+    while (true) {
+        try {
+            std::string result = interface->TubeSend("gn ", true);
+            std::pair <int, int> values = getTwoIntegers(result);
+            values.first /= 1000;
+            values.second /= 1000;
+            return values;
+        } catch (std::exception &e) {
+            // not a conversion problem
+            if (strstr(e.what(), "Cannot scan ") == NULL) {
+                throw;
+            }
+        }
+    }
 }
  
 int Xray::getActualVoltage() {
-    std::string result = interface->TubeSend("va ", true);
-    return (getInteger(result) / 1000);
+    while (true) {
+        try {    
+            std::string result = interface->TubeSend("va ", true);
+            return (getInteger(result) / 1000);
+        } catch (std::exception &e) {
+            // not a conversion problem
+            if (strstr(e.what(), "Cannot scan ") == NULL) {
+                throw;
+            }
+        }
+    }
 }
  
 int Xray::getActualCurrent() {
-    std::string result = interface->TubeSend("ca ", true);
-    return (getInteger(result) / 1000);
+    while (true) {
+        try {    
+            std::string result = interface->TubeSend("ca ", true);
+            return (getInteger(result) / 1000);
+        } catch (std::exception &e) {
+            // not a conversion problem
+            if (strstr(e.what(), "Cannot scan ") == NULL) {
+                throw;
+            }
+        }
+    }
 }
 
 std::pair <int, int> Xray::getActualVoltageAndCurrent() {
-    std::string result = interface->TubeSend("ga ", true);
-    std::pair <int, int> values = getTwoIntegers(result);
-    values.first /= 1000;
-    values.second /= 1000;
-    return values;
+    while (true) {
+        try {
+            std::string result = interface->TubeSend("ga ", true);
+            std::pair <int, int> values = getTwoIntegers(result);
+            values.first /= 1000;
+            values.second /= 1000;
+            return values;
+        } catch (std::exception &e) {
+            // not a conversion problem
+            if (strstr(e.what(), "Cannot scan ") == NULL) {
+                throw;
+            }
+        }
+    }
 }
 
 int Xray::getShutterStatus(int index) {
@@ -278,10 +360,20 @@ int Xray::getShutterStatus(int index) {
             oss << "Invalid shutter index " << index;
             throw RuntimeError (oss.str());
     }
-    std::string result = interface->TubeSend(command, true);
-    int value = getInteger(result);
-    value = ((value & mask) >> offset);
-    return value;
+    
+    while (true) {
+        try {
+            std::string result = interface->TubeSend(command, true);
+            int value = getInteger(result);
+            value = ((value & mask) >> offset);
+            return value;
+        } catch (std::exception &e) {
+            // not a conversion problem
+            if (strstr(e.what(), "Cannot scan ") == NULL) {
+                throw;
+            }
+        }
+    }    
 }
 
 bool Xray::isShutterConnected(int index) {
@@ -333,8 +425,17 @@ void Xray::startWarmup(int voltage) {
 
 
 int Xray::getWarmupTimeRemaining() {
-    std::string result = interface->TubeSend("wt ", true);
-    return getInteger(result);
+    while (true) {
+        try {
+            std::string result = interface->TubeSend("wt ", true);
+            return getInteger(result);
+        } catch (std::exception &e) {
+            // not a conversion problem
+            if (strstr(e.what(), "Cannot scan ") == NULL) {
+                throw;
+            }
+        }
+    }
 }
 
 

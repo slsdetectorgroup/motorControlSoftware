@@ -54,28 +54,36 @@ int Pgauge::getInteger(std::string result) {
 }
 
 std::vector<PressureGauge> Pgauge::getPressure() {
-    std::vector<PressureGauge> gauges(NUM_PRESSURE_GAUGES_PER_CONTROLLER);
-
-    std::string result = interface->PressureGaugeSend("PRX\r\n");
-    std::stringstream iss(result); 
-    std::string value;
-    // status 1
-    if (getline(iss, value, ',')) { 
-        gauges[0].status = getStatus(getInteger(value));
-    } 
-    // pressure 1
-    if (getline(iss, value, ',')) { 
-        gauges[0].pressure = value;
-    } 
-    // status 2
-    if (getline(iss, value, ',')) { 
-        gauges[1].status = getStatus(getInteger(value));
-    } 
-    // pressure 2
-    if (getline(iss, value, ',')) { 
-        gauges[1].pressure = value.substr(0, value.length() - 2);
-    } 
-    return gauges;
+    while (true) {
+        try {
+            std::vector<PressureGauge> gauges(NUM_PRESSURE_GAUGES_PER_CONTROLLER);
+            std::string result = interface->PressureGaugeSend("PRX\r\n");
+            std::stringstream iss(result); 
+            std::string value;
+            // status 1
+            if (getline(iss, value, ',')) { 
+                gauges[0].status = getStatus(getInteger(value));
+            } 
+            // pressure 1
+            if (getline(iss, value, ',')) { 
+                gauges[0].pressure = value;
+            } 
+            // status 2
+            if (getline(iss, value, ',')) { 
+                gauges[1].status = getStatus(getInteger(value));
+            } 
+            // pressure 2
+            if (getline(iss, value, ',')) { 
+                gauges[1].pressure = value.substr(0, value.length() - 2);
+            } 
+            return gauges;
+        } catch (std::exception &e) {
+            // not a conversion problem
+            if (strstr(e.what(), "Cannot scan integer") == NULL) {
+                throw;
+            }
+        }
+    }
 }
 
 void Pgauge::print() {

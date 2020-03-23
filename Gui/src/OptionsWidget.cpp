@@ -54,14 +54,14 @@ void OptionsWidget::LayoutWindow(
         groupFluor->setEnabled(false);
     }  
 #ifdef XRAYBOX
-    dispTarget1.setPlaceholderText("Target 8");
-    dispTarget2.setPlaceholderText("Target 7");
-    dispTarget3.setPlaceholderText("Target 6");
-    dispTarget4.setPlaceholderText("Target 5");
-    dispTarget5.setPlaceholderText("Target 4");
-    dispTarget6.setPlaceholderText("Target 3");
-    dispTarget7.setPlaceholderText("Target 2");
-    dispTarget8.setPlaceholderText("Target 1");
+    dispTarget1->setPlaceholderText("Target 8");
+    dispTarget2->setPlaceholderText("Target 7");
+    dispTarget3->setPlaceholderText("Target 6");
+    dispTarget4->setPlaceholderText("Target 5");
+    dispTarget5->setPlaceholderText("Target 4");
+    dispTarget6->setPlaceholderText("Target 3");
+    dispTarget7->setPlaceholderText("Target 2");
+    dispTarget8->setPlaceholderText("Target 1");
 #endif
     targets.push_back(dispTarget1);
     targets.push_back(dispTarget2);
