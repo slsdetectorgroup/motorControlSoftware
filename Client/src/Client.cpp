@@ -18,7 +18,7 @@ std::string Client::SendCommand(int nCommand, std::string command) {
         portno = PORT_NO + 1;
     }    
     if (command.find("gui ") == std::string::npos) {
-        FILE_LOG(logINFO) << "port: " << portno;
+        std::cout << ":" << portno << "]\n";
     }
 
     // connect
