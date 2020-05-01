@@ -50,6 +50,9 @@ void TargetHolder::changeTarget(int index, std::string name, std::string energy)
         oss << "Target index " << index << " must be less than " << targetName.size();
         throw RuntimeError(oss.str());
     }
+#ifdef XRAYBOX
+    index = (targetName.size() - index);
+#endif
     targetName[index] = name;
     targetEnergy[index] = energy;    
 }
