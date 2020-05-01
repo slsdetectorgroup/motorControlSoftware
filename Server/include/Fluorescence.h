@@ -21,6 +21,7 @@ class Fluorescence {
   void deleteLastTargetHolder();
   void addHolder(std::vector <std::string> name, std::vector <std::string> energy);
   void addTarget(std::string name, std::string energy);
+  void changeTarget(int holderIndex, int targetIndex, std::string name, std::string energy);
   std::string getList(int index);
   std::string updateAndGetCurrentTargetName();
   void moveToTarget(std::string target);

@@ -44,6 +44,17 @@ void TargetHolder::addTarget(std::string name, std::string energy) {
     ++numTargets;
 }
 
+void TargetHolder::changeTarget(int index, std::string name, std::string energy) {
+    if (index < 0 || index >= (int)targetName.size()) {
+        std::ostringstream oss;
+        oss << "Target index " << index << " must be less than " << targetName.size();
+        throw RuntimeError(oss.str());
+    }
+    targetName[index] = name;
+    targetEnergy[index] = energy;    
+}
+
+
 int TargetHolder::getTargetIndex(std::string name) {
     for (int i = 0; i < numTargets; ++i) {
         if (!strcasecmp(name.c_str(), targetName[i].c_str())) {

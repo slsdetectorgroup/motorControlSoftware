@@ -547,6 +547,35 @@ string Initialize::executeCommand(vector<string> args) {
 			return oss.str();
 		}
 
+		else if (!strcasecmp(command.c_str(), "changefl")) {
+			if (nArg != 6) {
+				throw RuntimeError("Requires 6 parameters: changefl "
+				"[fluorescence motor] [holder index] [target index] [new target name] [new target energy]");
+			}
+			string name = args[1];
+			OnlyFluorescenceCommand(name);
+			int ifluor = GetFluorescenceIndex(name);
+			int holderIndex = 0;
+			{
+				istringstream iss (args[2].c_str());
+				iss >> holderIndex;
+				if (iss.fail()) {
+					throw RuntimeError("Could not scan holder index argument " + args[2]);
+				}
+			}	
+			int targetIndex = 0;
+			{
+				istringstream iss (args[3].c_str());
+				iss >> targetIndex;
+				if (iss.fail()) {
+					throw RuntimeError("Could not scan target index argument " + args[3]);
+				}
+			}
+			string target = args[4];
+			string energy = args[5];
+			fluorescence[ifluor]->changeTarget(holderIndex, targetIndex, target, energy);
+			return fluorescence[ifluor]->getList(holderIndex);
+		}
 
 		// ----- slits ---------------------------------------------------------
 

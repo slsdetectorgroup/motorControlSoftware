@@ -57,7 +57,7 @@ int Fluorescence::getNumTargetHolders() {
 void Fluorescence::setCurrentTargetHolder(int index) {
     if (index < 0 || index >= (int)targetHolder.size()) {
         std::ostringstream oss;
-        oss << "Current target holder must be less than " << targetHolder.size();
+        oss << "Current target holder " << index <<  " must be less than " << targetHolder.size();
         throw RuntimeError(oss.str());
     }
     currentTargetHolder = index;
@@ -95,11 +95,20 @@ void Fluorescence::addTarget(std::string name, std::string energy) {
     targetHolder[targetHolder.size() - 1]->addTarget(name, energy);
 }
 
+void Fluorescence::changeTarget(int holderIndex, int targetIndex, std::string name, std::string energy) {
+    if (holderIndex < 0 || holderIndex >= (int)targetHolder.size()) {
+        std::ostringstream oss;
+        oss << "Holder index must be less than " << targetHolder.size();
+        throw RuntimeError(oss.str());
+    }
+    targetHolder[holderIndex]->changeTarget(targetIndex, name, energy);
+}
+
 std::string Fluorescence::getList(int index) {
     std::string result;
     if (index < 0 || index >= (int)targetHolder.size()) {
         std::ostringstream oss;
-        oss << "Holder index must be less than " << targetHolder.size();
+        oss << "Holder index " << index << " must be less than " << targetHolder.size();
         throw RuntimeError(oss.str());
     }
 #ifdef XRAYBOX
