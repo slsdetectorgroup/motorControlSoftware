@@ -500,7 +500,9 @@ string Initialize::executeCommand(vector<string> args) {
 				energy.push_back(args[i]);
 			}
 			fluorescence[ifluor]->addHolder(target, energy);
-			return "ok";
+			oss << "Holder appended for " << name 
+			<< " to position " << fluorescence[ifluor]->getNumTargetHolders() - 1;
+			return oss.str();
 		}					
 
 		else if (!strcasecmp(command.c_str(), "fllist")) {
