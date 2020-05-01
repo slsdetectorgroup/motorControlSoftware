@@ -476,7 +476,9 @@ string Initialize::executeCommand(vector<string> args) {
 			OnlyFluorescenceCommand(name);
 			int ifluor = GetFluorescenceIndex(name);
 			fluorescence[ifluor]->deleteLastTargetHolder();
-			return "ok";
+			oss << "Last holder deleted for " << name 
+			<< ". Num holders: " << fluorescence[ifluor]->getNumTargetHolders();
+			return oss.str();
 		}	
  
 		else if (!strcasecmp(command.c_str(), "addholder")) {
