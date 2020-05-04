@@ -12,8 +12,10 @@
 #define DEFAULT_SERVER_HOSTNAME 		("mpc2128.psi.ch")
 #elif LASERBOX
 #define DEFAULT_SERVER_HOSTNAME 		("mpc2085.psi.ch")
-#else
+#elsif VACUUMBOX
 #define DEFAULT_SERVER_HOSTNAME 		("mpc2069.psi.ch")
+#else
+#define DEFAULT_SERVER_HOSTNAME 		("mpc1922.psi.ch")
 #endif
 #define PORT_NO 						(1111)
 

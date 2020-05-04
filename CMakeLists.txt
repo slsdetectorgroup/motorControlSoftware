@@ -13,6 +13,8 @@ option (USE_CLIENT "CLIENT" ON)
 option (USE_BIG_XRAY "Big Xray Box" OFF)
 option (USE_LASER "Laser Box" OFF)
 option (USE_VACUUM "Vacuum Box" OFF)
+option (USE_GENERIC "Generic" OFF)
+option (USE_VIRTUAL "Virtual Server" OFF)
 
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "No build type selected, default to Release")

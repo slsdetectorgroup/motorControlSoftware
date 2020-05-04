@@ -35,6 +35,10 @@ if (USE_VACUUM)
     list(APPEND defenitions VACUUMBOX)
 endif(USE_VACUUM)
 
+if (USE_GENERIC)
+    list(APPEND bin_names motorControlClient)
+    list(APPEND defenitions GENERIC)
+endif(USE_GENERIC)
 
 #Calculate the length for doing the iteration
 list(LENGTH bin_names tmp)

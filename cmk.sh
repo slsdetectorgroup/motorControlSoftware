@@ -3,6 +3,8 @@ GUI=0
 BIG_XRAY=0
 LASER=0
 VACUUM=0
+GENERIC=0
+VIRTUAL=0
 
 DEBUG=0
 BUILDDIR="build"
@@ -12,12 +14,14 @@ CMAKE_PRE=""
 CMAKE_POST=""
 
 usage() { echo -e "
-Usage: $0 [x] [v] [l] [s] [-c] [-b] [g] [e] [-j] <Number of threads>
+Usage: $0 [x] [v] [l] [m] [t] [s] [-c] [-b] [g] [e] [-j] <Number of threads>
 -[no option]: only make
  -s: server only, otherwise client
  -x: xray box
  -v: vacuum box
  -l: laser box
+ -m: generic for beamtime usage
+ -t: virtual test motor server
  -c: Clean
  -b: Builds/Rebuilds CMake files normal mode
  -g: Build/Rebuilds only gui
@@ -25,7 +29,7 @@ Usage: $0 [x] [v] [l] [s] [-c] [-b] [g] [e] [-j] <Number of threads>
  -j: Number of threads to compile through
  " ; exit 1; }
 
- while getopts ":sxvlbcj:ge" opt ; do
+ while getopts ":sxvlmtbcj:ge" opt ; do
 	case $opt in
 	s) 
         SERVER=1
@@ -41,6 +45,14 @@ Usage: $0 [x] [v] [l] [s] [-c] [-b] [g] [e] [-j] <Number of threads>
 		;;
 	l) 
         LASER=1
+		REBUILD=1
+		;;
+	m) 
+        GENERIC=1
+		REBUILD=1
+		;;
+	t) 
+        VIRTUAL=1
 		REBUILD=1
 		;;
 	b) 
@@ -119,6 +131,18 @@ fi
 if [ $VACUUM -eq 1 ]; then
 	CMAKE_POST+=" -DUSE_VACUUM=ON "
 	echo "Enabling Compile Option: Vacuum Box"
+fi
+
+#generic
+if [ $GENERIC -eq 1 ]; then
+	CMAKE_POST+=" -DUSE_GENERIC=ON "
+	echo "Enabling Compile Option: Generic for beamtime usage"
+fi
+
+#virtual
+if [ $VIRTUAL -eq 1 ]; then
+	CMAKE_POST+=" -DUSE_VIRTUAL=ON "
+	echo "Enabling Compile Option: Virtual server for testing purposes"
 fi
 
 #gui

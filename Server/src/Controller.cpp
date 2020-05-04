@@ -20,6 +20,9 @@ Controller::Controller(const int index, const std::string name, const std::strin
 }
 
 bool Controller::CheckControllerSerialNumber(Interface* interface, std::string serialNumber) {
+#ifdef VIRTUAL
+    return true;
+#endif
     std::string result = interface->ControllerSend("getserialno ", true);
     interface->ControllerWaitForIdle();
     std::istringstream iss(result);
@@ -75,6 +78,9 @@ Motor* Controller::getMotor(int axis) const {
 }
 
 void Controller::updateAxisEnabled() {
+#ifdef VIRTUAL
+    return;
+#endif
     for (size_t i = 0; i < motor.size(); ++i) {
         int axis = i + 1;
         int enable = motor[i] == NULL ? 0 : 1;
@@ -86,6 +92,9 @@ void Controller::updateAxisEnabled() {
 }
 
 void Controller::debugPositions() {
+#ifdef VIRTUAL
+    return;
+#endif
     std::vector<double> pos;
     while (pos.size() != 3) {
         std::string result = interface->ControllerSend("pos ", true);
@@ -114,6 +123,12 @@ void Controller::moveRel(double position, int axis) {
         throw RuntimeError(oss.str());
     }
     // move    
+#ifdef VIRTUAL
+    motor[axis]->setPosition(motor[axis]->getPosition() + position);
+    FILE_LOG(logDEBUG) << axis << " virtual position set to " 
+        << motor[axis]->getPosition();    
+    return;
+#endif
     double positions[3] = {0.0, 0.0, 0.0};
     positions[axis] = position;
     oss << positions[0] << ' ' << positions[1] << ' ' << positions[2] << " r ";
@@ -136,6 +151,11 @@ void Controller::moveAbs(double position, int axis) {
         throw RuntimeError(oss.str());
     }
     // move
+#ifdef VIRTUAL
+    motor[axis]->setPosition(position);
+    FILE_LOG(logDEBUG) << axis << " virtual position set to " << position;    
+    return;
+#endif
     double positions[3] = {0.0, 0.0, 0.0};
     for (int i = 0; i < 3; ++i) {
         if (motor[i] !=  NULL) {
@@ -152,6 +172,11 @@ void Controller::moveAbs(double position, int axis) {
 }
 
 void Controller::resetPosition(double position, int axis) {
+#ifdef VIRTUAL
+    motor[axis]->setPosition(position);
+    FILE_LOG(logDEBUG) << axis << " virtual position set to " << position;    
+    return;
+#endif
     double positions[3] = {0.0, 0.0, 0.0};
     for (int i = 0; i < 3; ++i) {
         if (motor[i] !=  NULL) {
@@ -168,6 +193,11 @@ void Controller::resetPosition(double position, int axis) {
 }
 
 void Controller::calibrate(int axis) {
+#ifdef VIRTUAL
+    motor[axis]->setPosition(0);
+    FILE_LOG(logDEBUG) << axis << " virtual position set to " << 0;    
+    return;
+#endif
     std::ostringstream oss;
     oss << axis + 1 << " ncal ";
     interface->ControllerSend(oss.str());   
@@ -181,6 +211,9 @@ void Controller::calibrate(int axis) {
 }
 
 void Controller::rangeMeasure(int axis) {
+#ifdef VIRTUAL
+    throw RuntimeError("Cannot range measure on a virtual server");
+#endif
     std::ostringstream oss;
     oss << axis + 1 << " nrm ";
     interface->ControllerSend(oss.str());   
@@ -195,12 +228,18 @@ void Controller::stop() {
 }
 
 void Controller::sendCommand(std::string command) {
+#ifdef VIRTUAL
+    throw RuntimeError("Cannot send random command on a virtual server");
+#endif
     FILE_LOG(logINFO) << "Sending command: [" << command << "] to " << name;
     interface->ControllerSend(command);
     interface->ControllerWaitForIdle();
 }
 
 std::string Controller::sendCommandAndReadBack(std::string command) {
+#ifdef VIRTUAL
+    throw RuntimeError("Cannot send random command and read back on a virtual server");
+#endif
     FILE_LOG(logINFO) << "Sending command to read back: [" << command << "] to " << name;
     std::string result = interface->ControllerSend(command, true);
     interface->ControllerWaitForIdle();

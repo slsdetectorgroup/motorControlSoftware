@@ -31,8 +31,10 @@ void Gui::LayoutWindow() {
 	oss << "XRay Box Gui";
 #elif LASERBOX
 	oss << "Laser Box Gui";
-#else
+#elif VACUUMBOX
 	oss << "Vacuum Box Gui";
+#else
+	oss << "Motor Control Gui";
 #endif
 	oss << " - Motor Control Software (" << hostname << ")";
 	std::string title = oss.str();
@@ -45,7 +47,7 @@ void Gui::LayoutWindow() {
 	groupFluorescence->hide();
 	groupSlits->hide();
 	groupFilterWheels->hide();
-#ifdef LASERBOX
+#if !defined(XRAYBOX) && !defined(VACUUMBOX)
 	groupPressure->hide();
 	widgetTube->hide();
 	resize(WINDOW_WIDTH_NO_TUBE, WINDOW_HEIGHT_REFERENCE);
@@ -64,7 +66,7 @@ void Gui::LayoutWindow() {
 	// one can check this later if they want, takes up too much time
 	//groupPressure->setChecked(true);
 //#endif
-#ifndef LASERBOX
+#if defined(XRAYBOX) || defined(VACUUMBOX)
 	groupTube->setChecked(true);
 #endif
 	layoutDone = true;

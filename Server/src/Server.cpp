@@ -21,10 +21,14 @@ int main(int argc, char *argv[]) {
 	FILE_LOG(logINFOBLUE) << "XRay Box Server";
 #elif LASERBOX
 	FILE_LOG(logINFOBLUE) << "Laser Box Server";
-#else
+#elif VACUUMBOX
 	FILE_LOG(logINFOBLUE) << "Vacuum Box Server";
+#else
+	FILE_LOG(logINFOBLUE) << "Motor Control Server";
 #endif
-
+#ifdef VIRTUAL
+	FILE_LOG(logINFOBLUE) << "Virtual Server";
+#endif
     // if socket crash, ignores SISPIPE, prevents global signal handler
     // subsequent read/write to socket gives error - must handle locally
     signal(SIGPIPE, SIG_IGN);
@@ -145,8 +149,10 @@ int main(int argc, char *argv[]) {
 							"x-ray"
 #elif LASERBOX
 							"laser"
-#else
+#elif VACUUMBOX
 							"vacuum"
+#else
+							"motorControlServer"
 #endif
 							" %s \n\nUser Name\t%s: %s\nPC Name\t\t: %s\nLast Command at\t: %s\n\n"
 							"Please check with this person before you use \"unlock\".\n", 

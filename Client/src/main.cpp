@@ -9,8 +9,10 @@ int main(int argc, char* argv[]) {
 	  std::cout << "XRay Box Client";
 #elif LASERBOX
 	  std::cout << "Laser Box Client";
-#else
+#elif VACUUMBOX
 	  std::cout << "Vacuum Box Client";
+#else
+	  std::cout << "Motor Control Client";
 #endif
 
     char args[TCP_PACKET_LENGTH];

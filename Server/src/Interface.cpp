@@ -87,6 +87,10 @@ int Interface::getSerialPortNumber() {
 void Interface::ControllerInterface() {
 	std::cout << std::endl;
 	FILE_LOG(logINFO) << "\tMotorcontroller, checking:" << serial;
+#ifdef VIRTUAL
+	FILE_LOG(logINFO) << "\tFound controller port (virtual)";
+	return;
+#endif
 	serialfd = open (serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
 	if (serialfd == -1) {
 		FILE_LOG(logDEBUG) << "Unable to open port " << serial << " for controller";
@@ -148,6 +152,9 @@ bool Interface::ControllerIsIdle(std::string result) {
 }
 
 void Interface::ControllerWaitForIdle() {
+#ifdef VIRTUAL
+	return;
+#endif
 	for (;;) {
 		std::string result = ControllerSend(CONTROLLER_CHECK_STATUS_CMD, true);
 		if (ControllerIsIdle(result)) {
