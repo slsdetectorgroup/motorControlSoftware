@@ -15,7 +15,7 @@
 #elsif VACUUMBOX
 #define DEFAULT_SERVER_HOSTNAME 		("mpc2069.psi.ch")
 #else
-#define DEFAULT_SERVER_HOSTNAME 		("mpc1922.psi.ch")
+#define DEFAULT_SERVER_HOSTNAME 		("localhost")
 #endif
 #define PORT_NO 						(1111)
 
