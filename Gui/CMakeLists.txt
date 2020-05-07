@@ -115,8 +115,10 @@ foreach(val RANGE ${len})
         # z
         Qt4::QtOpenGL
         Qt4::QtSvg
-        project_warnings
     )  
+    if (${CMAKE_MAJOR_VERSION}$ GREATER "2")
+        target_link_libraries(${exename} PRIVATE project_warnings)
+    endif()
     set_target_properties(${exename} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     )

@@ -7,6 +7,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
+
+
 option (USE_GUI "GUI" OFF)
 option (USE_SERVER "SERVER" OFF)
 option (USE_CLIENT "CLIENT" ON)
@@ -35,9 +37,15 @@ find_package(ClangFormat)
 
 
 # standard compiler warnings
-add_library(project_warnings INTERFACE)
-include(cmake/CompilerWarnings.cmake)
-set_project_warnings(project_warnings)
+if (${CMAKE_MAJOR_VERSION}$ LESS "3")
+    message(STATUS "CMake major version less than 3 using -Wall -Wextra instead of warning list")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+else()
+    add_library(project_warnings INTERFACE)
+    include(cmake/CompilerWarnings.cmake)
+    set_project_warnings(project_warnings)
+endif()
+
 
 
 if (USE_CLIENT)
