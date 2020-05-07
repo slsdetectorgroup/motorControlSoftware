@@ -6,7 +6,7 @@
 #include <QTimer>
 
 #include <sstream>
-
+#include <unistd.h>
 #define TUBE_ERROR_INITIAL_WARM_UP (70)
 #define TUBE_ERROR_WARM_UP         (106)
 #define TUBE_ERROR_WARM_UP2        (109)
