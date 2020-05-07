@@ -62,6 +62,7 @@ foreach(val RANGE ${len})
     set_target_properties(${exename} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     )
+    target_link_libraries(${exename} PRIVATE project_warnings)
     target_compile_definitions(${exename} PRIVATE REMOTE ${defname})
     install(TARGETS ${exename}  DESTINATION bin)
 endforeach()

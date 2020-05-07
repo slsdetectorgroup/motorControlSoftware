@@ -3,7 +3,7 @@ project(MotorControl)
 
 set (CMAKE_CXX_STANDARD 98)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -Wextra")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
@@ -32,6 +32,12 @@ set(ClangFormat_EXCLUDE_PATTERNS "build/"
                                  ${CMAKE_BINARY_DIR}
 )
 find_package(ClangFormat)
+
+
+# standard compiler warnings
+add_library(project_warnings INTERFACE)
+include(cmake/CompilerWarnings.cmake)
+set_project_warnings(project_warnings)
 
 
 if (USE_CLIENT)
