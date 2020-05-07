@@ -63,7 +63,7 @@ inline int Message(MessageIndex index, std::string message, std::string source,
         return OK;
     }
     return FAIL;
-};
+}
 
 inline int getInteger(std::string result) {
     int value = 0;
@@ -73,7 +73,7 @@ inline int getInteger(std::string result) {
         throw std::runtime_error("Cannot scan int from " + result);
     }
     return value;
-};
+}
 
 inline double getDouble(std::string result) {
     double value = 0;
@@ -83,7 +83,7 @@ inline double getDouble(std::string result) {
         throw std::runtime_error("Cannot scan double from " + result);
     }
     return value;
-};
+}
 
 inline std::string SendCommand(std::string hostname, int nCommand,
                                std::string command, std::string source) {
@@ -135,4 +135,4 @@ inline std::string SendCommand(std::string hostname, int nCommand,
         Message(WARNING, e.what(), source);
     }
     return result;
-};
+}
