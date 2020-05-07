@@ -2,8 +2,8 @@
 #ifndef MY_SOCKET_TCP_H
 #define MY_SOCKET_TCP_H
 
-#define SEND_REC_MAX_SIZE 4096
-#define DEFAULT_PORTNO 1952
+#define SEND_REC_MAX_SIZE       4096
+#define DEFAULT_PORTNO          1952
 #define DEFAULT_PORTNO_GOTTHARD 1955
 
 /**
@@ -55,61 +55,61 @@
 
 class MySocketTCP {
 
-public:
-  MySocketTCP(
-      const char *const host_ip_or_name,
-      unsigned short int const port_number); // sender (client): where to? ip
-  MySocketTCP(unsigned short int const
-                  port_number); // receiver (server) local no need for ip
-  ~MySocketTCP();
+  public:
+    MySocketTCP(
+        const char *const host_ip_or_name,
+        unsigned short int const port_number); // sender (client): where to? ip
+    MySocketTCP(unsigned short int const
+                    port_number); // receiver (server) local no need for ip
+    ~MySocketTCP();
 
-  int getHostname(char *name);
-  int getPortNumber() { return portno; };
-  int getErrorStatus() {
-    if (socketDescriptor < 0)
-      return 1;
-    else
-      return 0;
-  };
+    int getHostname(char *name);
+    int getPortNumber() { return portno; };
+    int getErrorStatus() {
+        if (socketDescriptor < 0)
+            return 1;
+        else
+            return 0;
+    };
 
-  int Connect();     // establish connection a Disconnect should always follow
-  void Disconnect(); // free connection
-  /** Set the socket timeout ts is in seconds */
-  int SetTimeOut(int ts);
+    int Connect();     // establish connection a Disconnect should always follow
+    void Disconnect(); // free connection
+    /** Set the socket timeout ts is in seconds */
+    int SetTimeOut(int ts);
 
-  // The following two functions will connectioned->send/receive->disconnect
-  int SendData(void *buf, int length); // length in characters
-  int ReceiveData(void *buf, int length);
+    // The following two functions will connectioned->send/receive->disconnect
+    int SendData(void *buf, int length); // length in characters
+    int ReceiveData(void *buf, int length);
 
-  // The following two functions stay connected, blocking other connections, and
-  // must be manually disconnected,
-  //          when the last call is a SendData() or ReceiveData() the
-  //          disconnection will be done automatically
-  // These function will also automatically disconnect->reconnect if
-  //          two reads (or two writes) are called in a row to preserve the data
-  //          send/receive structure
-  int SendDataAndKeepConnection(void *buf, int length);
-  int ReceiveDataAndKeepConnection(void *buf, int length);
+    // The following two functions stay connected, blocking other connections,
+    // and must be manually disconnected,
+    //          when the last call is a SendData() or ReceiveData() the
+    //          disconnection will be done automatically
+    // These function will also automatically disconnect->reconnect if
+    //          two reads (or two writes) are called in a row to preserve the
+    //          data send/receive structure
+    int SendDataAndKeepConnection(void *buf, int length);
+    int ReceiveDataAndKeepConnection(void *buf, int length);
 
-  // Danger! These functions do not connect nor disconnect nor flush the data!
-  // be sure that send-receive match perfectly on both server and client side!
-  int SendDataOnly(void *buf, int length);
-  int ReceiveDataOnly(void *buf, int length);
+    // Danger! These functions do not connect nor disconnect nor flush the data!
+    // be sure that send-receive match perfectly on both server and client side!
+    int SendDataOnly(void *buf, int length);
+    int ReceiveDataOnly(void *buf, int length);
 
-private:
-  char hostname[1000];
-  int portno;
+  private:
+    char hostname[1000];
+    int portno;
 
-  int is_a_server;
-  int socketDescriptor;
-  struct sockaddr_in clientAddress, serverAddress;
-  socklen_t clientAddress_length;
+    int is_a_server;
+    int socketDescriptor;
+    struct sockaddr_in clientAddress, serverAddress;
+    socklen_t clientAddress_length;
 
-  int file_des;
+    int file_des;
 
-  int send_rec_max_size;
-  bool last_keep_connection_open_action_was_a_send;
+    int send_rec_max_size;
+    bool last_keep_connection_open_action_was_a_send;
 
-  //  void SetupParameters();
+    //  void SetupParameters();
 };
 #endif
