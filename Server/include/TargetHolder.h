@@ -2,11 +2,11 @@
 
 class Controller;
 
-#include <vector>
 #include <string>
+#include <vector>
 
 class TargetHolder {
-  public:
+public:
   TargetHolder(int index);
   int getNumTargets();
   bool isFull();
@@ -17,7 +17,7 @@ class TargetHolder {
   std::string getList();
   void print();
 
-  private:
+private:
   int index;
   std::vector<std::string> targetName;
   std::vector<std::string> targetEnergy;

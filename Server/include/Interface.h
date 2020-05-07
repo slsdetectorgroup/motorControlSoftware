@@ -2,12 +2,10 @@
 
 #include <string>
 
-
-enum InterfaceIndex{CONTROLLER, TUBE, PRESSURE, FILTER_WHEEL};
-
+enum InterfaceIndex { CONTROLLER, TUBE, PRESSURE, FILTER_WHEEL };
 
 class Interface {
-  public:
+public:
   Interface(std::string serial, int serialPortNumber, InterfaceIndex index);
   ~Interface();
   std::string getSerial();
@@ -24,7 +22,7 @@ class Interface {
   void PressureInterface();
   /* Calls PressureGaugeSendCommand handles exceptions */
   std::string PressureGaugeSend(std::string command);
-  
+
   void FilterWheelInterface();
   /* Calls FilterWheelSendCommand handles exceptions */
   std::string FilterWheelSend(std::string command, bool readBack = false);

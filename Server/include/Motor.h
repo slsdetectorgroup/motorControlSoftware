@@ -1,33 +1,30 @@
 #pragma once
 
-
 #include "Interface.h"
 
 class Motor {
- public:
-
-  Motor(int index, std::string name, int axis, int controller, double lowerLimit, double upperLimit);
+public:
+  Motor(int index, std::string name, int axis, int controller,
+        double lowerLimit, double upperLimit);
   static bool matches(double position1, double position2);
   std::string getName();
   int getAxis();
   int getController();
-  void setLowerLimit(double lowerLimit);	
+  void setLowerLimit(double lowerLimit);
   double getLowerLimit();
-  void setUpperLimit(double upperLimit);	
+  void setUpperLimit(double upperLimit);
   double getUpperLimit();
-  void setPosition(double position);  
+  void setPosition(double position);
   double getPosition();
   bool canMotorMove(double position);
   void print();
 
- private:
- int index;
+private:
+  int index;
   std::string name;
   int axis;
   int controller;
   double lowerLimit;
   double upperLimit;
   double position;
-
-}; 
-
+};

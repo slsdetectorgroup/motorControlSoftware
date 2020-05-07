@@ -3,27 +3,28 @@
 class QStatusBar;
 #include "ui_form_fwheelwidget.h"
 
-class FwheelWidget:public QWidget, private Ui::FwheelWidgetObject {
+class FwheelWidget : public QWidget, private Ui::FwheelWidgetObject {
   Q_OBJECT
-    public: 
-    FwheelWidget(QWidget *parent, std::string name, std::string hostname, QStatusBar* statusBar);
-    ~FwheelWidget();
-    std::string GetName();
- 
-    public:
-    void Update();
+public:
+  FwheelWidget(QWidget *parent, std::string name, std::string hostname,
+               QStatusBar *statusBar);
+  ~FwheelWidget();
+  std::string GetName();
 
-    private slots:
-    void SetValue();
+public:
+  void Update();
 
-    private:
-    void LayoutWindow();
-    void LoadAbsorptionValues();
-    void Initialization();
+private slots:
+  void SetValue();
 
-    void GetValue();
+private:
+  void LayoutWindow();
+  void LoadAbsorptionValues();
+  void Initialization();
 
-    std::string name;
-    std::string hostname;
-    QStatusBar* statusBar;
+  void GetValue();
+
+  std::string name;
+  std::string hostname;
+  QStatusBar *statusBar;
 };

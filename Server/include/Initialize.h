@@ -10,24 +10,23 @@ class Controller;
 class Motor;
 #include "Interface.h"
 
-#include <vector>
-#include <string>
 #include "time.h"
-
+#include <string>
+#include <vector>
 
 class Initialize {
- public:
+public:
   Initialize();
   ~Initialize();
   std::string executeCommand(std::vector<std::string> args);
 
- private:
+private:
   void OnlySlitCommand();
   void OnlyTubeCommand();
   void OnlyFluorescenceCommand(std::string name);
   void RestrictedForSlitAndFluorescence(std::string name);
   void UpdateSlitLimits(std::string name);
-  int GetFwheelIndex(std::string name);  
+  int GetFwheelIndex(std::string name);
   int GetFluorescenceIndex(std::string name);
   int GetMotorIndex(std::string name);
   int GetControllerIndex(std::string name);
@@ -42,14 +41,13 @@ class Initialize {
   void MotorMode(std::vector<std::string> args);
 
   std::vector<bool> usbSerialPortsUsed;
-  Xray* xrayTube;
-  Pgauge* pgauge;
-  std::vector<Fwheel*> fwheel;
-  ReferencePoints* referencePoints;
-  std::vector<Fluorescence*> fluorescence;
-  Slit* slit;
-  std::vector<Controller*> controller;
-  std::vector<Motor*> motor;
+  Xray *xrayTube;
+  Pgauge *pgauge;
+  std::vector<Fwheel *> fwheel;
+  ReferencePoints *referencePoints;
+  std::vector<Fluorescence *> fluorescence;
+  Slit *slit;
+  std::vector<Controller *> controller;
+  std::vector<Motor *> motor;
   int maxTubePower;
 };
-

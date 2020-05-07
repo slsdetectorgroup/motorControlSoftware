@@ -3,9 +3,9 @@
 #include "Controller.h"
 
 class Slit {
- public:
-
-  Slit(Controller* controllerX1, Controller* controllerX2, int axisX1, int axisX2);
+public:
+  Slit(Controller *controllerX1, Controller *controllerX2, int axisX1,
+       int axisX2);
   void updateLimits();
   std::string canBothMove(double position1, double position2);
   double getSlitWidth();
@@ -13,12 +13,11 @@ class Slit {
   double getCenter();
   void setCenter(double center);
   void print();
-  
 
- private:
-  Controller* controllerX1;
-  Controller* controllerX2;
+private:
+  Controller *controllerX1;
+  Controller *controllerX2;
   int axisX1;
   int axisX2;
-  double limit; 
-}; 
+  double limit;
+};
