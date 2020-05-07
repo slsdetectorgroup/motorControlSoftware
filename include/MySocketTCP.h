@@ -78,8 +78,8 @@ class MySocketTCP {
     int SetTimeOut(int ts);
 
     // The following two functions will connectioned->send/receive->disconnect
-    int SendData(void *buf, int length); // length in characters
-    int ReceiveData(void *buf, int length);
+    ssize_t SendData(void *buf, ssize_t length); // length in characters
+    ssize_t ReceiveData(void *buf, ssize_t length);
 
     // The following two functions stay connected, blocking other connections,
     // and must be manually disconnected,
@@ -88,13 +88,13 @@ class MySocketTCP {
     // These function will also automatically disconnect->reconnect if
     //          two reads (or two writes) are called in a row to preserve the
     //          data send/receive structure
-    int SendDataAndKeepConnection(void *buf, int length);
-    int ReceiveDataAndKeepConnection(void *buf, int length);
+    ssize_t SendDataAndKeepConnection(void *buf, ssize_t length);
+    ssize_t ReceiveDataAndKeepConnection(void *buf, ssize_t length);
 
     // Danger! These functions do not connect nor disconnect nor flush the data!
     // be sure that send-receive match perfectly on both server and client side!
-    int SendDataOnly(void *buf, int length);
-    int ReceiveDataOnly(void *buf, int length);
+    ssize_t SendDataOnly(void *buf, ssize_t length);
+    ssize_t ReceiveDataOnly(void *buf, ssize_t length);
 
   private:
     char hostname[1000];

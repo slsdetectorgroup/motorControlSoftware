@@ -49,7 +49,7 @@ MySocketTCP::MySocketTCP(unsigned short int const port_number)
             return;
         }
 
-        if (bind(socketDescriptor, (struct sockaddr *)&serverAddress,
+        if (bind(socketDescriptor, reinterpret_cast<sockaddr *>(&serverAddress),
                  sizeof(serverAddress)) < 0) {
             cerr << "Can not bind socket " << endl;
             socketDescriptor = -1;
@@ -76,8 +76,8 @@ MySocketTCP::MySocketTCP(const char *const host_ip_or_name,
     } else {
         // Set some fields in the serverAddress structure.
         serverAddress.sin_family = hostInfo->h_addrtype;
-        memcpy((char *)&serverAddress.sin_addr.s_addr, hostInfo->h_addr_list[0],
-               hostInfo->h_length);
+        memcpy(reinterpret_cast<char *>(&serverAddress.sin_addr.s_addr),
+               hostInfo->h_addr_list[0], hostInfo->h_length);
         serverAddress.sin_port = htons(port_number);
         socketDescriptor = 0; // You can use send and recv, //would it work?????
     }
@@ -88,7 +88,7 @@ int MySocketTCP::getHostname(char *name) {
         strcpy(name, hostname);
     }
     return is_a_server;
-};
+}
 
 int MySocketTCP::Connect() {
 
@@ -99,9 +99,9 @@ int MySocketTCP::Connect() {
                        // connection
 
         if (socketDescriptor > 0) {
-            if ((file_des =
-                     accept(socketDescriptor, (struct sockaddr *)&clientAddress,
-                            &clientAddress_length)) < 0) {
+            if ((file_des = accept(socketDescriptor,
+                                   reinterpret_cast<sockaddr *>(&clientAddress),
+                                   &clientAddress_length)) < 0) {
 
                 cerr << "Error: with server accept, connection refused" << endl;
 
@@ -173,7 +173,8 @@ int MySocketTCP::Connect() {
             file_des = socketDescriptor;
         } else {
 
-            if (connect(socketDescriptor, (struct sockaddr *)&serverAddress,
+            if (connect(socketDescriptor,
+                        reinterpret_cast<sockaddr *>(&serverAddress),
                         sizeof(serverAddress)) < 0) {
                 cerr << "Can not connect to socket " << endl;
                 file_des = -1;
@@ -220,17 +221,19 @@ void MySocketTCP::Disconnect() {
     }
 }
 
-int MySocketTCP::SendDataOnly(void *buf, int length) { // length in characters
+ssize_t MySocketTCP::SendDataOnly(void *buf,
+                                  ssize_t length) { // length in characters
     if (file_des < 0)
         return -1;
     if (length == 0) {
         return 0;
     }
-    int total_sent = 0;
+    ssize_t total_sent = 0;
     while (length > 0) {
-        int nsending =
+        ssize_t nsending =
             (length > send_rec_max_size) ? send_rec_max_size : length;
-        int nsent = write(file_des, (char *)buf + total_sent, nsending);
+        ssize_t nsent =
+            write(file_des, static_cast<char *>(buf) + total_sent, nsending);
         if (nsent <= 0) {
             if (!total_sent) {
                 cout << "Possible socket crash?" << endl;
@@ -244,33 +247,35 @@ int MySocketTCP::SendDataOnly(void *buf, int length) { // length in characters
     return total_sent;
 }
 
-int MySocketTCP::SendData(void *buf, int length) { // length in characters
-    int ndata = SendDataAndKeepConnection(buf, length);
+ssize_t MySocketTCP::SendData(void *buf,
+                              ssize_t length) { // length in characters
+    ssize_t ndata = SendDataAndKeepConnection(buf, length);
     Disconnect();
     return ndata;
 }
 
-int MySocketTCP::SendDataAndKeepConnection(void *buf,
-                                           int length) { // length in characters
+ssize_t
+MySocketTCP::SendDataAndKeepConnection(void *buf,
+                                       ssize_t length) { // length in characters
     if (last_keep_connection_open_action_was_a_send)
         Disconnect(); // to keep a structured data flow;
 
     Connect();
-    int total_sent = SendDataOnly(buf, length);
+    ssize_t total_sent = SendDataOnly(buf, length);
     last_keep_connection_open_action_was_a_send = 1;
     return total_sent;
 }
 
-int MySocketTCP::ReceiveDataOnly(void *buf, int length) { // length in
-                                                          // characters
-    int total_received = 0;
+ssize_t MySocketTCP::ReceiveDataOnly(void *buf, ssize_t length) { // length in
+                                                                  // characters
+    ssize_t total_received = 0;
     if (file_des < 0)
         return -1;
     while (length > 0) {
-        int nreceiving =
+        ssize_t nreceiving =
             (length > send_rec_max_size) ? send_rec_max_size : length;
-        int nreceived =
-            read(file_des, (char *)buf + total_received, nreceiving);
+        ssize_t nreceived = read(
+            file_des, static_cast<char *>(buf) + total_received, nreceiving);
         if (nreceived <= 0) {
             if (!total_received) {
                 cout << "Possible socket crash?" << endl;
@@ -284,20 +289,21 @@ int MySocketTCP::ReceiveDataOnly(void *buf, int length) { // length in
     return total_received;
 }
 
-int MySocketTCP::ReceiveData(void *buf, int length) { // length in characters
-    int ndata = ReceiveDataAndKeepConnection(buf, length);
+ssize_t MySocketTCP::ReceiveData(void *buf,
+                                 ssize_t length) { // length in characters
+    ssize_t ndata = ReceiveDataAndKeepConnection(buf, length);
     Disconnect();
     return ndata;
 }
 
-int MySocketTCP::ReceiveDataAndKeepConnection(
-    void *buf, int length) { // length in characters
+ssize_t MySocketTCP::ReceiveDataAndKeepConnection(
+    void *buf, ssize_t length) { // length in characters
     if (!last_keep_connection_open_action_was_a_send)
         Disconnect(); // to a keep structured data flow;
 
     Connect();
     //  should preform two reads one to receive incomming char count
-    int total_received = ReceiveDataOnly(buf, length);
+    ssize_t total_received = ReceiveDataOnly(buf, length);
     last_keep_connection_open_action_was_a_send = 0;
     return total_received;
 }

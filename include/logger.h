@@ -89,8 +89,7 @@ class Logger {
         gettimeofday(&tv, NULL);
         const size_t result_len = 100;
         char result[result_len];
-        snprintf(result, result_len, "%s.%03ld", buffer,
-                 (long)tv.tv_usec / 1000);
+        snprintf(result, result_len, "%s.%03ld", buffer, tv.tv_usec / 1000);
         result[result_len - 1] = '\0';
         return result;
     }
