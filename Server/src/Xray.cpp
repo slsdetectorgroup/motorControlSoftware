@@ -1,9 +1,9 @@
 #include "Xray.h"
 #include "commonDefs.h"
-
 #include <cstring>
 #include <iostream>
 #include <stdio.h>
+#include <unistd.h>
 
 #define TUBE_STANDBY_VALUE (76)
 #define TUBE_NUM_SHUTTERS  (4)
@@ -31,12 +31,12 @@
 //#define TUBE_HV_TRANSITION_VAL	(12)
 
 Xray::Xray(Interface *interface) : interface(interface), maxTubePower(0) {
-    FILE_LOG(logINFO) << "Tube: [usbPort:" << interface->getSerial() << "]";
+    LOG(logINFO) << "Tube: [usbPort:" << interface->getSerial() << "]";
 }
 
 Xray::~Xray() {
     delete interface;
-    FILE_LOG(logINFO) << "Deleting tube interface and class";
+    LOG(logINFO) << "Deleting tube interface and class";
 }
 
 Interface *Xray::getInterface() { return interface; }
@@ -402,7 +402,7 @@ bool Xray::getShutter(int index) {
     while (status == SHUTTER_TRANSITION_VAL) {
         status = getShutterStatus(index);
     }
-    FILE_LOG(logINFO) << "Shutter " << index << ": " << status;
+    LOG(logINFO) << "Shutter " << index << ": " << status;
     if (status == SHUTTER_ON_VALUE) {
         return true;
     }
@@ -447,13 +447,12 @@ bool Xray::isAccessPossible() {
 }
 
 void Xray::sendCommand(std::string command) {
-    FILE_LOG(logINFO) << "Sending command: [" << command << "] to tube";
+    LOG(logINFO) << "Sending command: [" << command << "] to tube";
     interface->TubeSend(command);
 }
 
 std::string Xray::sendCommandAndReadBack(std::string command) {
-    FILE_LOG(logINFO) << "Sending command to read back: [" << command
-                      << "] to tube";
+    LOG(logINFO) << "Sending command to read back: [" << command << "] to tube";
     return interface->TubeSend(command, true);
 }
 

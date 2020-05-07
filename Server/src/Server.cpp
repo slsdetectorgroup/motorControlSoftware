@@ -16,16 +16,16 @@
 
 int main(int argc, char *argv[]) {
 #ifdef XRAYBOX
-    FILE_LOG(logINFOBLUE) << "XRay Box Server";
+    LOG(logINFOBLUE) << "XRay Box Server";
 #elif LASERBOX
-    FILE_LOG(logINFOBLUE) << "Laser Box Server";
+    LOG(logINFOBLUE) << "Laser Box Server";
 #elif VACUUMBOX
-    FILE_LOG(logINFOBLUE) << "Vacuum Box Server";
+    LOG(logINFOBLUE) << "Vacuum Box Server";
 #else
-    FILE_LOG(logINFOBLUE) << "Motor Control Server";
+    LOG(logINFOBLUE) << "Motor Control Server";
 #endif
 #ifdef VIRTUAL
-    FILE_LOG(logINFOBLUE) << "Virtual Server";
+    LOG(logINFOBLUE) << "Virtual Server";
 #endif
     // if socket crash, ignores SISPIPE, prevents global signal handler
     // subsequent read/write to socket gives error - must handle locally
@@ -33,9 +33,9 @@ int main(int argc, char *argv[]) {
 
     int portno = PORT_NO;
     if (argc == 1) {
-        FILE_LOG(logINFO) << "Control Server";
+        LOG(logINFO) << "Control Server";
     } else {
-        FILE_LOG(logINFO) << "Stop Server";
+        LOG(logINFO) << "Stop Server";
         portno = PORT_NO + 1;
     }
 
@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
     }
 
     Initialize init = Initialize();
-    FILE_LOG(logINFO) << "Ready for commands...";
+    LOG(logINFO) << "Ready for commands...";
 
     std::string lockedPid;
     std::string lockedPcName;
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
         // get number of arguments
         int nArg = 0;
         if (sock->ReceiveDataOnly(&nArg, sizeof(nArg)) < 0) {
-            FILE_LOG(logERROR)
+            LOG(logERROR)
                 << "Error reading from socket. Possible socket crash.";
             sock->Disconnect();
             continue;
@@ -73,13 +73,13 @@ int main(int argc, char *argv[]) {
         char args[TCP_PACKET_LENGTH];
         memset(args, 0, sizeof(args));
         if (sock->ReceiveDataOnly(args, sizeof(args)) < 0) {
-            FILE_LOG(logERROR)
+            LOG(logERROR)
                 << "Error reading from socket. Possible socket crash.";
             sock->Disconnect();
             continue;
         }
         std::cout << std::endl;
-        FILE_LOG(logINFO) << "Server Received: " << args;
+        LOG(logINFO) << "Server Received: " << args;
 
         char mess[TCP_PACKET_LENGTH];
         memset(mess, 0, sizeof(mess));
@@ -109,11 +109,10 @@ int main(int argc, char *argv[]) {
             std::string userName = command[command.size() - 1];
             command.pop_back();
             --nArg;
-            FILE_LOG(logDEBUG)
-                << "clienttype:[" << clientType << "], command:[" << commandName
-                << "], pid:[" << pid << "], pcName:[" << pcName
-                << "], userName:[" << userName << "], timestamp:[" << timestamp
-                << ']';
+            LOG(logDEBUG) << "clienttype:[" << clientType << "], command:["
+                          << commandName << "], pid:[" << pid << "], pcName:["
+                          << pcName << "], userName:[" << userName
+                          << "], timestamp:[" << timestamp << ']';
 
             // unlock command
             if (commandName == "unlock") {
@@ -146,7 +145,7 @@ int main(int argc, char *argv[]) {
                         "%s.\n\nYour previous command was unsuccessful. Please "
                         "update your gui!",
                         ANOTHER_USER_ERROR_PHRASE);
-                    FILE_LOG(logERROR) << mess;
+                    LOG(logERROR) << mess;
                 }
             }
 
@@ -176,14 +175,14 @@ int main(int argc, char *argv[]) {
                             (clientType == "gui" ? "\t" : ""),
                             lockedUserName.c_str(), lockedPcName.c_str(),
                             lockedTimestamp.c_str());
-                    FILE_LOG(logERROR) << mess;
+                    LOG(logERROR) << mess;
                 }
             }
             if (proceed) {
                 // close server
                 if (commandName == "close") {
                     ret = GOODBYE;
-                    FILE_LOG(logINFO) << "Closing Server!";
+                    LOG(logINFO) << "Closing Server!";
                     strcpy(mess, "Closing server");
                 } else {
                     command.erase(command.begin());
@@ -206,20 +205,20 @@ int main(int argc, char *argv[]) {
             sprintf(mess,
                     "Invalid number of arguments %d. Require atleast %d\n.",
                     nArg, MIN_ARGUMENTS);
-            FILE_LOG(logERROR) << mess;
+            LOG(logERROR) << mess;
         }
 
         if (sock->SendDataOnly(&ret, sizeof(ret)) < 0) {
             sock->Disconnect();
             continue;
         }
-        FILE_LOG(logINFO) << "Server Sent: " << mess;
+        LOG(logINFO) << "Server Sent: " << mess;
         sock->SendDataOnly(mess, sizeof(mess));
         sock->Disconnect();
     }
 
     delete sock;
-    FILE_LOG(logINFO) << "Exiting Server!";
+    LOG(logINFO) << "Exiting Server!";
 
     return 0;
 }

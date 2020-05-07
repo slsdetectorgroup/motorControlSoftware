@@ -47,7 +47,7 @@ void MotorWidget::GetPosition() {
 }
 
 void MotorWidget::MoveAbsolute(double value) {
-    FILE_LOG(logINFO) << "Moving " << name << " to " << value;
+    LOG(logINFO) << "Moving " << name << " to " << value;
     statusBar->showMessage("Moving ...");
     statusBar->showMessage("Moving ...");
     std::ostringstream oss;
@@ -67,7 +67,7 @@ void MotorWidget::MoveLeft() { MoveRelative(-1 * spinRelative->value()); }
 void MotorWidget::MoveRight() { MoveRelative(spinRelative->value()); }
 
 void MotorWidget::MoveRelative(double value) {
-    FILE_LOG(logINFO) << "Moving " << name << " by " << value;
+    LOG(logINFO) << "Moving " << name << " by " << value;
     statusBar->showMessage("Moving ...");
     statusBar->showMessage("Moving ...");
     std::ostringstream oss;
@@ -91,7 +91,7 @@ void MotorWidget::Calibrate() {
     lblPosition->setEnabled(false);
     spinAbsolute->setEnabled(false);
     spinRelative->setEnabled(false);
-    FILE_LOG(logINFO) << "Calibrating " << name;
+    LOG(logINFO) << "Calibrating " << name;
     statusBar->showMessage("Calibrating ...");
     std::ostringstream oss;
     oss << "cal " << name;

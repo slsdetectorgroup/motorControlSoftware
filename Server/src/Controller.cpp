@@ -17,8 +17,8 @@ Controller::Controller(const int index, const std::string name,
     for (unsigned int i = 0; i < motor.size(); ++i) {
         motor[i] = NULL;
     }
-    FILE_LOG(logINFO) << "Contoller  [" << index << "]: [name:" << name
-                      << ", serialNumber:" << serialNumber << "]";
+    LOG(logINFO) << "Contoller  [" << index << "]: [name:" << name
+                 << ", serialNumber:" << serialNumber << "]";
 }
 
 bool Controller::CheckControllerSerialNumber(Interface *interface,
@@ -34,13 +34,12 @@ bool Controller::CheckControllerSerialNumber(Interface *interface,
 
         iss >> snum;
         if (snum == serialNumber) {
-            FILE_LOG(logINFOGREEN) << "\tSuccess";
+            LOG(logINFOGREEN) << "\tSuccess";
             return true;
         }
     }
-    FILE_LOG(logINFO) << "Expected [" << serialNumber << "], got [" << snum
-                      << ']';
-    FILE_LOG(logWARNING) << "Fail";
+    LOG(logINFO) << "Expected [" << serialNumber << "], got [" << snum << ']';
+    LOG(logWARNING) << "Fail";
     return false;
 }
 
@@ -50,8 +49,8 @@ std::string Controller::getSerialNumber() const { return serialNumber; }
 
 void Controller::setInterface(Interface *interface) {
     this->interface = interface;
-    FILE_LOG(logINFO) << "\tController " << name
-                      << ": [usbPort:" << interface->getSerial() << ']';
+    LOG(logINFO) << "\tController " << name
+                 << ": [usbPort:" << interface->getSerial() << ']';
 }
 
 Interface *Controller::getInterface() const { return interface; }
@@ -104,7 +103,7 @@ void Controller::debugPositions() {
     for (unsigned int i = 0; i < pos.size(); ++i) {
         if (motor[i] != NULL) {
             motor[i]->setPosition(pos[i]);
-            FILE_LOG(logDEBUG) << i << " Position set to " << pos[i];
+            LOG(logDEBUG) << i << " Position set to " << pos[i];
         }
     }
     interface->ControllerWaitForIdle();
@@ -115,7 +114,7 @@ void Controller::moveRel(double position, int axis) {
     // validate
     double currentPosition = motor[axis]->getPosition();
     if (position == 0) {
-        FILE_LOG(logINFO) << "\tNothing to move";
+        LOG(logINFO) << "\tNothing to move";
         return;
     }
     if (!motor[axis]->canMotorMove(currentPosition + position)) {
@@ -128,8 +127,8 @@ void Controller::moveRel(double position, int axis) {
     // move
 #ifdef VIRTUAL
     motor[axis]->setPosition(motor[axis]->getPosition() + position);
-    FILE_LOG(logDEBUG) << axis << " virtual position set to "
-                       << motor[axis]->getPosition();
+    LOG(logDEBUG) << axis << " virtual position set to "
+                  << motor[axis]->getPosition();
     return;
 #endif
     double positions[3] = {0.0, 0.0, 0.0};
@@ -144,7 +143,7 @@ void Controller::moveAbs(double position, int axis) {
     // validate
     double currentPosition = motor[axis]->getPosition();
     if (Motor::matches(position, currentPosition)) {
-        FILE_LOG(logINFO) << "\tNothing to move";
+        LOG(logINFO) << "\tNothing to move";
         return;
     }
     if (!motor[axis]->canMotorMove(position)) {
@@ -157,7 +156,7 @@ void Controller::moveAbs(double position, int axis) {
     // move
 #ifdef VIRTUAL
     motor[axis]->setPosition(position);
-    FILE_LOG(logDEBUG) << axis << " virtual position set to " << position;
+    LOG(logDEBUG) << axis << " virtual position set to " << position;
     return;
 #endif
     double positions[3] = {0.0, 0.0, 0.0};
@@ -178,7 +177,7 @@ void Controller::moveAbs(double position, int axis) {
 void Controller::resetPosition(double position, int axis) {
 #ifdef VIRTUAL
     motor[axis]->setPosition(position);
-    FILE_LOG(logDEBUG) << axis << " virtual position set to " << position;
+    LOG(logDEBUG) << axis << " virtual position set to " << position;
     return;
 #endif
     double positions[3] = {0.0, 0.0, 0.0};
@@ -200,7 +199,7 @@ void Controller::resetPosition(double position, int axis) {
 void Controller::calibrate(int axis) {
 #ifdef VIRTUAL
     motor[axis]->setPosition(0);
-    FILE_LOG(logDEBUG) << axis << " virtual position set to " << 0;
+    LOG(logDEBUG) << axis << " virtual position set to " << 0;
     return;
 #endif
     std::ostringstream oss;
@@ -237,7 +236,7 @@ void Controller::sendCommand(std::string command) {
 #ifdef VIRTUAL
     throw RuntimeError("Cannot send random command on a virtual server");
 #endif
-    FILE_LOG(logINFO) << "Sending command: [" << command << "] to " << name;
+    LOG(logINFO) << "Sending command: [" << command << "] to " << name;
     interface->ControllerSend(command);
     interface->ControllerWaitForIdle();
 }
@@ -247,8 +246,8 @@ std::string Controller::sendCommandAndReadBack(std::string command) {
     throw RuntimeError(
         "Cannot send random command and read back on a virtual server");
 #endif
-    FILE_LOG(logINFO) << "Sending command to read back: [" << command << "] to "
-                      << name;
+    LOG(logINFO) << "Sending command to read back: [" << command << "] to "
+                 << name;
     std::string result = interface->ControllerSend(command, true);
     interface->ControllerWaitForIdle();
     return result;

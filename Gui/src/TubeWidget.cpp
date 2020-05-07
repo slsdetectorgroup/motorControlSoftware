@@ -112,7 +112,7 @@ void TubeWidget::DisplayTubeError() {
 }
 
 void TubeWidget::ClearError(bool wait) {
-    FILE_LOG(logINFO) << "Clearing Error in Tube";
+    LOG(logINFO) << "Clearing Error in Tube";
     std::string result =
         SendTubeCommand(hostname, 1, "clear", "TubeWidget::ClearError");
     statusBar->showMessage("Updating ...");
@@ -142,7 +142,7 @@ void TubeWidget::GetHighVoltage() {
 }
 
 void TubeWidget::SetHighVoltage(bool enable) {
-    FILE_LOG(logINFO) << "Setting High Voltage: " << enable;
+    LOG(logINFO) << "Setting High Voltage: " << enable;
     frameShutters->setEnabled(enable);
     CheckWarning();
     std::ostringstream oss;
@@ -199,8 +199,8 @@ void TubeWidget::SetShutters() {
     QCheckBox *checkedBox = qobject_cast<QCheckBox *>(sender());
     for (unsigned int i = 0; i < chkShutters.size(); ++i) {
         if (checkedBox == chkShutters[i]) {
-            FILE_LOG(logINFO) << "Setting Shutter " << i << ": "
-                              << (chkShutters[i]->isChecked() ? "on" : "off");
+            LOG(logINFO) << "Setting Shutter " << i << ": "
+                         << (chkShutters[i]->isChecked() ? "on" : "off");
             std::ostringstream oss;
             oss << "shutter " << i + 1 << ' '
                 << (chkShutters[i]->isChecked() ? "on" : "off");
@@ -243,7 +243,7 @@ void TubeWidget::GetVoltage() {
 }
 
 void TubeWidget::SetVoltage(int value) {
-    FILE_LOG(logINFO) << "Setting voltage: " << value << " kV";
+    LOG(logINFO) << "Setting voltage: " << value << " kV";
     std::ostringstream oss;
     oss << "setv " << value;
     std::string result =
@@ -281,7 +281,7 @@ void TubeWidget::GetCurrent() {
 }
 
 void TubeWidget::SetCurrent(int value) {
-    FILE_LOG(logINFO) << "Setting current: " << value << " mA";
+    LOG(logINFO) << "Setting current: " << value << " mA";
     std::ostringstream oss;
     oss << "setc " << value;
     std::string result =
@@ -327,7 +327,7 @@ void TubeWidget::GetActualCurrent() {
 }
 
 int TubeWidget::CheckWarmup() {
-    FILE_LOG(logINFO) << "Checking warm up required";
+    LOG(logINFO) << "Checking warm up required";
     int errorCode = -1;
     std::string result =
         SendTubeCommand(hostname, 1, "geterr", "TubeWidget::CheckWarmup");
@@ -360,7 +360,7 @@ int TubeWidget::CheckWarmup() {
         // warm up question
         std::ostringstream oss;
         oss << "Initiate warm up for " << voltage << " kV? \n";
-        FILE_LOG(logINFO) << oss.str();
+        LOG(logINFO) << oss.str();
         if (Message(QUESTION, oss.str(), "TubeWidget::CheckWarmup",
                     "Warm-up?") != OK) {
             DeclineWarmup();
@@ -378,7 +378,7 @@ int TubeWidget::CheckWarmup() {
 }
 
 void TubeWidget::AcceptWarmup() {
-    FILE_LOG(logINFO) << "Warm up accepted";
+    LOG(logINFO) << "Warm up accepted";
     int voltage = spinVoltage->value();
     // int current = spinCurrent->value();
 
@@ -428,7 +428,7 @@ void TubeWidget::AcceptWarmup() {
 }
 
 void TubeWidget::DeclineWarmup() {
-    FILE_LOG(logINFO) << "Warmup declined";
+    LOG(logINFO) << "Warmup declined";
     Message(INFORMATION,
             "You have chosen not to proceed with warming up. \nClearing error "
             "message and updating values ...",
@@ -453,8 +453,8 @@ int TubeWidget::GetWarmupTimeRemaining() {
         try {
             warmupTimeRemaining = getInteger(result);
         } catch (const std::exception &e) {
-            FILE_LOG(logERROR)
-                << "Could not get warm up time remaining. " << e.what();
+            LOG(logERROR) << "Could not get warm up time remaining. "
+                          << e.what();
             result = "";
         }
     }
@@ -462,7 +462,7 @@ int TubeWidget::GetWarmupTimeRemaining() {
 }
 
 void TubeWidget::UpdateWarmupTiming() {
-    FILE_LOG(logDEBUG) << "timer warmup timeout";
+    LOG(logDEBUG) << "timer warmup timeout";
 
     // check if there is warm up time remaining
     int wt = GetWarmupTimeRemaining();
@@ -475,7 +475,7 @@ void TubeWidget::UpdateWarmupTiming() {
 
     // updating begins
     if (!groupWarmup->isEnabled()) {
-        FILE_LOG(logDEBUG) << "Begin Updating warm up timing";
+        LOG(logDEBUG) << "Begin Updating warm up timing";
         if (wt > 0) {
             Message(INFORMATION,
                     "Warm-up of tube is in progress. It takes " + wtime,
@@ -512,7 +512,7 @@ void TubeWidget::UpdateWarmupTiming() {
 }
 
 void TubeWidget::UpdateValues() {
-    FILE_LOG(logINFO) << "Updating Tube Values";
+    LOG(logINFO) << "Updating Tube Values";
 
     statusBar->showMessage("Updating ...");
     DisplayTubeError();
@@ -537,7 +537,7 @@ void TubeWidget::UpdateValues() {
 }
 
 void TubeWidget::UpdateActualValues() {
-    FILE_LOG(logDEBUG) << "timer actual timeout";
+    LOG(logDEBUG) << "timer actual timeout";
 
     // update actual values
     GetHighVoltage(); // if off, stop updating
@@ -550,7 +550,7 @@ void TubeWidget::UpdateActualValues() {
 
     // updating begins
     if (frameVoltage->isEnabled()) {
-        FILE_LOG(logDEBUG) << "Begin Updating Tube Actual Values";
+        LOG(logDEBUG) << "Begin Updating Tube Actual Values";
 
         frameHighVoltage->setEnabled(false);
         frameShutters->setEnabled(false);

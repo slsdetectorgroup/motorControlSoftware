@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     } catch (const AnotherUserError &e) {
         ;
     } catch (const std::exception &e) {
-        FILE_LOG(logERROR) << e.what();
+        LOG(logERROR) << e.what();
     }
 
     return 0;

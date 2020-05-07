@@ -39,8 +39,7 @@ std::string Client::SendCommand(int nCommand, std::string command) {
 
     // add additional parameters
     nCommand = AddOtherParameters(nCommand, args);
-    FILE_LOG(logDEBUG) << "Sending Command: " << nCommand << " [" << args
-                       << ']';
+    LOG(logDEBUG) << "Sending Command: " << nCommand << " [" << args << ']';
 
     // send command
     sock.SendDataOnly(&nCommand, sizeof(nCommand));
@@ -106,7 +105,7 @@ std::string Client::useSystemCommand(std::string command) {
 
     if (command == "date") {
         std::string dateresult(output, TIME_BUFFER_LENGTH);
-        FILE_LOG(logDEBUG) << "Date:[" << dateresult << ']';
+        LOG(logDEBUG) << "Date:[" << dateresult << ']';
         return dateresult;
     }
 

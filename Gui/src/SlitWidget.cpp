@@ -50,7 +50,7 @@ void SlitWidget::GetSlitWidth() {
 }
 
 void SlitWidget::SetSlitWidth(double value) {
-    FILE_LOG(logINFO) << "Setting slit width to " << value;
+    LOG(logINFO) << "Setting slit width to " << value;
     statusBar->showMessage("Moving ...");
     statusBar->showMessage("Moving ...");
     std::ostringstream oss;
@@ -84,7 +84,7 @@ void SlitWidget::GetCenter() {
 }
 
 void SlitWidget::SetCenter(double value) {
-    FILE_LOG(logINFO) << "Setting center to " << value;
+    LOG(logINFO) << "Setting center to " << value;
     statusBar->showMessage("Moving ...");
     statusBar->showMessage("Moving ...");
     std::ostringstream oss;

@@ -17,9 +17,9 @@ Fwheel::Fwheel(int index, std::string name, std::string serialNumber,
     : index(index), name(name), serialNumber(serialNumber),
       valueList(valueList), interface(NULL) {
     currentValue = valueList[0];
-    FILE_LOG(logINFO) << "Fwheel  [" << index << "]: [name:" << name
-                      << ", serialNumber: " << serialNumber
-                      << ", currentValue:" << currentValue << "]";
+    LOG(logINFO) << "Fwheel  [" << index << "]: [name:" << name
+                 << ", serialNumber: " << serialNumber
+                 << ", currentValue:" << currentValue << "]";
 }
 
 bool Fwheel::CheckFWSerialNumber(int usbport, std::string serialNumber) {
@@ -35,12 +35,12 @@ bool Fwheel::CheckFWSerialNumber(int usbport, std::string serialNumber) {
     pclose(sysFile);
 
     if (strstr(output, serialNumber.c_str()) != NULL) {
-        FILE_LOG(logINFOGREEN) << "\tSuccess";
+        LOG(logINFOGREEN) << "\tSuccess";
         return true;
     }
-    FILE_LOG(logINFO) << "Expected to find [" << serialNumber << "] in ["
-                      << output << ']';
-    FILE_LOG(logWARNING) << "Fail";
+    LOG(logINFO) << "Expected to find [" << serialNumber << "] in [" << output
+                 << ']';
+    LOG(logWARNING) << "Fail";
     return false;
 }
 
@@ -52,8 +52,8 @@ std::vector<double> Fwheel::getValueList() { return valueList; }
 
 void Fwheel::setInterface(Interface *interface) {
     this->interface = interface;
-    FILE_LOG(logINFO) << "\tFwheel " << name
-                      << ": [usbPort:" << interface->getSerial() << ']';
+    LOG(logINFO) << "\tFwheel " << name
+                 << ": [usbPort:" << interface->getSerial() << ']';
     setStartPosition();
 }
 

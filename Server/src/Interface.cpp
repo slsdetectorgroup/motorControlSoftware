@@ -82,16 +82,15 @@ int Interface::getSerialPortNumber() { return serialPortNumber; }
 
 void Interface::ControllerInterface() {
     std::cout << std::endl;
-    FILE_LOG(logINFO) << "\tMotorcontroller, checking:" << serial;
+    LOG(logINFO) << "\tMotorcontroller, checking:" << serial;
 #ifdef VIRTUAL
-    FILE_LOG(logINFO) << "\tFound controller port (virtual)";
+    LOG(logINFO) << "\tFound controller port (virtual)";
     return;
 #endif
     serialfd = open(serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
     if (serialfd == -1) {
-        FILE_LOG(logDEBUG) << "Unable to open port " << serial
-                           << " for controller";
-        FILE_LOG(logWARNING) << "Fail";
+        LOG(logDEBUG) << "Unable to open port " << serial << " for controller";
+        LOG(logWARNING) << "Fail";
         throw std::runtime_error("Failed to open port");
     }
 
@@ -114,7 +113,7 @@ void Interface::ControllerInterface() {
 }
 
 void Interface::ValidateController() {
-    FILE_LOG(logINFO) << "\tValidating Controller";
+    LOG(logINFO) << "\tValidating Controller";
     try {
         std::string result =
             ControllerSendCommand(CONTROLLER_IDENTIFY_CMD, true);
@@ -124,11 +123,11 @@ void Interface::ValidateController() {
         }
     } catch (...) {
         close(serialfd);
-        FILE_LOG(logWARNING) << "Fail";
+        LOG(logWARNING) << "Fail";
         throw;
     }
 
-    FILE_LOG(logINFO) << "\tFound controller port";
+    LOG(logINFO) << "\tFound controller port";
     ControllerWaitForIdle();
 }
 
@@ -139,14 +138,14 @@ bool Interface::ControllerIsIdle(std::string result) {
     if (iss.fail()) {
         std::ostringstream oss;
         oss << "Unknown controller status " + result;
-        FILE_LOG(logDEBUG) << oss.str();
+        LOG(logDEBUG) << oss.str();
         return false;
     }
     if (status == 0) {
-        FILE_LOG(logDEBUG) << "Controller Idle";
+        LOG(logDEBUG) << "Controller Idle";
         return true;
     }
-    FILE_LOG(logDEBUG) << "Controller Busy";
+    LOG(logDEBUG) << "Controller Busy";
     return false;
 }
 
@@ -157,10 +156,10 @@ void Interface::ControllerWaitForIdle() {
     for (;;) {
         std::string result = ControllerSend(CONTROLLER_CHECK_STATUS_CMD, true);
         if (ControllerIsIdle(result)) {
-            FILE_LOG(logDEBUG) << "Controller Idle";
+            LOG(logDEBUG) << "Controller Idle";
             break;
         }
-        FILE_LOG(logDEBUG) << "Controller Busy";
+        LOG(logDEBUG) << "Controller Busy";
     }
 }
 
@@ -179,8 +178,8 @@ std::string Interface::ControllerSendCommand(std::string command,
                                              bool readBack) {
     if (command != std::string(CONTROLLER_CHECK_STATUS_CMD) &&
         command != std::string(CONTROLLER_POSITION_CMD)) { // for debugging
-        FILE_LOG(logINFO) << "\tSending [" << command << "]   (port:" << serial
-                          << ", read:" << readBack << ')';
+        LOG(logINFO) << "\tSending [" << command << "]   (port:" << serial
+                     << ", read:" << readBack << ')';
     }
     bool verbose = true;
 
@@ -199,13 +198,13 @@ std::string Interface::ControllerSendCommand(std::string command,
                 << " for [" << buffer << "] to port " << serial
                 << ". Aborting command.";
             if (verbose) {
-                FILE_LOG(logERROR) << oss.str();
+                LOG(logERROR) << oss.str();
             }
             throw std::runtime_error(oss.str());
         }
     }
     if (attempt > 0) {
-        FILE_LOG(logDEBUG) << "Send attempt " << attempt;
+        LOG(logDEBUG) << "Send attempt " << attempt;
     }
     // no read back
     if (!readBack) {
@@ -226,37 +225,36 @@ std::string Interface::ControllerSendCommand(std::string command,
                 << " for [" << buffer << "] to port " << serial
                 << ". Aborting read.";
             if (verbose) {
-                FILE_LOG(logERROR) << oss.str();
+                LOG(logERROR) << oss.str();
             }
             throw std::runtime_error(oss.str());
         }
     }
     if (attempt > 0) {
-        FILE_LOG(logDEBUG) << "receive attempt " << attempt;
+        LOG(logDEBUG) << "receive attempt " << attempt;
     }
 
     // throw error if read buffer empty
     if (strlen(result) == 0) {
         std::ostringstream oss;
         oss << "Empty receive buffer to controller port " << serial;
-        // FILE_LOG(logERROR) << oss.str();
+        // LOG(logERROR) << oss.str();
         throw std::runtime_error(oss.str());
     }
 
     if (command != std::string(CONTROLLER_CHECK_STATUS_CMD)) {
-        FILE_LOG(logINFO) << "\tReceived [" << command << "]: " << result;
+        LOG(logINFO) << "\tReceived [" << command << "]: " << result;
     }
     return std::string(result);
 }
 
 void Interface::TubeInterface() {
     std::cout << std::endl;
-    FILE_LOG(logINFO) << "\tXray tube, checking:" << serial;
+    LOG(logINFO) << "\tXray tube, checking:" << serial;
     serialfd = open(serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
     if (serialfd == -1) {
-        FILE_LOG(logDEBUG) << "Unable to open port " << serial
-                           << " for xray tube";
-        FILE_LOG(logWARNING) << "Fail";
+        LOG(logDEBUG) << "Unable to open port " << serial << " for xray tube";
+        LOG(logWARNING) << "Fail";
         throw std::runtime_error("Failed to open port");
     }
 
@@ -279,7 +277,7 @@ void Interface::TubeInterface() {
 }
 
 void Interface::ValidateTube() {
-    FILE_LOG(logINFO) << "\tValidating Tube";
+    LOG(logINFO) << "\tValidating Tube";
     try {
         std::string result = TubeSend(TUBE_IDENTIFY_CMD, true);
         if (result.find(std::string(TUBE_MODEL_RESPONSE)) ==
@@ -289,10 +287,10 @@ void Interface::ValidateTube() {
         TubeSend(TUBE_STATUS_CMD, true);
     } catch (...) {
         close(serialfd);
-        FILE_LOG(logWARNING) << "Fail";
+        LOG(logWARNING) << "Fail";
         throw;
     }
-    FILE_LOG(logINFOGREEN) << "\tSuccess";
+    LOG(logINFOGREEN) << "\tSuccess";
 }
 
 std::string Interface::TubeSend(std::string command, bool readBack) {
@@ -309,7 +307,7 @@ std::string Interface::TubeSend(std::string command, bool readBack) {
                 if (iss.fail()) {
                     std::ostringstream oss;
                     oss << "Unknown tube status " + result;
-                    FILE_LOG(logERROR) << oss.str();
+                    LOG(logERROR) << oss.str();
                     throw std::runtime_error(oss.str());
                 }
             }
@@ -327,8 +325,8 @@ std::string Interface::TubeSend(std::string command, bool readBack) {
 }
 
 std::string Interface::TubeSendCommand(std::string command, bool readBack) {
-    FILE_LOG(logINFO) << "\tSend Tube [" << command << "]:\t(port:" << serial
-                      << ", read:" << readBack << ')';
+    LOG(logINFO) << "\tSend Tube [" << command << "]:\t(port:" << serial
+                 << ", read:" << readBack << ')';
 
     bool verbose = false;
 
@@ -342,7 +340,7 @@ std::string Interface::TubeSendCommand(std::string command, bool readBack) {
         std::ostringstream oss;
         oss << "Could not write to tube";
         if (verbose) {
-            FILE_LOG(logERROR) << oss.str();
+            LOG(logERROR) << oss.str();
         }
         throw std::runtime_error(oss.str());
     }
@@ -364,13 +362,13 @@ std::string Interface::TubeSendCommand(std::string command, bool readBack) {
             oss << "Receive attempt number " << TUBE_MAX_RX_ATTEMPTS << " for ["
                 << buffer << "] to tube " << serial << ". Aborting read.";
             if (verbose) {
-                FILE_LOG(logERROR) << oss.str();
+                LOG(logERROR) << oss.str();
             }
             throw std::runtime_error(oss.str());
         }
     }
     if (attempt > 0) {
-        FILE_LOG(logDEBUG) << "receive attempt " << attempt;
+        LOG(logDEBUG) << "receive attempt " << attempt;
     }
 
     // throw error if read buffer empty
@@ -378,23 +376,23 @@ std::string Interface::TubeSendCommand(std::string command, bool readBack) {
         std::ostringstream oss;
         oss << "Empty receive buffer from tube";
         if (verbose) {
-            FILE_LOG(logERROR) << oss.str();
+            LOG(logERROR) << oss.str();
         }
         throw std::runtime_error(oss.str());
     }
 
-    FILE_LOG(logINFO) << "\tRead Tube [" << command << "]:\t" << result;
+    LOG(logINFO) << "\tRead Tube [" << command << "]:\t" << result;
     return std::string(result);
 }
 
 void Interface::PressureInterface() {
     std::cout << std::endl;
-    FILE_LOG(logINFO) << "\tPressure, checking:" << serial;
+    LOG(logINFO) << "\tPressure, checking:" << serial;
     serialfd = open(serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
     if (serialfd == -1) {
-        FILE_LOG(logDEBUG) << "Unable to open port " << serial
-                           << " for pressure gauge";
-        FILE_LOG(logWARNING) << "Fail";
+        LOG(logDEBUG) << "Unable to open port " << serial
+                      << " for pressure gauge";
+        LOG(logWARNING) << "Fail";
         throw std::runtime_error("Fail to open port");
     }
 
@@ -424,22 +422,22 @@ void Interface::ValidatePressureGauge() {
         ;
     }
     // validate
-    FILE_LOG(logINFO) << "\tValidating Pressure Gauge";
+    LOG(logINFO) << "\tValidating Pressure Gauge";
     try {
         std::string result = PressureGaugeSend(PRESSURE_ARE_YOU_THERE_CMD);
         if (result.find(PRESSURE_TYPE_RESPONSE) == std::string::npos) {
             std::ostringstream oss;
             oss << "Unknown pressure gauge status " + result;
-            FILE_LOG(logERROR) << oss.str();
+            LOG(logERROR) << oss.str();
             PressureGaugeSendCommand("RES\r\n");
             throw std::runtime_error(oss.str());
         }
     } catch (...) {
         close(serialfd);
-        FILE_LOG(logWARNING) << "Fail";
+        LOG(logWARNING) << "Fail";
         throw;
     }
-    FILE_LOG(logINFOGREEN) << "\tSuccess";
+    LOG(logINFOGREEN) << "\tSuccess";
 }
 
 std::string Interface::PressureGaugeSend(std::string command) {
@@ -461,9 +459,8 @@ std::string Interface::PressureGaugeSend(std::string command) {
 
 std::string Interface::PressureGaugeSendCommand(std::string command) {
     bool verbose = false;
-    FILE_LOG(logINFO) << "\tSend Gauge ["
-                      << command.substr(0, command.length() - 2)
-                      << "\\r\\n]:\t(port:" << serial << ')';
+    LOG(logINFO) << "\tSend Gauge [" << command.substr(0, command.length() - 2)
+                 << "\\r\\n]:\t(port:" << serial << ')';
 
     // send command
     char buffer[COMMAND_BUFFER_LENGTH];
@@ -474,7 +471,7 @@ std::string Interface::PressureGaugeSendCommand(std::string command) {
         std::ostringstream oss;
         oss << "Could not write command [" << buffer << "] to pressure gauge";
         if (verbose) {
-            FILE_LOG(logERROR) << oss.str();
+            LOG(logERROR) << oss.str();
         }
         throw std::runtime_error(oss.str());
     }
@@ -488,7 +485,7 @@ std::string Interface::PressureGaugeSendCommand(std::string command) {
         std::ostringstream oss;
         oss << "Could not read ack status from pressure gauge";
         if (verbose) {
-            FILE_LOG(logERROR) << oss.str();
+            LOG(logERROR) << oss.str();
         }
         throw std::runtime_error(oss.str());
     }
@@ -499,7 +496,7 @@ std::string Interface::PressureGaugeSendCommand(std::string command) {
         std::ostringstream oss;
         oss << "Could not read ack status from pressure gauge. Empty buffer";
         if (verbose) {
-            FILE_LOG(logERROR) << oss.str();
+            LOG(logERROR) << oss.str();
         }
         throw std::runtime_error(oss.str());
     }
@@ -516,11 +513,11 @@ std::string Interface::PressureGaugeSendCommand(std::string command) {
             }
         }
         if (verbose) {
-            FILE_LOG(logERROR) << oss.str();
+            LOG(logERROR) << oss.str();
         }
         throw std::runtime_error(oss.str());
     }
-    FILE_LOG(logDEBUG) << "\tAck rxd";
+    LOG(logDEBUG) << "\tAck rxd";
 
     // send enquiry
     memset(buffer, 0, sizeof(buffer));
@@ -530,11 +527,11 @@ std::string Interface::PressureGaugeSendCommand(std::string command) {
         std::ostringstream oss;
         oss << "Could not write enquiry [" << buffer << "] to pressure gauge";
         if (verbose) {
-            FILE_LOG(logERROR) << oss.str();
+            LOG(logERROR) << oss.str();
         }
         throw std::runtime_error(oss.str());
     }
-    FILE_LOG(logDEBUG) << "\tSent enquiry";
+    LOG(logDEBUG) << "\tSent enquiry";
 
     // read back
     int attempt = 0;
@@ -550,13 +547,13 @@ std::string Interface::PressureGaugeSendCommand(std::string command) {
                 << " for [" << buffer << "] to pressure gauge " << serial
                 << ". Aborting read.";
             if (verbose) {
-                FILE_LOG(logERROR) << oss.str();
+                LOG(logERROR) << oss.str();
             }
             throw std::runtime_error(oss.str());
         }
     }
     if (attempt > 0) {
-        FILE_LOG(logDEBUG) << "receive attempt " << attempt;
+        LOG(logDEBUG) << "receive attempt " << attempt;
     }
 
     // throw error if read buffer empty
@@ -564,25 +561,24 @@ std::string Interface::PressureGaugeSendCommand(std::string command) {
         std::ostringstream oss;
         oss << "Could not read pressure gauge. Empty buffer";
         if (verbose) {
-            FILE_LOG(logERROR) << oss.str();
+            LOG(logERROR) << oss.str();
         }
         throw std::runtime_error(oss.str());
     }
 
-    FILE_LOG(logINFO) << "\tRead Gauge ["
-                      << command.substr(0, command.length() - 2) << "\\r\\n]:\t"
-                      << result;
+    LOG(logINFO) << "\tRead Gauge [" << command.substr(0, command.length() - 2)
+                 << "\\r\\n]:\t" << result;
     return std::string(result);
 }
 
 void Interface::FilterWheelInterface() {
     std::cout << std::endl;
-    FILE_LOG(logINFO) << "\tFilter wheel, checking:" << serial;
+    LOG(logINFO) << "\tFilter wheel, checking:" << serial;
     serialfd = open(serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
     if (serialfd == -1) {
-        FILE_LOG(logDEBUG) << "Unable to open port " << serial
-                           << " for filter wheel";
-        FILE_LOG(logWARNING) << "Fail";
+        LOG(logDEBUG) << "Unable to open port " << serial
+                      << " for filter wheel";
+        LOG(logWARNING) << "Fail";
         throw std::runtime_error("Fail to open port");
     }
 
@@ -605,7 +601,7 @@ void Interface::FilterWheelInterface() {
 }
 
 void Interface::ValidateFilterWheel() {
-    FILE_LOG(logINFO) << "\tValidating Filter Wheel";
+    LOG(logINFO) << "\tValidating Filter Wheel";
     int attempts = 0;
     try {
         std::string result =
@@ -618,11 +614,11 @@ void Interface::ValidateFilterWheel() {
         ++attempts;
         if (attempts == FILTER_WHEEL_MAX_REPEAT_ATTEMPTS) {
             close(serialfd);
-            FILE_LOG(logWARNING) << "Fail";
+            LOG(logWARNING) << "Fail";
             throw;
         }
     }
-    FILE_LOG(logINFO) << "\tFound filter wheel port";
+    LOG(logINFO) << "\tFound filter wheel port";
 }
 
 std::string Interface::FilterWheelSend(std::string command, bool readBack) {
@@ -638,9 +634,9 @@ std::string Interface::FilterWheelSend(std::string command, bool readBack) {
 
 std::string Interface::FilterWheelSendCommand(std::string command,
                                               bool readBack) {
-    FILE_LOG(logINFO) << "\tSend Filter Wheel ["
-                      << command.substr(0, command.length() - 1)
-                      << "]:\t(port:" << serial << ", read:" << readBack << ')';
+    LOG(logINFO) << "\tSend Filter Wheel ["
+                 << command.substr(0, command.length() - 1)
+                 << "]:\t(port:" << serial << ", read:" << readBack << ')';
 
     bool verbose = false;
 
@@ -654,7 +650,7 @@ std::string Interface::FilterWheelSendCommand(std::string command,
         std::ostringstream oss;
         oss << "Could not write to filter wheel";
         if (verbose) {
-            FILE_LOG(logERROR) << oss.str();
+            LOG(logERROR) << oss.str();
         }
         throw std::runtime_error(oss.str());
     }
@@ -675,13 +671,13 @@ std::string Interface::FilterWheelSendCommand(std::string command,
                 << " for [" << buffer << "] to filter wheel " << serial
                 << ". Aborting read.";
             if (verbose) {
-                FILE_LOG(logERROR) << oss.str();
+                LOG(logERROR) << oss.str();
             }
             throw std::runtime_error(oss.str());
         }
     }
     if (attempt > 0 && verbose) {
-        FILE_LOG(logINFORED) << "receive attempt " << attempt;
+        LOG(logINFORED) << "receive attempt " << attempt;
     }
 
     // throw error if read buffer empty
@@ -689,7 +685,7 @@ std::string Interface::FilterWheelSendCommand(std::string command,
         std::ostringstream oss;
         oss << "Empty receive buffer from filter wheel";
         if (verbose) {
-            FILE_LOG(logERROR) << oss.str();
+            LOG(logERROR) << oss.str();
         }
         throw std::runtime_error(oss.str());
     }
@@ -706,7 +702,7 @@ std::string Interface::FilterWheelSendCommand(std::string command,
         std::ostringstream oss;
         oss << "Filter wheel returns unknown command or argument: " << result;
         if (verbose) {
-            FILE_LOG(logERROR) << oss.str();
+            LOG(logERROR) << oss.str();
         }
         throw std::runtime_error(oss.str());
     }
@@ -720,9 +716,9 @@ std::string Interface::FilterWheelSendCommand(std::string command,
                 result[i] = 'N';
             }
         }
-        FILE_LOG(logINFO) << "\tRead Filter Wheel ["
-                          << command.substr(0, command.length() - 1) << "]: ["
-                          << result << ']';
+        LOG(logINFO) << "\tRead Filter Wheel ["
+                     << command.substr(0, command.length() - 1) << "]: ["
+                     << result << ']';
         return command;
     }
 
@@ -745,8 +741,8 @@ std::string Interface::FilterWheelSendCommand(std::string command,
     output[strlen(output) - 1] = '\0';
 
     result[strlen(result) - 1] = '\0';
-    FILE_LOG(logINFO) << "\tRead Filter Wheel ["
-                      << command.substr(0, command.length() - 1) << "]: ["
-                      << output << ']';
+    LOG(logINFO) << "\tRead Filter Wheel ["
+                 << command.substr(0, command.length() - 1) << "]: [" << output
+                 << ']';
     return std::string(output);
 }

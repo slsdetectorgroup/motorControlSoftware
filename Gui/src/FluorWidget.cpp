@@ -41,7 +41,7 @@ void FluorWidget::LoadTargetHolders() {
     if (result.empty()) {
         return;
     }
-    FILE_LOG(logDEBUG) << "numfl:" << result;
+    LOG(logDEBUG) << "numfl:" << result;
     try {
         int numHolders = getInteger(result);
         if (numHolders < 1) {
@@ -103,7 +103,7 @@ void FluorWidget::GetTargetList() {
     std::string result =
         SendCommand(hostname, 3, oss.str(), "FwheelWidget::GetTargetList");
     if (!result.empty()) {
-        FILE_LOG(logDEBUG) << "fllist:" << result;
+        LOG(logDEBUG) << "fllist:" << result;
         // parse values
         std::istringstream iss(result);
         std::vector<std::string> list =
@@ -140,7 +140,7 @@ void FluorWidget::GetTargetList() {
 }
 
 void FluorWidget::SetHolder(int index) {
-    FILE_LOG(logINFO) << "Setting " << name << "'s target holder to " << index;
+    LOG(logINFO) << "Setting " << name << "'s target holder to " << index;
     std::ostringstream oss;
     oss << "setholder " << name << ' ' << index;
     std::string result =
@@ -186,7 +186,7 @@ void FluorWidget::GetTarget() {
 void FluorWidget::SetTarget(int index) {
     std::string target =
         std::string(comboTarget->currentText().toAscii().data());
-    FILE_LOG(logINFO) << "Moving " << name << " to target " << target;
+    LOG(logINFO) << "Moving " << name << " to target " << target;
     // display energy
     dispEnergy->setText(std::string(energy[index] + " KeV").c_str());
     statusBar->showMessage("Moving ...");

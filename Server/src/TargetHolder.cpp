@@ -15,7 +15,7 @@ TargetHolder::TargetHolder(int index) : index(index), numTargets(0) {
         targetName[i] = '-';
         targetEnergy[i] = '-';
     }
-    FILE_LOG(logDEBUG) << "Target Holder [" << index << "] added";
+    LOG(logDEBUG) << "Target Holder [" << index << "] added";
 }
 
 int TargetHolder::getNumTargets() { return numTargets; }
@@ -35,7 +35,7 @@ void TargetHolder::addTarget(std::string name, std::string energy) {
     }
     targetName[numTargets] = name;
     targetEnergy[numTargets] = energy;
-    FILE_LOG(logDEBUG) << "Target [" << index << "]: " << name;
+    LOG(logDEBUG) << "Target [" << index << "]: " << name;
     ++numTargets;
 }
 

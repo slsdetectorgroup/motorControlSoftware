@@ -51,7 +51,7 @@ void PGaugeWidget::TimeoutRefresh() {
 }
 
 void PGaugeWidget::GetPressure() {
-    FILE_LOG(logDEBUG) << "Getting pressure from Server";
+    LOG(logDEBUG) << "Getting pressure from Server";
 
     // stop update temporarily
     timer->stop();
@@ -139,7 +139,7 @@ std::string PGaugeWidget::GetTimeStamp() {
     fgets(output, sizeof(output), sysFile);
     pclose(sysFile);
     std::string result(output, TIME_BUFFER_LENGTH);
-    FILE_LOG(logDEBUG) << "Date:[" << result << ']';
+    LOG(logDEBUG) << "Date:[" << result << ']';
     if (result.find("CET ") != std::string::npos) {
         result.erase(result.find("CET "), 4);
     }

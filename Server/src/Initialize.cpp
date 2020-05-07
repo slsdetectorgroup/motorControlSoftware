@@ -126,7 +126,7 @@ string Initialize::executeCommand(vector<string> args) {
 
     /*
             for (int i = 0; i < nArg; ++i) {
-                    FILE_LOG(logINFO) << i << ":" << args[i];
+                    LOG(logINFO) << i << ":" << args[i];
             }
     */
     try {
@@ -1265,8 +1265,8 @@ string Initialize::executeCommand(vector<string> args) {
         if (xrayTube != NULL) {
             int port = xrayTube->getInterface()->getSerialPortNumber();
             usbSerialPortsUsed[port] = false;
-            FILE_LOG(logINFO)
-                << "Setting interface /ttyUSB" << port << ": Not in use";
+            LOG(logINFO) << "Setting interface /ttyUSB" << port
+                         << ": Not in use";
             delete xrayTube;
             xrayTube = NULL;
         }
@@ -1278,8 +1278,8 @@ string Initialize::executeCommand(vector<string> args) {
         if (pgauge != NULL) {
             int port = pgauge->getInterface()->getSerialPortNumber();
             usbSerialPortsUsed[port] = false;
-            FILE_LOG(logINFO)
-                << "Setting interface /ttyUSB" << port << ": Not in use";
+            LOG(logINFO) << "Setting interface /ttyUSB" << port
+                         << ": Not in use";
             delete pgauge;
             pgauge = NULL;
         }
@@ -1386,7 +1386,7 @@ Initialize::Initialize()
 }
 
 void Initialize::ReadConfigFile() {
-    FILE_LOG(logINFO) << "Reading config file" << endl;
+    LOG(logINFO) << "Reading config file" << endl;
     ifstream inFile;
     inFile.open(CONFIG_FILE, ifstream::in);
     if (!inFile.is_open()) {
@@ -1399,14 +1399,14 @@ void Initialize::ReadConfigFile() {
         if (sLine.find('#') != string::npos) {
             sLine.erase(sLine.find('#'));
         }
-        FILE_LOG(logDEBUG) << "line:" << sLine << endl;
+        LOG(logDEBUG) << "line:" << sLine << endl;
         // scan arguments
         istringstream iss(sLine);
         vector<string> args = vector<string>(istream_iterator<string>(iss),
                                              istream_iterator<string>());
         for (unsigned int i = 0; i < args.size(); ++i) {
-            FILE_LOG(logDEBUG) << i << ":[" << args[i]
-                               << "] length:" << args[i].length() << endl;
+            LOG(logDEBUG) << i << ":[" << args[i]
+                          << "] length:" << args[i].length() << endl;
         }
         // blank lines
         if (args.size() == 0 || args[0].empty()) {
@@ -1539,8 +1539,7 @@ void Initialize::TubeMode(vector<string> args) {
         UpdateInterface(TUBE);
         xrayTube->setMaxPower(maxTubePower);
     } catch (RuntimeError &e) {
-        FILE_LOG(logWARNING)
-            << "Xray Tube is probably switched off. Continuing.";
+        LOG(logWARNING) << "Xray Tube is probably switched off. Continuing.";
     }
     cout << endl;
 }
@@ -1550,7 +1549,7 @@ void Initialize::PressureMode() {
     try {
         UpdateInterface(PRESSURE);
     } catch (RuntimeError &e) {
-        FILE_LOG(logWARNING)
+        LOG(logWARNING)
             << "Pressure Gauge is probably switched off. Continuing.";
     }
     cout << endl;

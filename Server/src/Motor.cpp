@@ -16,9 +16,8 @@ Motor::Motor(int index, std::string name, int axis, int controller,
         oss << "Invalid limits to set motor " << name;
         throw RuntimeError(oss.str());
     }
-    FILE_LOG(logINFO) << "Motor [" << index << "]: [name:" << name
-                      << ", axis:" << axis << ", iController:" << controller
-                      << "]";
+    LOG(logINFO) << "Motor [" << index << "]: [name:" << name
+                 << ", axis:" << axis << ", iController:" << controller << "]";
 }
 
 bool Motor::matches(double position1, double position2) {

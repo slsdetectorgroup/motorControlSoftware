@@ -38,7 +38,7 @@ void ReferencePointsWidget::LoadReferencePoints() {
     if (result.empty()) {
         return;
     }
-    FILE_LOG(logDEBUG) << "reflist:" << result;
+    LOG(logDEBUG) << "reflist:" << result;
     // parse values
     std::istringstream iss(result);
     std::vector<std::string> list =
@@ -103,7 +103,7 @@ void ReferencePointsWidget::GetReferencePoint() {
 void ReferencePointsWidget::SetReferencePoint() {
     std::string ref =
         std::string(comboReference->currentText().toAscii().data());
-    FILE_LOG(logINFO) << "Moving to reference point " << ref;
+    LOG(logINFO) << "Moving to reference point " << ref;
     statusBar->showMessage("Moving ...");
     statusBar->showMessage("Moving ...");
     std::ostringstream oss;

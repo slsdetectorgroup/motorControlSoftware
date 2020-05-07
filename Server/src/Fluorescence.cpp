@@ -28,7 +28,7 @@ Fluorescence::Fluorescence(int index, std::string name, Controller *controller,
     : index(index), name(name), circular(false), controller(controller),
       axis(axis), width(0), offset(0), currentTargetHolder(0),
       currentTarget(-1) {
-    FILE_LOG(logINFO) << name << " [" << index << "] added";
+    LOG(logINFO) << name << " [" << index << "] added";
     if (name == "Fluorescence_wheel") {
         circular = true;
         width = CIRCULAR_WIDTH;
@@ -138,7 +138,7 @@ void Fluorescence::updateCurrentTarget() {
     // laser position
     if (!circular && Motor::matches(LINEAR_LASER_POSITION, position)) {
         currentTarget = FLUOR_LASER_VALUE;
-        FILE_LOG(logINFO) << name << " at " << FLUOR_LASER_NAME;
+        LOG(logINFO) << name << " at " << FLUOR_LASER_NAME;
         return;
     }
 #endif
@@ -149,14 +149,14 @@ void Fluorescence::updateCurrentTarget() {
     // target positions
     if (Motor::matches(calculatedPosition, position)) {
         currentTarget = ipos;
-        FILE_LOG(logINFO) << name << " at "
-                          << targetHolder[currentTargetHolder]
-                                 ->getCurrentTargetName(currentTarget);
+        LOG(logINFO) << name << " at "
+                     << targetHolder[currentTargetHolder]->getCurrentTargetName(
+                            currentTarget);
     }
     // no target position
     else {
         currentTarget = FLUOR_NO_TARGET_VALUE;
-        FILE_LOG(logINFO) << name << " at " << FLUOR_NO_TARGET_NAME;
+        LOG(logINFO) << name << " at " << FLUOR_NO_TARGET_NAME;
     }
 }
 
@@ -179,7 +179,7 @@ void Fluorescence::moveToTarget(std::string target) {
         }
     }
     controller->moveAbs(position, axis);
-    FILE_LOG(logINFO) << name << " has been moved to " << target;
+    LOG(logINFO) << name << " has been moved to " << target;
 }
 
 void Fluorescence::print() {

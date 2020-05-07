@@ -9,13 +9,13 @@
 
 Pgauge::Pgauge(Interface *interface) {
     this->interface = interface;
-    FILE_LOG(logINFO) << "Pressure Gauge: [usbPort:" << interface->getSerial()
-                      << "]";
+    LOG(logINFO) << "Pressure Gauge: [usbPort:" << interface->getSerial()
+                 << "]";
 }
 
 Pgauge::~Pgauge() {
     delete interface;
-    FILE_LOG(logINFO) << "Deleting pressure gauge interface and class";
+    LOG(logINFO) << "Deleting pressure gauge interface and class";
 }
 
 Interface *Pgauge::getInterface() { return interface; }

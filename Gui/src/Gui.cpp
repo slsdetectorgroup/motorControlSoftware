@@ -39,7 +39,7 @@ void Gui::LayoutWindow() {
 #endif
     oss << " - Motor Control Software (" << hostname << ")";
     std::string title = oss.str();
-    FILE_LOG(logINFOBLUE) << title;
+    LOG(logINFOBLUE) << title;
     setWindowTitle(title.c_str());
 
     // hide all widgets
@@ -80,7 +80,7 @@ void Gui::LoadMotorWidgets() {
     while (result.empty()) {
         result = SendCommand(hostname, 1, "motorlist", "Gui::LoadMotorWidgets");
     }
-    FILE_LOG(logDEBUG) << "motorlist:" << result;
+    LOG(logDEBUG) << "motorlist:" << result;
 
     // parse motor names
     std::istringstream iss(result);
@@ -213,7 +213,7 @@ void Gui::LoadFwheelWidgets() {
     if (result.empty()) {
         return;
     }
-    FILE_LOG(logDEBUG) << "fwlist:" << result;
+    LOG(logDEBUG) << "fwlist:" << result;
 
     // parse filter wheel names
     std::istringstream iss(result);
@@ -475,7 +475,7 @@ void Gui::Update() {
 
 // void Gui::Stop() {
 //     pushStop->setChecked(true);
-//     FILE_LOG(logINFO) << "Stopping all motors";
+//     LOG(logINFO) << "Stopping all motors";
 //     std::string result = SendCommand(hostname, 1, "stopall", "Gui::Stop");
 //     pushStop->setChecked(false);
 // 	Update();

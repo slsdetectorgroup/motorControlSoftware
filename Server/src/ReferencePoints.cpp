@@ -67,10 +67,9 @@ void ReferencePoints::moveTo(std::string name) {
                 // move motor to that position ( as long as reference position
                 // is not -1)
                 if (!Motor::matches(positions[j], -1)) {
-                    FILE_LOG(logINFO)
-                        << "Moving "
-                        << controller[j]->getMotor(axis[j])->getName() << " to "
-                        << positions[j];
+                    LOG(logINFO) << "Moving "
+                                 << controller[j]->getMotor(axis[j])->getName()
+                                 << " to " << positions[j];
                     controller[j]->moveAbs(positions[j], axis[j]);
                 }
             }

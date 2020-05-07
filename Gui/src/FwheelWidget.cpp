@@ -30,7 +30,7 @@ void FwheelWidget::LoadAbsorptionValues() {
     if (result.empty()) {
         return;
     }
-    FILE_LOG(logDEBUG) << "fwvals:" << result;
+    LOG(logDEBUG) << "fwvals:" << result;
     // parse values
     std::istringstream iss(result);
     std::vector<std::string> list =
@@ -77,8 +77,7 @@ void FwheelWidget::GetValue() {
 
 void FwheelWidget::SetValue() {
     std::string value = std::string(comboValue->currentText().toAscii().data());
-    FILE_LOG(logINFO) << "Setting absorption value of " << name << " to "
-                      << value;
+    LOG(logINFO) << "Setting absorption value of " << name << " to " << value;
     statusBar->showMessage("Moving ...");
     statusBar->showMessage("Moving ...");
     std::ostringstream oss;

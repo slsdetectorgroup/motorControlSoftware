@@ -11,9 +11,9 @@ Slit::Slit(Controller *controllerX1, Controller *controllerX2, int axisX1,
            int axisX2)
     : controllerX1(controllerX1), controllerX2(controllerX2), axisX1(axisX1),
       axisX2(axisX2), limit(SLITS_SUM_LIMIT) {
-    FILE_LOG(logINFO) << "Slit: [controllerX1:" << controllerX1->getName()
-                      << ", controllerX2:" << controllerX2->getName()
-                      << ", axisX1:" << axisX1 << ", axisX2:" << axisX2 << "]";
+    LOG(logINFO) << "Slit: [controllerX1:" << controllerX1->getName()
+                 << ", controllerX2:" << controllerX2->getName()
+                 << ", axisX1:" << axisX1 << ", axisX2:" << axisX2 << "]";
 }
 
 void Slit::updateLimits() {
@@ -29,9 +29,9 @@ void Slit::updateLimits() {
     }
     controllerX1->getMotor(axisX1)->setUpperLimit(limitx1);
     controllerX2->getMotor(axisX2)->setUpperLimit(limitx2);
-    FILE_LOG(logINFO) << "Updated upperlimits of slits ("
-                      << controllerX1->getMotor(axisX1)->getUpperLimit() << ", "
-                      << controllerX2->getMotor(axisX2)->getUpperLimit() << ')';
+    LOG(logINFO) << "Updated upperlimits of slits ("
+                 << controllerX1->getMotor(axisX1)->getUpperLimit() << ", "
+                 << controllerX2->getMotor(axisX2)->getUpperLimit() << ')';
 }
 
 std::string Slit::canBothMove(double position1, double position2) {

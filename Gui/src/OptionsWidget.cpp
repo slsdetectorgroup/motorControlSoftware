@@ -183,8 +183,8 @@ void OptionsWidget::SetPosition(double value) {
         return;
     }
     std::string name = std::string(comboMotor->currentText().toAscii().data());
-    FILE_LOG(logINFO) << "Overwriting current position of " << name << " to "
-                      << value;
+    LOG(logINFO) << "Overwriting current position of " << name << " to "
+                 << value;
     std::ostringstream oss;
     oss << "setpos " << name << ' ' << value;
     std::string result =
@@ -214,7 +214,7 @@ void OptionsWidget::GetUpperLimit() {
 
 void OptionsWidget::SetUpperLimit(double value) {
     std::string name = std::string(comboMotor->currentText().toAscii().data());
-    FILE_LOG(logINFO) << "Setting " << name << "'s upper limit to " << value;
+    LOG(logINFO) << "Setting " << name << "'s upper limit to " << value;
     std::ostringstream oss;
     oss << "setupper " << name << ' ' << value;
     std::string result =
@@ -244,7 +244,7 @@ void OptionsWidget::GetLowerLimit() {
 
 void OptionsWidget::SetLowerLimit(double value) {
     std::string name = std::string(comboMotor->currentText().toAscii().data());
-    FILE_LOG(logINFO) << "Setting " << name << "'s lower limit to " << value;
+    LOG(logINFO) << "Setting " << name << "'s lower limit to " << value;
     std::ostringstream oss;
     oss << "setlower " << name << ' ' << value;
     std::string result =
