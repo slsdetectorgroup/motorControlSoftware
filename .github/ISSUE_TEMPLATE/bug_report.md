@@ -12,7 +12,6 @@ template: bug_report.md
 ##### *Distribution: 
 <!-- RHEL7, RHEL6, Fedora, etc -->
 
-
 ##### *Xray Box type: 
 <!-- If applicable, Laser Box, Big Xray box, Vaccum Box -->
 
