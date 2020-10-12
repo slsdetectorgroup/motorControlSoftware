@@ -56,7 +56,7 @@ function(set_project_warnings project_name)
       -Wpedantic # warn if non-standard C++ is used
       -Wconversion # warn on type conversions that may lose data
     #   -Wsign-conversion # warn on sign conversions
-      -Wnull-dereference # warn if a null dereference is detected
+#       -Wnull-dereference # warn if a null dereference is detected
       -Wdouble-promotion # warn if float is implicit promoted to double
       -Wformat=2 # warn on security issues around functions that format output
                  # (ie printf)
@@ -67,16 +67,32 @@ function(set_project_warnings project_name)
     set(MSVC_WARNINGS ${MSVC_WARNINGS} /WX)
   endif()
 
+  # GCC specific warnings, some depend on version 
+  # TODO! double check intermediate versions 
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6)
+        set(GCC_WARNINGS
+                ${CLANG_WARNINGS}
+                -Wlogical-op # warn about logical operations being used where bitwise were
+                        # probably wanted
+                -Wuseless-cast # warn if you perform a cast to the same type
+        )   
+  endif()
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6)
   set(GCC_WARNINGS
-      ${CLANG_WARNINGS}
+      ${GCC_WARNINGS}
       -Wmisleading-indentation # warn if indentation implies blocks where blocks
                                # do not exist
       -Wduplicated-cond # warn if if / else chain has duplicated conditions
       -Wduplicated-branches # warn if if / else branches have duplicated code
-      -Wlogical-op # warn about logical operations being used where bitwise were
-                   # probably wanted
-      -Wuseless-cast # warn if you perform a cast to the same type
+      -Wnull-dereference 
   )
+  endif()
+
+  set(CLANG_WARNINGS
+  ${CLANG_WARNINGS}
+
+  -Wnull-dereference 
+)
 
   if(MSVC)
     set(PROJECT_WARNINGS ${MSVC_WARNINGS})
