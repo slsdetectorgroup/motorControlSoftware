@@ -40,7 +40,7 @@ function(set_project_warnings project_name)
       /permissive- # standards conformance mode for MSVC compiler.
   )
 
-  set(CLANG_WARNINGS
+  set(BASE_WARNINGS
       -Wall
       -Wextra # reasonable and standard
     #   -Wshadow # warn the user if a variable declaration shadows one from a
@@ -63,25 +63,31 @@ function(set_project_warnings project_name)
   )
 
   if (WARNINGS_AS_ERRORS)
-    set(CLANG_WARNINGS ${CLANG_WARNINGS} -Werror)
+    set(BASE_WARNINGS ${CLANG_WARNINGS} -Werror)
     set(MSVC_WARNINGS ${MSVC_WARNINGS} /WX)
   endif()
 
   # GCC specific warnings, some depend on version 
   # TODO! double check intermediate versions 
+
+  set(GCC_LESS_6
+   -Wlogical-op # warn about logical operations being used where bitwise were
+                   # probably wanted
+   -Wuseless-cast # warn if you perform a cast to the same type
+  )
+
   if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6)
     set(GCC_WARNINGS
-      ${CLANG_WARNINGS}
-      -Wlogical-op # warn about logical operations being used where bitwise were
-                   # probably wanted
-      -Wuseless-cast # warn if you perform a cast to the same type
+      ${BASE_WARNINGS}
+      ${GCC_LESS_6}
   )   
   endif()
 
-  
+
   if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6)
   set(GCC_WARNINGS
-    ${GCC_WARNINGS}
+    ${BASE_WARNINGS}
+    ${GCC_LESS_6}
     -Wmisleading-indentation # warn if indentation implies blocks where blocks
                              # do not exist
     -Wduplicated-cond # warn if if / else chain has duplicated conditions
@@ -92,7 +98,7 @@ function(set_project_warnings project_name)
 
   #Add gcc version depenend warnings to clang
   set(CLANG_WARNINGS
-    ${CLANG_WARNINGS}
+    ${BASE_WARNINGS}
     -Wnull-dereference 
   )
 
