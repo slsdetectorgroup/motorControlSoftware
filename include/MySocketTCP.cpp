@@ -75,7 +75,7 @@ MySocketTCP::MySocketTCP(const char *const host_ip_or_name,
         throw RuntimeError(oss.str());
     } else {
         // Set some fields in the serverAddress structure.
-        serverAddress.sin_family = hostInfo->h_addrtype;
+        serverAddress.sin_family = static_cast<short>(hostInfo->h_addrtype);
         memcpy(reinterpret_cast<char *>(&serverAddress.sin_addr.s_addr),
                hostInfo->h_addr_list[0], hostInfo->h_length);
         serverAddress.sin_port = htons(port_number);
