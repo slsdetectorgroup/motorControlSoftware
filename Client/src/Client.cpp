@@ -10,7 +10,7 @@
 Client::Client(std::string hostname) : hostname(hostname) {}
 
 std::string Client::SendCommand(int nCommand, std::string command) {
-    int portno = PORT_NO;
+    unsigned short int portno = PORT_NO;
     if (command.find("stop") != std::string::npos) {
         portno = PORT_NO + 1;
     }
@@ -31,7 +31,7 @@ std::string Client::SendCommand(int nCommand, std::string command) {
     char args[TCP_PACKET_LENGTH];
     memset(args, 0, sizeof(args));
     // ensure command doesnt exceed size
-    int sz = command.length();
+    size_t sz = command.length();
     if (sz >= TCP_PACKET_LENGTH) {
         sz = TCP_PACKET_LENGTH - 1;
     }

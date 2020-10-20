@@ -112,7 +112,7 @@ void Gui::LoadMotorWidgets() {
             }
             fluorWidgets.push_back(
                 new FluorWidget(this, motorName, hostname, statusbar));
-            int currentIndex = fluorWidgets.size() - 1;
+            int currentIndex = static_cast<int>(fluorWidgets.size()) - 1;
             gridFluorescence->addWidget(fluorWidgets[currentIndex],
                                         currentIndex, 0);
             continue;
@@ -126,16 +126,18 @@ void Gui::LoadMotorWidgets() {
         }
         motorWidgets.push_back(
             new MotorWidget(this, motorName, hostname, statusbar));
-        int currentIndex = motorWidgets.size() - 1;
+        int currentIndex = static_cast<int>(motorWidgets.size()) - 1;
         gridMotors->addWidget(motorWidgets[currentIndex], currentIndex, 0);
     }
 
     int mainWindowHeight =
-        height() + ((motorWidgets.size() == 0) ? 0 : WINDOW_HEIGHT_MOTOR_REF) +
-        motorWidgets.size() * WINDOW_HEIGHT_MOTOR +
-        ((fluorWidgets.size() == 0) ? 0 : WINDOW_HEIGHT_FLUOR_REF) +
-        fluorWidgets.size() * WINDOW_HEIGHT_FLUOR +
-        (slits == NULL ? 0 : WINDOW_HEIGHT_SLITS);
+        height() +
+        static_cast<int>(
+            ((motorWidgets.size() == 0) ? 0 : WINDOW_HEIGHT_MOTOR_REF) +
+            motorWidgets.size() * WINDOW_HEIGHT_MOTOR +
+            ((fluorWidgets.size() == 0) ? 0 : WINDOW_HEIGHT_FLUOR_REF) +
+            fluorWidgets.size() * WINDOW_HEIGHT_FLUOR +
+            (slits == NULL ? 0 : WINDOW_HEIGHT_SLITS));
     resize(width(), mainWindowHeight);
 }
 
@@ -233,15 +235,16 @@ void Gui::LoadFwheelWidgets() {
 
         fwheelWidgets.push_back(
             new FwheelWidget(this, name, hostname, statusbar));
-        int currentIndex = fwheelWidgets.size() - 1;
+        int currentIndex = static_cast<int>(fwheelWidgets.size()) - 1;
         gridFilterWheels->addWidget(fwheelWidgets[currentIndex], currentIndex,
                                     0);
     }
 
     int mainWindowHeight =
         height() +
-        ((fwheelWidgets.size() == 0) ? 0 : WINDOW_HEIGHT_FWHEEL_REF) +
-        fwheelWidgets.size() * WINDOW_HEIGHT_FWHEEL;
+        static_cast<int>(
+            ((fwheelWidgets.size() == 0) ? 0 : WINDOW_HEIGHT_FWHEEL_REF) +
+            fwheelWidgets.size() * WINDOW_HEIGHT_FWHEEL);
     resize(width(), mainWindowHeight);
 }
 
