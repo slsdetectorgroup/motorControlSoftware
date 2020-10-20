@@ -73,7 +73,7 @@ function(set_project_warnings project_name)
   set(GCC_LESS_6
    -Wlogical-op # warn about logical operations being used where bitwise were
                    # probably wanted
-   -Wuseless-cast # warn if you perform a cast to the same type
+  #  -Wuseless-cast # warn if you perform a cast to the same type
   )
 
   if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6)
