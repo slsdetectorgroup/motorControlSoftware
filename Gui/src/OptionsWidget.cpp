@@ -321,9 +321,10 @@ void OptionsWidget::SendCommandToController() {
     dispContResult->clear();
     std::string name =
         std::string(comboController->currentText().toAscii().data());
+    int size = static_cast<int>(args.size());
     std::ostringstream oss;
     oss << "sendcontroller " << name << ' ' << command;
-    std::string result = SendCommand(hostname, 2 + args.size(), oss.str(),
+    std::string result = SendCommand(hostname, 2 + size, oss.str(),
                                      "OptionsWidget::SendCommandToController");
 }
 
@@ -343,10 +344,11 @@ void OptionsWidget::SendandReadCommandToController() {
     dispContResult->clear();
     std::string name =
         std::string(comboController->currentText().toAscii().data());
+    int size = static_cast<int>(args.size());
     std::ostringstream oss;
     oss << "readcontroller " << name << ' ' << command;
     std::string result =
-        SendCommand(hostname, 2 + args.size(), oss.str(),
+        SendCommand(hostname, 2 + size, oss.str(),
                     "OptionsWidget::SendandReadCommandToController");
     if (!result.empty()) {
         dispContResult->setText(result.c_str());
@@ -408,13 +410,14 @@ void OptionsWidget::AddHolder() {
     std::string name = std::string(comboFluor->currentText().toAscii().data());
     std::ostringstream oss;
     // already backwards from the gui (target 8 to target 1)
+    int size = static_cast<int>(targets.size());
     oss << "addholder " << name << ' ';
     for (size_t i = 0; i < targets.size(); ++i) {
         oss << targets[i]->text().toAscii().data() << ' ';
         oss << energy[i]->value() << ' ';
     }
-    std::string result = SendCommand(hostname, 2 + 2 * targets.size(),
-                                     oss.str(), "OptionsWidget::AddHolder");
+    std::string result = SendCommand(hostname, 2 + 2 * size, oss.str(),
+                                     "OptionsWidget::AddHolder");
     if (!result.empty()) {
         ClearHolderContents();
     }
@@ -481,9 +484,10 @@ void OptionsWidget::SendCommandToTube() {
         return;
     }
     dispTubeResult->clear();
+    int size = static_cast<int>(args.size());
     std::ostringstream oss;
     oss << "sendtube " << command;
-    std::string result = SendCommand(hostname, 1 + args.size(), oss.str(),
+    std::string result = SendCommand(hostname, 1 + size, oss.str(),
                                      "OptionsWidget::SendCommandToTube");
 }
 
@@ -501,9 +505,10 @@ void OptionsWidget::SendandReadCommandToTube() {
         return;
     }
     dispTubeResult->clear();
+    int size = static_cast<int>(args.size());
     std::ostringstream oss;
     oss << "readtube " << command;
-    std::string result = SendCommand(hostname, 1 + args.size(), oss.str(),
+    std::string result = SendCommand(hostname, 1 + size, oss.str(),
                                      "OptionsWidget::SendandReadCommandToTube");
     if (!result.empty()) {
         dispTubeResult->setText(result.c_str());

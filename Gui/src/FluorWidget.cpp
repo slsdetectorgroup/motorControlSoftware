@@ -167,7 +167,7 @@ void FluorWidget::GetTarget() {
             // found match
             if (text == result) {
                 comboTarget->setCurrentIndex(i);
-                dispEnergy->setText(std::string(energy[i] + " KeV").c_str());
+                dispEnergy->setText((energy[i] + std::string(" KeV")).c_str());
                 found = true;
             }
         }
@@ -188,7 +188,7 @@ void FluorWidget::SetTarget(int index) {
         std::string(comboTarget->currentText().toAscii().data());
     LOG(logINFO) << "Moving " << name << " to target " << target;
     // display energy
-    dispEnergy->setText(std::string(energy[index] + " KeV").c_str());
+    dispEnergy->setText((energy[index] + std::string(" KeV")).c_str());
     statusBar->showMessage("Moving ...");
     statusBar->showMessage("Moving ...");
     // move to target
