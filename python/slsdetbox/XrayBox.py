@@ -106,11 +106,17 @@ class XrayBox:
         logger.info(f"Setting current to: {mA} mA")
         self._call("setc", str(mA))
 
+    @property
+    def shutters(self):
+        out = self._call("getshutters")
+        sh = out.split('\n')[1].split()
+        return sh
 
 class BigXrayBox(XrayBox):
     def __init__(self):
         self._client = "xrayClient"
         self._motor = "Fluorescence"
+
     @property
     def target(self):
         out = self._call("getfl", self._motor)
@@ -119,4 +125,10 @@ class BigXrayBox(XrayBox):
     @target.setter
     def target(self, pos):
         self._call("setfl", self._motor, str(pos))
+
+    def xrf_open(self):
+        self._call("shutter", "1", "on")
+
+    def xrf_close(self):
+        self._call("shutter", "1", "off")
 
