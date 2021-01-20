@@ -110,4 +110,13 @@ class XrayBox:
 class BigXrayBox(XrayBox):
     def __init__(self):
         self._client = "xrayClient"
+        self._motor = "Fluorescence"
+    @property
+    def target(self):
+        out = self._call("getfl", self._motor)
+        return out.split('\n')[1]
+
+    @target.setter
+    def target(self, pos):
+        self._call("setfl", self._motor, str(pos))
 
