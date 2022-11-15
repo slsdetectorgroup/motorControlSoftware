@@ -96,6 +96,14 @@ function(set_project_warnings project_name)
   )
   endif()
 
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7)
+  set(GCC_WARNINGS
+    ${BASE_WARNINGS}
+    ${GCC_LESS_6}
+    -Wno-psabi# warn if subtle ABI change (conformance fix)
+  )
+  endif()
+
   #Add gcc version depenend warnings to clang
   set(CLANG_WARNINGS
     ${BASE_WARNINGS}
