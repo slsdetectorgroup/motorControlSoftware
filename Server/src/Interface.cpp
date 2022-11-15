@@ -187,7 +187,7 @@ std::string Interface::ControllerSendCommand(std::string command,
     char buffer[COMMAND_BUFFER_LENGTH];
     memset(buffer, 0, sizeof(buffer));
     strcpy(buffer, command.c_str());
-    int ret = -1;
+    ssize_t ret = -1;
     int attempt = 0;
     while (ret == -1) {
         ret = write(serialfd, buffer, sizeof(buffer));
@@ -335,7 +335,7 @@ std::string Interface::TubeSendCommand(std::string command, bool readBack) {
     memset(buffer, 0, sizeof(buffer));
     strcpy(buffer, command.c_str());
 
-    int ret = write(serialfd, buffer, strlen(buffer));
+    ssize_t ret = write(serialfd, buffer, strlen(buffer));
     if (ret == -1) {
         std::ostringstream oss;
         oss << "Could not write to tube";
@@ -466,7 +466,7 @@ std::string Interface::PressureGaugeSendCommand(std::string command) {
     char buffer[COMMAND_BUFFER_LENGTH];
     memset(buffer, 0, sizeof(buffer));
     strcpy(buffer, command.c_str());
-    int ret = write(serialfd, buffer, strlen(buffer));
+    ssize_t ret = write(serialfd, buffer, strlen(buffer));
     if (ret == -1) {
         std::ostringstream oss;
         oss << "Could not write command [" << buffer << "] to pressure gauge";
@@ -645,7 +645,7 @@ std::string Interface::FilterWheelSendCommand(std::string command,
     memset(buffer, 0, sizeof(buffer));
     strcpy(buffer, command.c_str());
 
-    int ret = write(serialfd, buffer, strlen(buffer));
+    ssize_t ret = write(serialfd, buffer, strlen(buffer));
     if (ret == -1) {
         std::ostringstream oss;
         oss << "Could not write to filter wheel";

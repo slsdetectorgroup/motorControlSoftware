@@ -47,10 +47,10 @@ bool Fluorescence::isCircular() { return circular; }
 
 Controller *Fluorescence::getController() { return controller; }
 
-int Fluorescence::getNumTargetHolders() { return (int)targetHolder.size(); }
+int Fluorescence::getNumTargetHolders() { return static_cast<int>(targetHolder.size()); }
 
 void Fluorescence::setCurrentTargetHolder(int index) {
-    if (index < 0 || index >= (int)targetHolder.size()) {
+    if (index < 0 || index >= getNumTargetHolders()) {
         std::ostringstream oss;
         oss << "Current target holder " << index << " must be less than "
             << targetHolder.size();
@@ -71,31 +71,36 @@ void Fluorescence::deleteLastTargetHolder() {
             "Cannot delete target holder. Minimum 1 holder is required.");
     }
     targetHolder.pop_back();
-    if (currentTargetHolder >= (int)targetHolder.size()) {
-        currentTargetHolder = (int)targetHolder.size() - 1;
+    int targetHolderSize = getNumTargetHolders();
+    if (currentTargetHolder >= targetHolderSize) {
+        currentTargetHolder = targetHolderSize - 1;
     }
 }
 
 void Fluorescence::addHolder(std::vector<std::string> name,
                              std::vector<std::string> energy) {
-    targetHolder.push_back(new TargetHolder(targetHolder.size()));
+    int targetHolderSize = getNumTargetHolders();
+    targetHolder.push_back(new TargetHolder(targetHolderSize));
     for (size_t i = 0; i < name.size(); ++i) {
-        targetHolder[targetHolder.size() - 1]->addTarget(name[i], energy[i]);
+        targetHolderSize = getNumTargetHolders();
+        targetHolder[targetHolderSize - 1]->addTarget(name[i], energy[i]);
     }
 }
 
 void Fluorescence::addTarget(std::string name, std::string energy) {
     // 1st time or previous target holder is full, create a new one
-    if (targetHolder.size() == 0 ||
-        targetHolder[targetHolder.size() - 1]->isFull()) {
-        targetHolder.push_back(new TargetHolder(targetHolder.size()));
+    int targetHolderSize = getNumTargetHolders();
+    if (targetHolderSize == 0 ||
+        targetHolder[targetHolderSize - 1]->isFull()) {
+        targetHolder.push_back(new TargetHolder(targetHolderSize));
     }
-    targetHolder[targetHolder.size() - 1]->addTarget(name, energy);
+    targetHolderSize = getNumTargetHolders();
+    targetHolder[targetHolderSize - 1]->addTarget(name, energy);
 }
 
 void Fluorescence::changeTarget(int holderIndex, int targetIndex,
                                 std::string name, std::string energy) {
-    if (holderIndex < 0 || holderIndex >= (int)targetHolder.size()) {
+    if (holderIndex < 0 || holderIndex >= getNumTargetHolders()) {
         std::ostringstream oss;
         oss << "Holder index must be less than " << targetHolder.size();
         throw RuntimeError(oss.str());
@@ -105,7 +110,7 @@ void Fluorescence::changeTarget(int holderIndex, int targetIndex,
 
 std::string Fluorescence::getList(int index) {
     std::string result;
-    if (index < 0 || index >= (int)targetHolder.size()) {
+    if (index < 0 || index >= getNumTargetHolders()) {
         std::ostringstream oss;
         oss << "Holder index " << index << " must be less than "
             << targetHolder.size();
@@ -185,7 +190,7 @@ void Fluorescence::moveToTarget(std::string target) {
 void Fluorescence::print() {
     std::cout << "\tFluorescence" << (circular ? "_wheel [" : " [") << index
               << ']' << std::endl;
-    for (unsigned int i = 0; i < targetHolder.size(); ++i) {
+    for (int i = 0; i < getNumTargetHolders(); ++i) {
         std::cout << "\t  Target Holder [" << i << ']' << std::endl;
         targetHolder[i]->print();
     }
