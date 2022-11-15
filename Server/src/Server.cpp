@@ -14,7 +14,7 @@
 
 #define MIN_ARGUMENTS (6)
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* []) {
 #ifdef XRAYBOX
     LOG(logINFOBLUE) << "XRay Box Server";
 #elif LASERBOX
@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
     // subsequent read/write to socket gives error - must handle locally
     signal(SIGPIPE, SIG_IGN);
 
-    int portno = PORT_NO;
+    unsigned short int portno = PORT_NO;
     if (argc == 1) {
         LOG(logINFO) << "Control Server";
     } else {

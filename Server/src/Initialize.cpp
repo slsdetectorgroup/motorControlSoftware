@@ -121,7 +121,7 @@ int Initialize::GetControllerIndex(string name) {
 
 string Initialize::executeCommand(vector<string> args) {
     string command = args[0];
-    int nArg = (int)args.size();
+    int nArg = static_cast<int>(args.size());
     ostringstream oss;
 
     /*
@@ -1303,9 +1303,8 @@ Initialize::Initialize()
     : xrayTube(NULL), pgauge(NULL), referencePoints(NULL), slit(NULL),
       maxTubePower(0) {
 
-    usbSerialPortsUsed.resize(MAX_USB_SERIAL_PORTS);
-    for (unsigned int i = 0; i < usbSerialPortsUsed.size(); ++i) {
-        usbSerialPortsUsed[i] = false;
+    for (unsigned int i = 0; i < MAX_USB_SERIAL_PORTS; ++i) {
+        usbSerialPortsUsed.push_back(false);
     }
 
     ReadConfigFile();
@@ -1447,9 +1446,9 @@ void Initialize::UpdateInterface(InterfaceIndex index) {
     // get last index to update interface
     int lastIndex = 0;
     if (index == CONTROLLER) {
-        lastIndex = controller.size() - 1;
+        lastIndex = static_cast<int>(controller.size()) - 1;
     } else if (index == FILTER_WHEEL) {
-        lastIndex = fwheel.size() - 1;
+        lastIndex = static_cast<int>(fwheel.size()) - 1;
     }
 
     // loop through usb ports
@@ -1577,7 +1576,7 @@ void Initialize::FwheelMode(vector<string> args) {
     }
 
     // create fwheel object
-    fwheel.push_back(new Fwheel(fwheel.size(), name, serialNumber, values));
+    fwheel.push_back(new Fwheel(static_cast<int>(fwheel.size()), name, serialNumber, values));
 
     // get fwheel interface
     try {
@@ -1676,7 +1675,7 @@ void Initialize::ControllerMode(vector<string> args) {
     }
 
     // create controller object
-    controller.push_back(new Controller(controller.size(), name, serialNumber));
+    controller.push_back(new Controller(static_cast<int>(controller.size()), name, serialNumber));
 
     // get controller interface
     try {
@@ -1740,7 +1739,7 @@ void Initialize::MotorMode(vector<string> args) {
     int icontroller = GetControllerIndex(controllerName);
 
     // create motor object
-    motor.push_back(new Motor(motor.size(), name, axis, icontroller, lowerLimit,
+    motor.push_back(new Motor(static_cast<int>(motor.size()), name, axis, icontroller, lowerLimit,
                               upperLimit));
     controller[icontroller]->setMotor(axis, motor[motor.size() - 1]);
 
@@ -1748,7 +1747,7 @@ void Initialize::MotorMode(vector<string> args) {
 
     // if fluorescence, create fluorescence object
     if (name == "Fluorescence" || name == "Fluorescence_wheel") {
-        fluorescence.push_back(new Fluorescence(fluorescence.size(), name,
+        fluorescence.push_back(new Fluorescence(static_cast<int>(fluorescence.size()), name,
                                                 controller[icontroller], axis));
     } else if (name == "Slit_x2") {
         int imotorX1 = GetMotorIndex("Slit_x1");

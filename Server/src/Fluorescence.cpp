@@ -149,7 +149,9 @@ void Fluorescence::updateCurrentTarget() {
 #endif
 
     // find target
-    int ipos = round((position - (double)offset) / (double)width);
+    double dOffset = static_cast<double>(offset);
+    double dWidth = static_cast<double>(width);
+    int ipos = static_cast<int>(round((position - dOffset) / dWidth));
     double calculatedPosition = offset + ipos * width;
     // target positions
     if (Motor::matches(calculatedPosition, position)) {

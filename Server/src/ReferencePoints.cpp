@@ -11,11 +11,11 @@ ReferencePoints::ReferencePoints(std::vector<Controller *> controller,
                                  std::vector<int> axis)
     : controller(controller), axis(axis) {}
 
-int ReferencePoints::size() { return referencePoint.size(); }
+int ReferencePoints::size() { return static_cast<int>(referencePoint.size()); }
 
 void ReferencePoints::add(std::string name, std::vector<double> position) {
     referencePoint.push_back(
-        new ReferencePoint(referencePoint.size(), name, position));
+        new ReferencePoint(size(), name, position));
 }
 
 std::vector<double> ReferencePoints::getCurrentMotorPositions() {
@@ -27,7 +27,7 @@ std::vector<double> ReferencePoints::getCurrentMotorPositions() {
 }
 
 std::vector<double> ReferencePoints::getPositions(std::string name) {
-    for (unsigned int i = 0; i < referencePoint.size(); ++i) {
+    for (int i = 0; i < size(); ++i) {
         if (referencePoint[i]->getName() == name) {
             return referencePoint[i]->getPositions();
         }
@@ -37,9 +37,9 @@ std::vector<double> ReferencePoints::getPositions(std::string name) {
 
 std::string ReferencePoints::getList() {
     std::string result;
-    for (unsigned int i = 0; i < referencePoint.size(); ++i) {
+    for (int i = 0; i < size(); ++i) {
         result += referencePoint[i]->getName();
-        if (i < referencePoint.size() - 1) {
+        if (i < size() - 1) {
             result += ' ';
         }
     }
@@ -51,7 +51,7 @@ std::string ReferencePoints::getCurrentReferenceName() {
     std::vector<double> positions = getCurrentMotorPositions();
 
     // find matching reference name
-    for (unsigned int i = 0; i < referencePoint.size(); ++i) {
+    for (int i = 0; i < size(); ++i) {
         if (referencePoint[i]->isMatch(positions)) {
             return referencePoint[i]->getName();
         }
@@ -60,7 +60,7 @@ std::string ReferencePoints::getCurrentReferenceName() {
 }
 
 void ReferencePoints::moveTo(std::string name) {
-    for (unsigned int i = 0; i < referencePoint.size(); ++i) {
+    for (int i = 0; i < size(); ++i) {
         if (referencePoint[i]->getName() == name) {
             std::vector<double> positions = referencePoint[i]->getPositions();
             for (unsigned int j = 0; j < controller.size(); ++j) {
@@ -89,7 +89,7 @@ void ReferencePoints::print() {
     }
     std::cout << ']' << std::endl;
 
-    for (unsigned int i = 0; i < referencePoint.size(); ++i) {
+    for (int i = 0; i < size(); ++i) {
         referencePoint[i]->print();
     }
     std::cout << std::endl;
