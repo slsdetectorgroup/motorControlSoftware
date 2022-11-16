@@ -31,7 +31,7 @@ set(HEADERS
     ../include/MySocketTCP.h  
     ../include/commonDefs.h
     ../include/ansi.h
-    ../include/logger.h
+    include/logger.h
 )
 
 
