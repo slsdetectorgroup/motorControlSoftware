@@ -49,9 +49,10 @@ else()
 endif()
 
 if(USE_SANITIZER)
-    add_library(project_options INTERFACE)
-    target_compile_options(project_options INTERFACE -fsanitize=address,undefined -fno-omit-frame-pointer)
-    target_link_libraries(project_options INTERFACE -fsanitize=address,undefined)
+    target_compile_options(project_warnings INTERFACE -fsanitize=address,undefined -fno-omit-frame-pointer)
+    target_link_libraries(project_warnings INTERFACE -fsanitize=address,undefined)
+    # need to run this before running the server in rasp pi
+    # export LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libasan.so.6
 endif()
 
 
