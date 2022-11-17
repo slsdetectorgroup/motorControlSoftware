@@ -31,7 +31,7 @@ int main(int argc, char* []) {
     // subsequent read/write to socket gives error - must handle locally
     signal(SIGPIPE, SIG_IGN);
 
-    unsigned short int portno = PORT_NO;
+    int portno = PORT_NO;
     if (argc == 1) {
         LOG(logINFO) << "Control Server";
     } else {
@@ -40,10 +40,6 @@ int main(int argc, char* []) {
     }
 
     MySocketTCP *sock = new MySocketTCP(portno);
-    if (sock->getErrorStatus()) {
-        throw RuntimeError("Could not create server socket");
-    }
-
     Initialize init = Initialize();
     LOG(logINFO) << "Ready for commands...";
 

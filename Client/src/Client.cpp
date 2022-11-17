@@ -10,10 +10,7 @@
 Client::Client(std::string hostname) : hostname(hostname) {}
 
 std::string Client::SendCommand(int nCommand, std::string command) {
-    unsigned short int portno = PORT_NO;
-    if (command.find("stop") != std::string::npos) {
-        portno = PORT_NO + 1;
-    }
+    int portno = PORT_NO;
     if (command.find("stop") != std::string::npos) {
         portno = PORT_NO + 1;
     }
@@ -22,10 +19,8 @@ std::string Client::SendCommand(int nCommand, std::string command) {
     }
 
     // connect
-    MySocketTCP sock(hostname.c_str(), portno);
-    if (sock.Connect() < 0) {
-        throw RuntimeError("Could not connect to socket");
-    }
+    MySocketTCP sock(hostname, portno);
+    sock.Connect();
 
     // copy arguments
     char args[TCP_PACKET_LENGTH];
