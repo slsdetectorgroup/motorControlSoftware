@@ -14,8 +14,7 @@ ReferencePoints::ReferencePoints(std::vector<Controller *> controller,
 int ReferencePoints::size() { return static_cast<int>(referencePoint.size()); }
 
 void ReferencePoints::add(std::string name, std::vector<double> position) {
-    referencePoint.push_back(
-        new ReferencePoint(size(), name, position));
+    referencePoint.push_back(new ReferencePoint(size(), name, position));
 }
 
 std::vector<double> ReferencePoints::getCurrentMotorPositions() {

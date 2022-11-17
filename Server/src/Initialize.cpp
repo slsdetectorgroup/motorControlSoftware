@@ -1576,7 +1576,8 @@ void Initialize::FwheelMode(vector<string> args) {
     }
 
     // create fwheel object
-    fwheel.push_back(new Fwheel(static_cast<int>(fwheel.size()), name, serialNumber, values));
+    fwheel.push_back(new Fwheel(static_cast<int>(fwheel.size()), name,
+                                serialNumber, values));
 
     // get fwheel interface
     try {
@@ -1675,7 +1676,8 @@ void Initialize::ControllerMode(vector<string> args) {
     }
 
     // create controller object
-    controller.push_back(new Controller(static_cast<int>(controller.size()), name, serialNumber));
+    controller.push_back(new Controller(static_cast<int>(controller.size()),
+                                        name, serialNumber));
 
     // get controller interface
     try {
@@ -1739,16 +1741,17 @@ void Initialize::MotorMode(vector<string> args) {
     int icontroller = GetControllerIndex(controllerName);
 
     // create motor object
-    motor.push_back(new Motor(static_cast<int>(motor.size()), name, axis, icontroller, lowerLimit,
-                              upperLimit));
+    motor.push_back(new Motor(static_cast<int>(motor.size()), name, axis,
+                              icontroller, lowerLimit, upperLimit));
     controller[icontroller]->setMotor(axis, motor[motor.size() - 1]);
 
     // if slit_x2, create slit object
 
     // if fluorescence, create fluorescence object
     if (name == "Fluorescence" || name == "Fluorescence_wheel") {
-        fluorescence.push_back(new Fluorescence(static_cast<int>(fluorescence.size()), name,
-                                                controller[icontroller], axis));
+        fluorescence.push_back(
+            new Fluorescence(static_cast<int>(fluorescence.size()), name,
+                             controller[icontroller], axis));
     } else if (name == "Slit_x2") {
         int imotorX1 = GetMotorIndex("Slit_x1");
         Controller *controller_slitx1 =

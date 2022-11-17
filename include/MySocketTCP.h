@@ -2,26 +2,26 @@
 #ifndef MY_SOCKET_TCP_H
 #define MY_SOCKET_TCP_H
 
-#define SEND_REC_MAX_SIZE       4096
-
+#define SEND_REC_MAX_SIZE 4096
 
 #include <arpa/inet.h>
+#include <math.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#include <unistd.h>
 #include <string>
-#include <math.h>
+#include <unistd.h>
 
 class MySocketTCP {
 
   public:
-    MySocketTCP(std::string host_ip_or_name, int port_number); 
-    MySocketTCP(int port_number); 
+    MySocketTCP(std::string host_ip_or_name, int port_number);
+    MySocketTCP(int port_number);
     ~MySocketTCP();
 
-int ConvertHostnameToInternetAddress (std::string hostname, struct addrinfo **res);
+    int ConvertHostnameToInternetAddress(std::string hostname,
+                                         struct addrinfo **res);
     void Disconnect();
-    int Connect();     
+    int Connect();
     ssize_t SendDataOnly(void *buf, ssize_t length);
     ssize_t ReceiveDataOnly(void *buf, ssize_t length);
 
@@ -33,19 +33,18 @@ int ConvertHostnameToInternetAddress (std::string hostname, struct addrinfo **re
 
     class mySocketDescriptors {
       public:
-
         /** Constructor */
-        mySocketDescriptors():fd(-1), newfd(-1){};
+        mySocketDescriptors() : fd(-1), newfd(-1){};
         /** Destructor */
         ~mySocketDescriptors() {
-          // close TCP server new socket descriptor from accept
-          if (newfd >= 0) {
-            close(newfd);
-          }
-          // close socket descriptor
-          if (fd >= 0) {
-            close(fd);
-          }
+            // close TCP server new socket descriptor from accept
+            if (newfd >= 0) {
+                close(newfd);
+            }
+            // close socket descriptor
+            if (fd >= 0) {
+                close(fd);
+            }
         }
         /** socket descriptor */
         int fd;
@@ -53,6 +52,5 @@ int ConvertHostnameToInternetAddress (std::string hostname, struct addrinfo **re
         int newfd;
     };
     mySocketDescriptors sockfd;
-
 };
 #endif

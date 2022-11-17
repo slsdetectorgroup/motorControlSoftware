@@ -47,7 +47,9 @@ bool Fluorescence::isCircular() { return circular; }
 
 Controller *Fluorescence::getController() { return controller; }
 
-int Fluorescence::getNumTargetHolders() { return static_cast<int>(targetHolder.size()); }
+int Fluorescence::getNumTargetHolders() {
+    return static_cast<int>(targetHolder.size());
+}
 
 void Fluorescence::setCurrentTargetHolder(int index) {
     if (index < 0 || index >= getNumTargetHolders()) {
@@ -90,8 +92,7 @@ void Fluorescence::addHolder(std::vector<std::string> name,
 void Fluorescence::addTarget(std::string name, std::string energy) {
     // 1st time or previous target holder is full, create a new one
     int targetHolderSize = getNumTargetHolders();
-    if (targetHolderSize == 0 ||
-        targetHolder[targetHolderSize - 1]->isFull()) {
+    if (targetHolderSize == 0 || targetHolder[targetHolderSize - 1]->isFull()) {
         targetHolder.push_back(new TargetHolder(targetHolderSize));
     }
     targetHolderSize = getNumTargetHolders();

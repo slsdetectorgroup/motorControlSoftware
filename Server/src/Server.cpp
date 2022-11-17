@@ -14,7 +14,7 @@
 
 #define MIN_ARGUMENTS (6)
 
-int main(int argc, char* []) {
+int main(int argc, char *[]) {
 #ifdef XRAYBOX
     LOG(logINFOBLUE) << "XRay Box Server";
 #elif LASERBOX
