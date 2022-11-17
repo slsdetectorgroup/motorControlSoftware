@@ -71,7 +71,7 @@ MySocketTCP::MySocketTCP(std::string host_ip_or_name, int port_number)
     clientAddress_length = sizeof(clientAddress);
 
     struct addrinfo *result;
-    if (!ConvertHostnameToInternetAddress(host_ip_or_name, &result) == FAIL) {
+    if (ConvertHostnameToInternetAddress(host_ip_or_name, &result) == FAIL) {
         sockfd.fd = -1;
         throw RuntimeError("Could not get ip from hostname");
     }
