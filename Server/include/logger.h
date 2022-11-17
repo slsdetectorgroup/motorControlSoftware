@@ -6,6 +6,13 @@
 #include <string>
 #include <unistd.h>
 
+// on background black
+#define bprintf(code, format, ...)                                             \
+    printf(code BG_BLACK format RESET, ##__VA_ARGS__)
+
+// normal printout
+#define cprintf(code, format, ...) printf(code format RESET, ##__VA_ARGS__)
+
 #ifdef FIFODEBUG
 #define FILELOG_MAX_LEVEL logDEBUG5
 #elif VERYVERBOSE
