@@ -23,7 +23,7 @@ ReferencePointsWidget::~ReferencePointsWidget() {}
 std::vector<std::string> ReferencePointsWidget::GetList() {
     std::vector<std::string> result;
     for (int i = 0; i < comboReference->count(); ++i) {
-        std::string name = comboReference->itemText(i).toAscii().data();
+        std::string name = comboReference->itemText(i).toLatin1().data();
         if (name != "None") {
             result.push_back(name);
         }
@@ -80,7 +80,7 @@ void ReferencePointsWidget::GetReferencePoint() {
         bool found = false;
         for (int i = 0; i < comboReference->count(); ++i) {
             std::string text =
-                std::string(comboReference->itemText(i).toAscii().data());
+                std::string(comboReference->itemText(i).toLatin1().data());
             // found match
             if (text == result) {
                 comboReference->setCurrentIndex(i);
@@ -102,7 +102,7 @@ void ReferencePointsWidget::GetReferencePoint() {
 
 void ReferencePointsWidget::SetReferencePoint() {
     std::string ref =
-        std::string(comboReference->currentText().toAscii().data());
+        std::string(comboReference->currentText().toLatin1().data());
     LOG(logINFO) << "Moving to reference point " << ref;
     statusBar->showMessage("Moving ...");
     statusBar->showMessage("Moving ...");

@@ -56,7 +56,7 @@ void FwheelWidget::GetValue() {
         bool found = false;
         for (int i = 0; i < comboValue->count(); ++i) {
             std::string text =
-                std::string(comboValue->itemText(i).toAscii().data());
+                std::string(comboValue->itemText(i).toLatin1().data());
             // found match
             if (text == result) {
                 comboValue->setCurrentIndex(i);
@@ -76,7 +76,7 @@ void FwheelWidget::GetValue() {
 }
 
 void FwheelWidget::SetValue() {
-    std::string value = std::string(comboValue->currentText().toAscii().data());
+    std::string value = std::string(comboValue->currentText().toLatin1().data());
     LOG(logINFO) << "Setting absorption value of " << name << " to " << value;
     statusBar->showMessage("Moving ...");
     statusBar->showMessage("Moving ...");
