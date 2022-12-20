@@ -1,4 +1,7 @@
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+
+find_package(Qt5 5.9 COMPONENTS Widgets Core Gui REQUIRED)
 
 set(SOURCES
     src/gui_main.cpp
@@ -27,6 +30,8 @@ set(FORMS
     forms/form_optionswidget.ui
 )
 
+qt5_wrap_ui(FORMS_H ${FORMS})
+
 
 set(HEADERS
     include/GuiDefs.h
@@ -48,46 +53,45 @@ set(HEADERS
 #Variable to hold the names of the binaries we want to build
 set(bin_names)
 
-#Variable to hold the compile time defenitions needed for the build
-set(defenitions)
+#Variable to hold the compile time definitions needed for the build
+set(definitions ${Qt5Widgets_DEFINITIONS})
 
-#Append the correct names and defenitions to the list
+#Append the correct names and definitions to the list
 if (USE_BIG_XRAY)
     list(APPEND bin_names XRayBoxGui)
-    list(APPEND defenitions XRAYBOX)
+    list(APPEND definitions XRAYBOX)
 endif (USE_BIG_XRAY)
 
 if (USE_LASER)
     list(APPEND bin_names LaserBoxGui)
-    list(APPEND defenitions LASERBOX)
+    list(APPEND definitions LASERBOX)
 endif(USE_LASER)
 
 if (USE_VACUUM)
     list(APPEND bin_names VacuumBoxGui)
-    list(APPEND defenitions VACUUMBOX)
+    list(APPEND definitions VACUUMBOX)
 endif(USE_VACUUM)
 
 if (USE_GENERIC)
     list(APPEND bin_names MotorControlGui)
-    list(APPEND defenitions GENERIC)
+    list(APPEND definitions GENERIC)
 endif(USE_GENERIC)
 
 #Calculate the length for doing the iteration
 list(LENGTH bin_names tmp)
 math(EXPR len "${tmp} - 1")
 
-qt4_wrap_ui(FORMS_H ${FORMS})
 
 set(RESOURCES
     include/icons.qrc
 )
-qt4_add_resources(RESOURCES_SRCS ${RESOURCES})
+qt5_add_resources(RESOURCES_SRCS ${RESOURCES})
 
 #Iterate over the lists to add targets
 foreach(val RANGE ${len})
 
     list(GET bin_names ${val} exename)
-    list(GET defenitions ${val} defname)
+    list(GET definitions ${val} defname)
     # message("Adding: ${exename} with ${defname} defined")
 
     add_executable(${exename}
@@ -102,25 +106,22 @@ foreach(val RANGE ${len})
         ${CMAKE_CURRENT_SOURCE_DIR}/../Client/include
         ${CMAKE_CURRENT_SOURCE_DIR}/../include
         ${CMAKE_INSTALL_INCLUDEDIR}
-        ${QT_INCLUDE_DIR}
-        ${QT_QTCORE_INCLUDE_DIR}
-        ${QT_QTGUI_INCLUDE_DIR}
+        ${QT5Widgets_INCLUDE_DIRS}
         ${CMAKE_CURRENT_BINARY_DIR}
     )
     target_link_libraries(${exename} PUBLIC
-        ${QT_QTCORE_LIBRARIES}
-        ${QT_QTGUI_LIBRARIES}
         pthread
         rt
-        # z
-        Qt4::QtOpenGL
-        Qt4::QtSvg
+        Qt5::Widgets
+        Qt5::Gui
+        Qt5::Core
     )  
     if (${CMAKE_MAJOR_VERSION}$ GREATER "2")
         target_link_libraries(${exename} PRIVATE project_warnings)
     endif()
     set_target_properties(${exename} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+        AUTOMOC ON
     )
     target_compile_definitions(${exename} PRIVATE ${defname})
     install(TARGETS ${exename}  DESTINATION bin)

@@ -65,7 +65,6 @@ if (USE_SERVER)
 endif(USE_SERVER)
 
 if (USE_GUI)  
-    find_package(Qt4 REQUIRED)
     add_subdirectory(Gui)
 endif (USE_GUI)
 
