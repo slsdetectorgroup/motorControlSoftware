@@ -2,7 +2,6 @@
 #include "GuiDefs.h"
 
 #include <QApplication>
-#include <QPlastiqueStyle>
 
 int main(int argc, char **argv) {
     // find server hostname
@@ -20,7 +19,7 @@ int main(int argc, char **argv) {
     }
 
     QApplication app(argc, argv);
-    app.setStyle(new QPlastiqueStyle);
+
     // app.setWindowIcon(QIcon(":/icons/images/motorIcon.png"));
     try {
         Gui gui(serverHostname);

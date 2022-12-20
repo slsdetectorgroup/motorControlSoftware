@@ -39,7 +39,7 @@ MySocketTCP::MySocketTCP(int port_number)
     }
 
     serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(port_number);
+    serverAddress.sin_port = htons(static_cast<uint16_t>(port_number));
     serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
 
     // reuse port
@@ -84,7 +84,7 @@ MySocketTCP::MySocketTCP(std::string host_ip_or_name, int port_number)
            &(reinterpret_cast<sockaddr_in *>(result->ai_addr))->sin_addr,
            sizeof(in_addr_t));
     freeaddrinfo(result);
-    serverAddress.sin_port = htons(port_number);
+    serverAddress.sin_port = htons(static_cast<uint16_t>(port_number));
 }
 
 int MySocketTCP::ConvertHostnameToInternetAddress(std::string hostname,
