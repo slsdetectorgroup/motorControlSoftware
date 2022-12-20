@@ -3,108 +3,136 @@
 
 #include "MySocketTCP.h"
 #include "commonDefs.h"
+#include "logger.h"
+
+#include <cstring>
 #include <errno.h>
 #include <iostream>
 #include <math.h>
 #include <sstream>
 #include <stdio.h>
-#include <string.h>
-using namespace std;
+#include <string>
+
+#define DEFAULT_BACKLOG 5
 
 MySocketTCP::~MySocketTCP() {
-    Disconnect();
+    /*Disconnect();
     if (socketDescriptor >= 0) {
         close(socketDescriptor);
     }
-    file_des = -1;
+    file_des = -1;*/
 }
 
-MySocketTCP::MySocketTCP(unsigned short int const port_number)
-    : portno(DEFAULT_PORTNO), is_a_server(1), socketDescriptor(-1),
-      file_des(-1), send_rec_max_size(SEND_REC_MAX_SIZE),
-      last_keep_connection_open_action_was_a_send(
-          0) { // receiver (server) local no need for ip
+MySocketTCP::MySocketTCP(int port_number)
+    : is_a_server(1), send_rec_max_size(SEND_REC_MAX_SIZE) {
 
-    portno = port_number;
-    strcpy(hostname, "localhost");
-    //  SetupParameters();
+    memset(&serverAddress, 0, sizeof(serverAddress));
+    memset(&clientAddress, 0, sizeof(clientAddress));
+    clientAddress_length = sizeof(clientAddress);
 
-    socketDescriptor = socket(AF_INET, SOCK_STREAM, 0); // tcp
+    sockfd.fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd.fd < 0) {
+        sockfd.fd = -1;
+        std::ostringstream os;
+        os << "Can not create socket on port " << port_number;
+        throw RuntimeError(os.str());
+    }
 
-    if (socketDescriptor < 0) {
-        cerr << "Can not create socket " << endl;
-    } else {
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_port = htons(port_number);
+    serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
 
-        // Set some fields in the serverAddress structure.
-        serverAddress.sin_family = AF_INET;
-        serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
-        serverAddress.sin_port = htons(port_number);
+    // reuse port
+    int val = 1;
+    if (setsockopt(sockfd.fd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int)) ==
+        -1) {
+        sockfd.fd = -1;
+        std::ostringstream os;
+        os << "Can not create socket on port " << port_number
+           << ". setsockopt REUSEADDR failed";
+        throw RuntimeError(os.str());
+    }
 
-        // reuse port
-        int val = 1;
-        if (setsockopt(socketDescriptor, SOL_SOCKET, SO_REUSEADDR, &val,
-                       sizeof(int)) == -1) {
-            cerr << "setsockopt" << endl;
-            socketDescriptor = -1;
-            return;
+    if (bind(sockfd.fd, reinterpret_cast<sockaddr *>(&serverAddress),
+             sizeof(serverAddress)) < 0) {
+        sockfd.fd = -1;
+        std::ostringstream os;
+        os << "Can not bind socket on port " << port_number;
+        throw RuntimeError(os.str());
+    }
+
+    listen(sockfd.fd, DEFAULT_BACKLOG);
+}
+
+MySocketTCP::MySocketTCP(std::string host_ip_or_name, int port_number)
+    : is_a_server(0), send_rec_max_size(SEND_REC_MAX_SIZE) {
+
+    memset(&serverAddress, 0, sizeof(serverAddress));
+    memset(&clientAddress, 0, sizeof(clientAddress));
+    clientAddress_length = sizeof(clientAddress);
+
+    struct addrinfo *result;
+    if (ConvertHostnameToInternetAddress(host_ip_or_name, &result) == FAIL) {
+        sockfd.fd = -1;
+        throw RuntimeError("Could not get ip from hostname");
+    }
+
+    // Set some fields in the serverAddress structure
+    sockfd.fd = 0;
+    serverAddress.sin_family = static_cast<short>(result->ai_family);
+    memcpy(reinterpret_cast<char *>(&serverAddress.sin_addr.s_addr),
+           &(reinterpret_cast<sockaddr_in *>(result->ai_addr))->sin_addr,
+           sizeof(in_addr_t));
+    freeaddrinfo(result);
+    serverAddress.sin_port = htons(port_number);
+}
+
+int MySocketTCP::ConvertHostnameToInternetAddress(std::string hostname,
+                                                  struct addrinfo **res) {
+    // criteria in selecting socket address structures returned by res
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    // get host info into res
+    int errcode = getaddrinfo(hostname.c_str(), NULL, &hints, res);
+    if (errcode != 0) {
+        LOG(logERROR) << "Could not convert " << hostname
+                      << " to IP : " << gai_strerror(errcode);
+        return FAIL;
+    }
+    if (*res == NULL) {
+        LOG(logERROR) << "Could not convert " << hostname
+                      << " to IP : gettaddrinfo returned null";
+        return FAIL;
+    }
+    return OK;
+}
+
+void MySocketTCP::Disconnect() {
+    if (is_a_server) {
+        if (sockfd.newfd >= 0) {
+            close(sockfd.newfd);
+            sockfd.newfd = -1;
         }
-
-        if (bind(socketDescriptor, reinterpret_cast<sockaddr *>(&serverAddress),
-                 sizeof(serverAddress)) < 0) {
-            cerr << "Can not bind socket " << endl;
-            socketDescriptor = -1;
-        } else {
-            listen(socketDescriptor, 5);
-        }
+        return;
     }
-}
-
-MySocketTCP::MySocketTCP(const char *const host_ip_or_name,
-                         unsigned short int const port_number)
-    : portno(DEFAULT_PORTNO), is_a_server(0), socketDescriptor(-1),
-      file_des(-1), send_rec_max_size(SEND_REC_MAX_SIZE),
-      last_keep_connection_open_action_was_a_send(
-          0) { // sender (client): where to? ip
-    // SetupParameters();
-    strcpy(hostname, host_ip_or_name);
-    portno = port_number;
-    struct hostent *hostInfo = gethostbyname(host_ip_or_name);
-    if (hostInfo == NULL) {
-        ostringstream oss;
-        oss << "Exiting: Problem interpreting host: " << host_ip_or_name;
-        throw RuntimeError(oss.str());
-    } else {
-        // Set some fields in the serverAddress structure.
-        serverAddress.sin_family = static_cast<short>(hostInfo->h_addrtype);
-        memcpy(reinterpret_cast<char *>(&serverAddress.sin_addr.s_addr),
-               hostInfo->h_addr_list[0], hostInfo->h_length);
-        serverAddress.sin_port = htons(port_number);
-        socketDescriptor = 0; // You can use send and recv, //would it work?????
+    if (sockfd.fd >= 0) {
+        close(sockfd.fd);
+        sockfd.fd = -1;
     }
-}
-
-int MySocketTCP::getHostname(char *name) {
-    if (is_a_server == 0) {
-        strcpy(name, hostname);
-    }
-    return is_a_server;
 }
 
 int MySocketTCP::Connect() {
+    if (sockfd.newfd > 0)
+        return sockfd.newfd;
 
-    if (file_des > 0)
-        return file_des;
-
-    if (is_a_server) { // server; the server will wait for the clients
-                       // connection
-
-        if (socketDescriptor > 0) {
-            if ((file_des = accept(socketDescriptor,
-                                   reinterpret_cast<sockaddr *>(&clientAddress),
-                                   &clientAddress_length)) < 0) {
-
-                cerr << "Error: with server accept, connection refused" << endl;
-
+    if (is_a_server) {
+        if (sockfd.fd > 0) {
+            if ((sockfd.newfd = accept(
+                     sockfd.fd, reinterpret_cast<sockaddr *>(&clientAddress),
+                     &clientAddress_length)) < 0) {
+                LOG(logERROR) << "Connection refused";
                 switch (errno) {
                 case EWOULDBLOCK:
                     printf("ewouldblock eagain\n");
@@ -151,159 +179,88 @@ int MySocketTCP::Connect() {
                 default:
                     printf("unknown error\n");
                 }
-
-                socketDescriptor = -1;
+            } else {
+                LOG(logDEBUG) << "client connected " << sockfd.newfd;
             }
-#ifdef VERY_VERBOSE
-            else
-                cout << "client connected " << file_des << endl;
-#endif
         }
-        // file_des = socketDescriptor;
+        LOG(logDEBUG) << "fd " << sockfd.newfd;
+        return sockfd.newfd;
+    }
 
-#ifdef VERY_VERBOSE
-        cout << "fd " << file_des << endl;
-#endif
+    // client
+    if (sockfd.fd <= 0)
+        sockfd.fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd.fd < 0) {
+        throw RuntimeError("Cannot create socket");
     } else {
-        if (socketDescriptor <= 0)
-            socketDescriptor = socket(AF_INET, SOCK_STREAM, 0); // tcp
-        //    SetTimeOut(10);
-        if (socketDescriptor < 0) {
-            cerr << "Can not create socket " << endl;
-            file_des = socketDescriptor;
-        } else {
-
-            if (connect(socketDescriptor,
-                        reinterpret_cast<sockaddr *>(&serverAddress),
-                        sizeof(serverAddress)) < 0) {
-                cerr << "Can not connect to socket " << endl;
-                file_des = -1;
-            } else
-                file_des = socketDescriptor;
+        if (connect(sockfd.fd, reinterpret_cast<sockaddr *>(&serverAddress),
+                    sizeof(serverAddress)) < 0) {
+            throw RuntimeError("Cannot connect to socket");
         }
     }
-
-    return file_des;
+    return sockfd.fd;
 }
 
-int MySocketTCP::SetTimeOut(int ts) {
-
-    if (ts <= 0)
+ssize_t MySocketTCP::SendDataOnly(void *buf, ssize_t length) {
+    if (buf == NULL)
         return -1;
 
-    // cout << "socketdescriptor "<< socketDescriptor << endl;
-    struct timeval tout;
-    tout.tv_sec = 0;
-    tout.tv_usec = 0;
-    if (::setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, &tout,
-                     sizeof(struct timeval)) < 0) {
-        cerr << "Error in setsockopt SO_RCVTIMEO " << 0 << endl;
-    }
-    tout.tv_sec = ts;
-    tout.tv_usec = 0;
-    if (::setsockopt(socketDescriptor, SOL_SOCKET, SO_SNDTIMEO, &tout,
-                     sizeof(struct timeval)) < 0) {
-        cerr << "Error in setsockopt SO_SNDTIMEO " << ts << endl;
-    }
-    return 0;
-}
-
-void MySocketTCP::Disconnect() {
-
-    if (file_des >= 0) { // then was open
-        if (is_a_server) {
-            close(file_des);
-        } else {
-            close(socketDescriptor);
-            socketDescriptor = -1;
-        }
-        file_des = -1;
-    }
-}
-
-ssize_t MySocketTCP::SendDataOnly(void *buf,
-                                  ssize_t length) { // length in characters
-    if (file_des < 0)
+    int tcpfd = (is_a_server ? sockfd.newfd : sockfd.fd);
+    if (tcpfd < 0)
         return -1;
+
     if (length == 0) {
         return 0;
     }
+
     ssize_t total_sent = 0;
     while (length > 0) {
         ssize_t nsending =
             (length > send_rec_max_size) ? send_rec_max_size : length;
         ssize_t nsent =
-            write(file_des, static_cast<char *>(buf) + total_sent, nsending);
-        if (nsent <= 0) {
-            if (!total_sent) {
-                cout << "Possible socket crash?" << endl;
-                return -1; // to handle it
-            }
+            write(tcpfd, reinterpret_cast<char *>(buf) + total_sent, nsending);
+        if (is_a_server && nsent < 0) {
+            LOG(logERROR)
+                << "Could not write to socket. Possible client socket crash";
             break;
         }
+        if (nsent <= 0)
+            break;
         length -= nsent;
         total_sent += nsent;
     }
+    LOG(logDEBUG) << "sent " << total_sent << "bytes";
     return total_sent;
 }
 
-ssize_t MySocketTCP::SendData(void *buf,
-                              ssize_t length) { // length in characters
-    ssize_t ndata = SendDataAndKeepConnection(buf, length);
-    Disconnect();
-    return ndata;
-}
-
-ssize_t
-MySocketTCP::SendDataAndKeepConnection(void *buf,
-                                       ssize_t length) { // length in characters
-    if (last_keep_connection_open_action_was_a_send)
-        Disconnect(); // to keep a structured data flow;
-
-    Connect();
-    ssize_t total_sent = SendDataOnly(buf, length);
-    last_keep_connection_open_action_was_a_send = 1;
-    return total_sent;
-}
-
-ssize_t MySocketTCP::ReceiveDataOnly(void *buf, ssize_t length) { // length in
-                                                                  // characters
-    ssize_t total_received = 0;
-    if (file_des < 0)
+ssize_t MySocketTCP::ReceiveDataOnly(void *buf, ssize_t length) {
+    if (buf == NULL)
         return -1;
+
+    int tcpfd = (is_a_server ? sockfd.newfd : sockfd.fd);
+    if (tcpfd < 0)
+        return -1;
+
+    if (length == 0) {
+        return 0;
+    }
+
+    ssize_t total_received = 0;
     while (length > 0) {
         ssize_t nreceiving =
             (length > send_rec_max_size) ? send_rec_max_size : length;
         ssize_t nreceived = read(
-            file_des, static_cast<char *>(buf) + total_received, nreceiving);
+            tcpfd, reinterpret_cast<char *>(buf) + total_received, nreceiving);
         if (nreceived <= 0) {
             if (!total_received) {
-                cout << "Possible socket crash?" << endl;
-                return -1; // to handle it
+                LOG(logERROR) << "Possible socket crash?";
+                return -1;
             }
             break;
         }
         length -= nreceived;
         total_received += nreceived;
     }
-    return total_received;
-}
-
-ssize_t MySocketTCP::ReceiveData(void *buf,
-                                 ssize_t length) { // length in characters
-    ssize_t ndata = ReceiveDataAndKeepConnection(buf, length);
-    Disconnect();
-    return ndata;
-}
-
-ssize_t MySocketTCP::ReceiveDataAndKeepConnection(
-    void *buf, ssize_t length) { // length in characters
-    if (!last_keep_connection_open_action_was_a_send)
-        Disconnect(); // to a keep structured data flow;
-
-    Connect();
-    //  should preform two reads one to receive incomming char count
-    ssize_t total_received = ReceiveDataOnly(buf, length);
-    last_keep_connection_open_action_was_a_send = 0;
+    LOG(logDEBUG) << "received " << total_received << "bytes";
     return total_received;
 }

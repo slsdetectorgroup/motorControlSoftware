@@ -19,6 +19,8 @@ option (USE_LASER "Laser Box" OFF)
 option (USE_VACUUM "Vacuum Box" OFF)
 option (USE_GENERIC "Generic" OFF)
 option (USE_VIRTUAL "Virtual Server" OFF)
+option (USE_SANITIZER "Sanitizers for debugging" OFF)
+
 
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "No build type selected, default to Release")
@@ -46,6 +48,12 @@ else()
     set_project_warnings(project_warnings)
 endif()
 
+if(USE_SANITIZER)
+    target_compile_options(project_warnings INTERFACE -fsanitize=address,undefined -fno-omit-frame-pointer)
+    target_link_libraries(project_warnings INTERFACE -fsanitize=address,undefined)
+    # need to run this before running the server in rasp pi
+    # export LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libasan.so.6
+endif()
 
 
 if (USE_CLIENT)

@@ -79,7 +79,7 @@ void Controller::updateAxisEnabled() {
 #ifdef VIRTUAL
     return;
 #endif
-    for (size_t i = 0; i < motor.size(); ++i) {
+    for (int i = 0; i < static_cast<int>(motor.size()); ++i) {
         int axis = i + 1;
         int enable = motor[i] == NULL ? 0 : 1;
         std::ostringstream oss;

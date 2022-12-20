@@ -14,7 +14,7 @@
 
 #define MIN_ARGUMENTS (6)
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *[]) {
 #ifdef XRAYBOX
     LOG(logINFOBLUE) << "XRay Box Server";
 #elif LASERBOX
@@ -40,10 +40,6 @@ int main(int argc, char *argv[]) {
     }
 
     MySocketTCP *sock = new MySocketTCP(portno);
-    if (sock->getErrorStatus()) {
-        throw RuntimeError("Could not create server socket");
-    }
-
     Initialize init = Initialize();
     LOG(logINFO) << "Ready for commands...";
 

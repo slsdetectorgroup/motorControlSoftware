@@ -41,14 +41,15 @@ void TargetHolder::addTarget(std::string name, std::string energy) {
 
 void TargetHolder::changeTarget(int index, std::string name,
                                 std::string energy) {
-    if (index < 0 || index >= (int)targetName.size()) {
+    int targetNameSize = static_cast<int>(targetName.size());
+    if (index < 0 || index >= targetNameSize) {
         std::ostringstream oss;
         oss << "Target index " << index << " must be less than "
             << targetName.size();
         throw RuntimeError(oss.str());
     }
 #ifdef XRAYBOX
-    index = (targetName.size() - 1 - index);
+    index = (targetNameSize - 1 - index);
 #endif
     targetName[index] = name;
     targetEnergy[index] = energy;

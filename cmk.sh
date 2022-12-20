@@ -104,8 +104,8 @@ fi
 
 #Debug
 if [ $DEBUG -eq 1 ]; then
-	CMAKE_POST+=" -DCMAKE_BUILD_TYPE=Debug "
-# CMAKE_POST+=" -DCMAKE_BUILD_TYPE=Debug -DSLS_USE_SANITIZER=ON "
+	#CMAKE_POST+=" -DCMAKE_BUILD_TYPE=Debug "
+ 	CMAKE_POST+=" -DCMAKE_BUILD_TYPE=Debug -DUSE_SANITIZER=ON "
 	echo "Debug Option enabled"
 fi 
 
