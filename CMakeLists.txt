@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(MotorControl)
 
-set(CMAKE_CXX_STANDARD 98)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
@@ -10,7 +10,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 
 option (USE_GUI "GUI" OFF)
-option (USE_SERVER "SERVER" OFF)
+option (USE_SERVER "SERVER" ON)
 option (USE_CLIENT "CLIENT" ON)
 
 #definitions

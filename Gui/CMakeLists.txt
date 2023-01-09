@@ -54,7 +54,8 @@ set(HEADERS
 set(bin_names)
 
 #Variable to hold the compile time definitions needed for the build
-set(definitions ${Qt5Widgets_DEFINITIONS})
+set(definitions)
+list(APPEND definitions ${Qt5Widgets_DEFINITIONS})
 
 #Append the correct names and definitions to the list
 if (USE_BIG_XRAY)
@@ -89,10 +90,8 @@ qt5_add_resources(RESOURCES_SRCS ${RESOURCES})
 
 #Iterate over the lists to add targets
 foreach(val RANGE ${len})
-
     list(GET bin_names ${val} exename)
-    list(GET definitions ${val} defname)
-    # message("Adding: ${exename} with ${defname} defined")
+    #message("Adding Gui: ${exename} with ${definitions} defined")
 
     add_executable(${exename}
         ${SOURCES}
@@ -123,7 +122,7 @@ foreach(val RANGE ${len})
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
         AUTOMOC ON
     )
-    target_compile_definitions(${exename} PRIVATE ${defname})
+    target_compile_definitions(${exename} PRIVATE ${definitions})
     install(TARGETS ${exename}  DESTINATION bin)
 endforeach()
 

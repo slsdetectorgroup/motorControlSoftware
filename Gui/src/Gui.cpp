@@ -37,7 +37,7 @@ void Gui::LayoutWindow() {
 #else
     oss << "Motor Control Gui";
 #endif
-    oss << " - Motor Control Software (" << hostname << ")";
+    oss << " - (" << hostname << ")";
     std::string title = oss.str();
     LOG(logINFOBLUE) << title;
     setWindowTitle(title.c_str());

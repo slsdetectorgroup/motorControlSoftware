@@ -38,34 +38,44 @@ set(HEADERS
 #Variable to hold the names of the binaries we want to build
 set(bin_names)
 
-#Variable to hold the compile time defenitions needed for the build
-set(defenitions)
+#Variable to hold the compile time definitions needed for the build
+set(definitions)
 
-#Append the correct names and defenitions to the list
+#Append the correct names and definitions to the list
 if (USE_BIG_XRAY)
-    list(APPEND bin_names xrayServer)
-    list(APPEND defenitions XRAYBOX)
-endif (USE_BIG_XRAY)
-
-if (USE_LASER)
-    list(APPEND bin_names laserServer)
-    list(APPEND defenitions LASERBOX)
-endif(USE_LASER)
-
-if (USE_VACUUM)
-    list(APPEND bin_names vacuumServer)
-    list(APPEND defenitions VACUUMBOX)
-endif(USE_VACUUM)
-
-if (USE_GENERIC)
-    list(APPEND bin_names motorControlServer)
-    list(APPEND defenitions GENERIC)
-endif(USE_GENERIC)
-
-if (USE_VIRTUAL)
-    list(APPEND bin_names motorControlServer_virtual)
-    list(APPEND defenitions VIRTUAL)
-endif(USE_VIRTUAL)
+    list(APPEND definitions XRAYBOX)
+    if (USE_VIRTUAL)
+        list(APPEND definitions VIRTUAL)
+        list(APPEND bin_names xrayServer_virtual)
+    else()
+        list(APPEND bin_names xrayServer)  
+    endif(USE_VIRTUAL)
+elseif (USE_LASER)
+    list(APPEND definitions LASERBOX)
+    if (USE_VIRTUAL)
+        list(APPEND definitions VIRTUAL)
+        list(APPEND bin_names laserServer_virtual)
+    else()
+        list(APPEND bin_names laserServer)  
+    endif(USE_VIRTUAL)
+elseif (USE_VACUUM)
+    list(APPEND definitions VACUUMBOX)
+    if (USE_VIRTUAL)
+        list(APPEND definitions VIRTUAL)
+        list(APPEND bin_names vacuumServer_virtual)
+    else()
+        list(APPEND bin_names vacuumServer)  
+    endif(USE_VIRTUAL)
+#generic
+else()
+    list(APPEND definitions GENERIC)
+    if (USE_VIRTUAL)
+        list(APPEND definitions VIRTUAL)
+        list(APPEND bin_names motorControlServer_virtual)
+    else()
+        list(APPEND bin_names motorControlServer)  
+    endif(USE_VIRTUAL)
+endif()
 
 #Calculate the length for doing the iteration
 list(LENGTH bin_names tmp)
@@ -74,8 +84,7 @@ math(EXPR len "${tmp} - 1")
 #Iterate over the lists to add targets
 foreach(val RANGE ${len})
     list(GET bin_names ${val} exename)
-    list(GET defenitions ${val} defname)
-    # message("Adding: ${exename} with ${defname} defined")
+    #message("Adding Server: ${exename} with ${definitions} defined")
     add_executable(${exename}
         ${SOURCES}
         ${HEADERS}
@@ -90,7 +99,7 @@ foreach(val RANGE ${len})
     if (${CMAKE_MAJOR_VERSION}$ GREATER "2")
         target_link_libraries(${exename} PRIVATE project_warnings)
     endif()
-    target_compile_definitions(${exename} PRIVATE REMOTE ${defname})
+    target_compile_definitions(${exename} PRIVATE REMOTE ${definitions})
     install(TARGETS ${exename}  DESTINATION bin)
 endforeach()
 

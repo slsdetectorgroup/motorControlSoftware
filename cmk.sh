@@ -1,4 +1,5 @@
-SERVER=0
+SERVER=1
+CLIENT=1
 GUI=0
 BIG_XRAY=0
 LASER=0
@@ -14,34 +15,44 @@ CMAKE_PRE=""
 CMAKE_POST=""
 
 usage() { echo -e "
-Usage: $0 [x] [v] [l] [m] [t] [s] [-c] [-b] [g] [e] [-j] <Number of threads>
--[no option]: only make
- -s: server only, otherwise client
- -x: xray box
- -v: vacuum box
+Usage: $0 
+ [-b] [-c] [e] [g] [-j] <Number of threads> [l] [m] [s] [t] [v] [x] 
+ -[no option]: only make
+ -b: Builds/Rebuilds CMake files normal mode
+ -c: Clean
+ -e: Debug mode
+ -g: Build/Rebuilds only gui
+ -j: Number of threads to compile through
  -l: laser box
  -m: generic for beamtime usage
- -t: virtual test motor server
- -c: Clean
- -b: Builds/Rebuilds CMake files normal mode
- -g: Build/Rebuilds only gui
- -e: Debug mode
- -j: Number of threads to compile through
+ -s: server only
+ -t: virtual servers
+ -v: vacuum box
+ -x: xray box
  " ; exit 1; }
 
  while getopts ":sxvlmtbcj:ge" opt ; do
 	case $opt in
-	s) 
-        SERVER=1
-		REBUILD=1
-		;;	
-	x) 
-        BIG_XRAY=1
+	b) 
+		echo "Building of CMake files Required"
 		REBUILD=1
 		;;
-	v) 
-        VACUUM=1
+	c) 
+		echo "Clean Required"
+		CLEAN=1
+		;;
+	e)
+		echo "Compiling Options: Debug" 
+		DEBUG=1
+		;;
+	g) 
+		echo "Compiling Options: GUI" 
+		GUI=1
 		REBUILD=1
+		;;  
+	j) 
+		echo "Number of compiler threads: $OPTARG" 
+		COMPILERTHREADS=$OPTARG
 		;;
 	l) 
         LASER=1
@@ -51,30 +62,22 @@ Usage: $0 [x] [v] [l] [m] [t] [s] [-c] [-b] [g] [e] [-j] <Number of threads>
         GENERIC=1
 		REBUILD=1
 		;;
+	s) 
+        SERVER=1
+		CLIENT=0
+		REBUILD=1
+		;;	
 	t) 
         VIRTUAL=1
 		REBUILD=1
 		;;
-	b) 
-		echo "Building of CMake files Required"
+	v) 
+        VACUUM=1
 		REBUILD=1
 		;;
-	c) 
-		echo "Clean Required"
-		CLEAN=1
-		;;
-	j) 
-		echo "Number of compiler threads: $OPTARG" 
-		COMPILERTHREADS=$OPTARG
-		;;
-	g) 
-		echo "Compiling Options: GUI" 
-		GUI=1
+	x) 
+        BIG_XRAY=1
 		REBUILD=1
-		;;  
-	e)
-		echo "Compiling Options: Debug" 
-		DEBUG=1
 		;;
   \?)
     echo "Invalid option: -$OPTARG" 
@@ -110,9 +113,12 @@ if [ $DEBUG -eq 1 ]; then
 fi 
 
 # server only
-if [ $SERVER -eq 1 ]; then
+if [ $SERVER -eq 1 ] && [ $CLIENT -eq 0 ]; then
 	CMAKE_POST+=" -DUSE_SERVER=ON -DUSE_CLIENT=OFF "
 	echo "Enabling Compile Option: Server Only"
+else
+	CMAKE_POST+=" -DUSE_SERVER=ON -DUSE_CLIENT=ON "
+	echo "Enabling Compile Option: Server and Text Client"
 fi
 
 #big xraybox

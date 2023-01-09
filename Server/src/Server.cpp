@@ -15,18 +15,19 @@
 #define MIN_ARGUMENTS (6)
 
 int main(int argc, char *[]) {
+#ifdef VIRTUAL
+    LOG(logINFOBLUE) << "Virtual Server";
+#endif
 #ifdef XRAYBOX
     LOG(logINFOBLUE) << "XRay Box Server";
 #elif LASERBOX
     LOG(logINFOBLUE) << "Laser Box Server";
 #elif VACUUMBOX
     LOG(logINFOBLUE) << "Vacuum Box Server";
-#else
+#elif GENERIC
     LOG(logINFOBLUE) << "Motor Control Server";
 #endif
-#ifdef VIRTUAL
-    LOG(logINFOBLUE) << "Virtual Server";
-#endif
+
     // if socket crash, ignores SISPIPE, prevents global signal handler
     // subsequent read/write to socket gives error - must handle locally
     signal(SIGPIPE, SIG_IGN);

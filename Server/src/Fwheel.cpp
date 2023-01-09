@@ -23,6 +23,9 @@ Fwheel::Fwheel(int index, std::string name, std::string serialNumber,
 }
 
 bool Fwheel::CheckFWSerialNumber(int usbport, std::string serialNumber) {
+#ifdef VIRTUAL
+    return true;
+#endif
     std::ostringstream oss;
     oss << FWHEEL_SERIAL_NUM_LINK_PART1 << usbport
         << FWHEEL_SERIAL_NUM_LINK_PART2;
@@ -62,6 +65,7 @@ Interface *Fwheel::getInterface() { return interface; }
 void Fwheel::setStartPosition() { setValue(valueList[0]); }
 
 double Fwheel::getValue() {
+#ifndef VIRTUAL
     std::string result = interface->FilterWheelSend("pos?\r", true);
     std::istringstream iss(result);
     int position = -1;
@@ -79,6 +83,7 @@ double Fwheel::getValue() {
         throw RuntimeError(oss.str());
     }
     currentValue = valueList[position - 1];
+#endif
     return currentValue;
 }
 
@@ -91,8 +96,13 @@ void Fwheel::setValue(double currentValue) {
             int loop = 0;
             for (;;) {
                 try {
+#ifdef VIRTUAL
+                    this->currentValue = currentValue;
+#else
                     interface->FilterWheelSend(oss.str());
+#endif
                     if (currentValue != getValue()) {
+                        oss.clear();
                         oss << "Filter wheel " << name
                             << " could not be moved to " << currentValue
                             << ". It is at " << this->currentValue;

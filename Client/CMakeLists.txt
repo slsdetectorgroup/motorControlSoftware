@@ -16,28 +16,28 @@ set(HEADERS
 #Variable to hold the names of the binaries we want to build
 set(bin_names)
 
-#Variable to hold the compile time defenitions needed for the build
-set(defenitions)
+#Variable to hold the compile time definitions needed for the build
+set(definitions)
 
-#Append the correct names and defenitions to the list
+#Append the correct names and definitions to the list
 if (USE_BIG_XRAY)
     list(APPEND bin_names xrayClient)
-    list(APPEND defenitions XRAYBOX)
+    list(APPEND definitions XRAYBOX)
 endif (USE_BIG_XRAY)
 
 if (USE_LASER)
     list(APPEND bin_names laserClient)
-    list(APPEND defenitions LASERBOX)
+    list(APPEND definitions LASERBOX)
 endif(USE_LASER)
 
 if (USE_VACUUM)
     list(APPEND bin_names vacuumClient)
-    list(APPEND defenitions VACUUMBOX)
+    list(APPEND definitions VACUUMBOX)
 endif(USE_VACUUM)
 
 if (USE_GENERIC)
     list(APPEND bin_names motorControlClient)
-    list(APPEND defenitions GENERIC)
+    list(APPEND definitions GENERIC)
 endif(USE_GENERIC)
 
 #Calculate the length for doing the iteration
@@ -47,10 +47,7 @@ math(EXPR len "${tmp} - 1")
 #Iterate over the lists to add targets
 foreach(val RANGE ${len})
     list(GET bin_names ${val} exename)
-    list(GET defenitions ${val} defname)
-    # message("Adding: ${exename} with ${defname} defined")
-
-
+    #message("Adding Client: ${exename} with ${definitions} defined")
     add_executable(${exename}
         ${SOURCES}
         ${HEADERS}
@@ -65,7 +62,7 @@ foreach(val RANGE ${len})
     if (${CMAKE_MAJOR_VERSION}$ GREATER "2")
         target_link_libraries(${exename} PRIVATE project_warnings)
     endif()
-    target_compile_definitions(${exename} PRIVATE REMOTE ${defname})
+    target_compile_definitions(${exename} PRIVATE REMOTE ${definitions})
     install(TARGETS ${exename}  DESTINATION bin)
 endforeach()
 

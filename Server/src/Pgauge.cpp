@@ -56,7 +56,11 @@ std::vector<PressureGauge> Pgauge::getPressure() {
         try {
             std::vector<PressureGauge> gauges(
                 NUM_PRESSURE_GAUGES_PER_CONTROLLER);
+#ifdef VIRTUAL
+            std::string result = "0, 0, 0, 0kk";
+#else
             std::string result = interface->PressureGaugeSend("PRX\r\n");
+#endif
             std::stringstream iss(result);
             std::string value;
             // status 1
