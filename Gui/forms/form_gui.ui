@@ -37,7 +37,16 @@
     </size>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <property name="margin">
+    <property name="leftMargin">
+     <number>9</number>
+    </property>
+    <property name="topMargin">
+     <number>9</number>
+    </property>
+    <property name="rightMargin">
+     <number>9</number>
+    </property>
+    <property name="bottomMargin">
      <number>9</number>
     </property>
     <property name="spacing">
@@ -74,8 +83,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>278</width>
-         <height>434</height>
+         <width>274</width>
+         <height>446</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -298,7 +307,16 @@
            </size>
           </property>
           <layout class="QGridLayout" name="gridWidgetTube">
-           <property name="margin">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
             <number>0</number>
            </property>
            <property name="spacing">

@@ -10,6 +10,7 @@
 #include "TubeWidget.h"
 
 #include <QCloseEvent>
+#include <QScreen>
 
 #include <iterator>
 
@@ -71,7 +72,23 @@ void Gui::LayoutWindow() {
 #if defined(XRAYBOX) || defined(VACUUMBOX)
     groupTube->setChecked(true);
 #endif
+
+    CheckWindowSize();
     layoutDone = true;
+}
+
+void Gui::CheckWindowSize() {
+    QScreen *screen = QGuiApplication::primaryScreen();
+    QRect  screenGeometry = screen->geometry();
+    int screenHeight = screenGeometry.height() - 100;
+    int screenWidth = screenGeometry.width() - 100;
+
+    if (height() > screenHeight) {
+        resize(width(), screenHeight);
+    }
+    if (width() > screenWidth) {
+        resize(screenWidth, height());
+    }
 }
 
 void Gui::LoadMotorWidgets() {
@@ -472,6 +489,8 @@ void Gui::Update() {
         LoadTubeWidget(false);
         statusbar->showMessage("Updating ...");
     }
+
+    CheckWindowSize();
 
     statusbar->showMessage("Update completed", 2 * 1000);
 }

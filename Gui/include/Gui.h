@@ -34,6 +34,7 @@ class Gui : public QMainWindow, private Ui::GuiObject {
 
   private:
     void LayoutWindow();
+    void CheckWindowSize();
     void LoadMotorWidgets();
     void LoadReferencePointsWidget();
     void LoadFwheelWidgets();
