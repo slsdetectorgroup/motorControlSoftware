@@ -32,7 +32,16 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridFluorescenceWidgetObject">
-   <property name="margin">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
     <number>0</number>
    </property>
    <property name="spacing">
@@ -164,6 +173,9 @@
        </sizepolicy>
       </property>
       <layout class="QGridLayout" name="gridPageTargets">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
        <property name="topMargin">
         <number>0</number>
        </property>
@@ -197,7 +209,7 @@
           <item row="0" column="0">
            <widget class="QComboBox" name="comboHolder">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -215,7 +227,7 @@
              </size>
             </property>
             <property name="layoutDirection">
-             <enum>Qt::RightToLeft</enum>
+             <enum>Qt::LeftToRight</enum>
             </property>
             <property name="editable">
              <bool>false</bool>
@@ -225,7 +237,7 @@
           <item row="1" column="0">
            <widget class="QComboBox" name="comboTarget">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -243,7 +255,7 @@
              </size>
             </property>
             <property name="layoutDirection">
-             <enum>Qt::RightToLeft</enum>
+             <enum>Qt::LeftToRight</enum>
             </property>
             <property name="editable">
              <bool>false</bool>
@@ -253,7 +265,7 @@
           <item row="1" column="1">
            <widget class="QLineEdit" name="dispEnergy">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -297,6 +309,9 @@
        </sizepolicy>
       </property>
       <layout class="QGridLayout" name="gridPageMotor">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
        <property name="topMargin">
         <number>0</number>
        </property>

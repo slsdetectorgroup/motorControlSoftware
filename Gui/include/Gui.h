@@ -51,7 +51,7 @@ class Gui : public QMainWindow, private Ui::GuiObject {
     TubeWidget *tube;
     OptionsWidget *optionsWidget;
     bool layoutDone;
-    static const int WINDOW_WIDTH_TUBE = 750;
+    static const int WINDOW_WIDTH_TUBE = 780;
     static const int WINDOW_WIDTH_UNCHECK_TUBE = 465;
     static const int WINDOW_WIDTH_NO_TUBE = 345;
     static const int WINDOW_HEIGHT_TUBE = 480;
@@ -65,8 +65,8 @@ class Gui : public QMainWindow, private Ui::GuiObject {
 
     static const int WINDOW_HEIGHT_REF_POINTS = 90;
 
-    static const int WINDOW_HEIGHT_FWHEEL_REF = 36;
-    static const int WINDOW_HEIGHT_FWHEEL = 98;
+    static const int WINDOW_HEIGHT_FWHEEL_REF = 38;
+    static const int WINDOW_HEIGHT_FWHEEL = 90;
 
     static const int WINDOW_HEIGHT_FLUOR_REF = 60;
     static const int WINDOW_HEIGHT_FLUOR = 120;

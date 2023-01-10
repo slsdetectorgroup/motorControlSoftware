@@ -341,7 +341,7 @@ void Gui::EnablePressureWidget(bool enable) {
             lblPressure->show();
         }
         groupPressure->setChecked(false);
-
+        resize(WINDOW_WIDTH_UNCHECK_TUBE, height());
     } else {
         if (pgauge == NULL) {
             lblPressure->hide();
@@ -361,6 +361,8 @@ void Gui::EnablePressureWidget(bool enable) {
                 SLOT(EnablePressureWidget(bool)));
     }
     optionsWidget->EnablePressure(enable);
+
+    CheckWindowSize();
 }
 
 void Gui::LoadTubeWidget(bool userClick) {
@@ -406,6 +408,7 @@ void Gui::EnableTubeWidget(bool enable) {
             lblTube->show();
         }
         groupTube->setChecked(false);
+        resize(WINDOW_WIDTH_UNCHECK_TUBE, height());
     }
     // enable tube
     else {
@@ -429,6 +432,8 @@ void Gui::EnableTubeWidget(bool enable) {
                 SLOT(EnableTubeWidget(bool)));
     }
     optionsWidget->EnableTube(enable);
+    
+    CheckWindowSize();
 }
 
 void Gui::ShowOptions() {
@@ -489,8 +494,6 @@ void Gui::Update() {
         LoadTubeWidget(false);
         statusbar->showMessage("Updating ...");
     }
-
-    CheckWindowSize();
 
     statusbar->showMessage("Update completed", 2 * 1000);
 }
