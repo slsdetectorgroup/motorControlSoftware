@@ -258,7 +258,7 @@ void Gui::LoadFwheelWidgets() {
     }
 
     int mainWindowHeight =
-        height() +
+        height() + 
         static_cast<int>(
             ((fwheelWidgets.size() == 0) ? 0 : WINDOW_HEIGHT_FWHEEL_REF) +
             fwheelWidgets.size() * WINDOW_HEIGHT_FWHEEL);

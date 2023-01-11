@@ -54,10 +54,10 @@ class Gui : public QMainWindow, private Ui::GuiObject {
     static const int WINDOW_WIDTH_TUBE = 780;
     static const int WINDOW_WIDTH_UNCHECK_TUBE = 465;
     static const int WINDOW_WIDTH_NO_TUBE = 345;
-    static const int WINDOW_HEIGHT_TUBE = 480;
+    static const int WINDOW_HEIGHT_TUBE = 505;
 
     static const int WINDOW_HEIGHT_REFERENCE = 110;
-    static const int WINDOW_HEIGHT_PRESSURE = 255;
+    static const int WINDOW_HEIGHT_PRESSURE = 225;
     static const int WINDOW_HEIGHT_UNCHECK_PRESSURE = 53;
 
     static const int WINDOW_HEIGHT_MOTOR_REF = 43;
@@ -65,8 +65,8 @@ class Gui : public QMainWindow, private Ui::GuiObject {
 
     static const int WINDOW_HEIGHT_REF_POINTS = 90;
 
-    static const int WINDOW_HEIGHT_FWHEEL_REF = 38;
-    static const int WINDOW_HEIGHT_FWHEEL = 90;
+    static const int WINDOW_HEIGHT_FWHEEL_REF = 46;
+    static const int WINDOW_HEIGHT_FWHEEL = 80;
 
     static const int WINDOW_HEIGHT_FLUOR_REF = 60;
     static const int WINDOW_HEIGHT_FLUOR = 120;

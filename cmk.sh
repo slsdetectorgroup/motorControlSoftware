@@ -1,3 +1,5 @@
+CMAKE="cmake3"
+
 SERVER=1
 CLIENT=1
 GUI=0
@@ -16,13 +18,14 @@ CMAKE_POST=""
 
 usage() { echo -e "
 Usage: $0 
- [-b] [-c] [e] [g] [-j] <Number of threads> [l] [m] [s] [t] [v] [x] 
+ [-b] [-c] [e] [g] [-j] <Number of threads> [-k <CMake command>] [l] [m] [s] [t] [v] [x] 
  -[no option]: only make
  -b: Builds/Rebuilds CMake files normal mode
  -c: Clean
  -e: Debug mode
  -g: Build/Rebuilds only gui
  -j: Number of threads to compile through
+ -k: CMake command
  -l: laser box
  -m: generic for beamtime usage
  -s: server only
@@ -54,6 +57,10 @@ Usage: $0
 		echo "Number of compiler threads: $OPTARG" 
 		COMPILERTHREADS=$OPTARG
 		;;
+	k)
+		echo "CMake command: $OPTARG"
+		CMAKE="$OPTARG"
+		;;		
 	l) 
         LASER=1
 		REBUILD=1
@@ -166,11 +173,7 @@ echo "in "$PWD
 #cmake
 if [ $REBUILD -eq 1 ]; then
 	rm -f CMakeCache.txt
-if [ $SERVER -eq 0 ]; then
-	BUILDCOMMAND="$CMAKE_PRE cmake3 $CMAKE_POST .."
-else
-	BUILDCOMMAND="$CMAKE_PRE cmake $CMAKE_POST .."
-fi
+	BUILDCOMMAND="$CMAKE_PRE $CMAKE $CMAKE_POST .."
 	echo $BUILDCOMMAND
 	eval $BUILDCOMMAND
 fi

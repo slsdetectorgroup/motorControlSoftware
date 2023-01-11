@@ -19,7 +19,7 @@ std::string MotorWidget::GetName() { return name; }
 
 double MotorWidget::GetPositionFromWidget() { return spinAbsolute->value(); }
 
-void MotorWidget::LayoutWindow() { groupbox->setTitle(name.c_str()); }
+void MotorWidget::LayoutWindow() { lblMotor->setText(name.c_str()); }
 
 void MotorWidget::Initialization() {
     connect(spinAbsolute, SIGNAL(valueChanged(double)), this,

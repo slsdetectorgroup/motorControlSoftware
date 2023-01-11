@@ -28,7 +28,7 @@ void FluorWidget::UpdateHolderList() {
 }
 
 void FluorWidget::LayoutWindow() {
-    groupbox->setTitle(name.c_str());
+    lblFluor->setText(name.c_str());
     LoadTargetHolders();
     motor = new MotorWidget(this, name, hostname, statusBar);
     gridPageMotor->addWidget(motor, 0, 0);

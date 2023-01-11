@@ -20,7 +20,7 @@ FwheelWidget::~FwheelWidget() {}
 std::string FwheelWidget::GetName() { return name; }
 
 void FwheelWidget::LayoutWindow() {
-    groupbox->setTitle(name.c_str());
+    lblFwheel->setText(name.c_str());
     LoadAbsorptionValues();
 }
 
