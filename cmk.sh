@@ -62,27 +62,34 @@ Usage: $0
 		CMAKE="$OPTARG"
 		;;		
 	l) 
+		echo "Compiling laserbox"
         LASER=1
 		REBUILD=1
 		;;
 	m) 
+		echo "Compiling generic for motor control at beamlines"
         GENERIC=1
 		REBUILD=1
 		;;
 	s) 
+		echo "Compiling server only with cmake for rasperry pi"
         SERVER=1
 		CLIENT=0
 		REBUILD=1
+		CMAKE="cmake"
 		;;	
 	t) 
+		"Compiling with virtual server environment"
         VIRTUAL=1
 		REBUILD=1
 		;;
 	v) 
+		"Compiling vacuumbox"
         VACUUM=1
 		REBUILD=1
 		;;
 	x) 
+		"Compiling xraybox"
         BIG_XRAY=1
 		REBUILD=1
 		;;
