@@ -6,14 +6,25 @@ logger = logging.getLogger()
 
 
 class XrayBox:
+    def __init__(self, server = None, verbose = False):
+        self.server = server
+        self.verbose = verbose
+        print(f'XrayBox.server: {self.server}')
+        print(f'XrayBox.verbose: {self.verbose}')
+
     def _call(self, *args):
         """
         Default function to handle command line calls
         Waits for process to return then returns the output
         as a list using a CompletedProcess object
         """
-        args = (self._client, *args)
+        args = [self._client, *args]
+        if self.server:
+            args.append('--server')
+            args.append(self.server)
         logger.debug(args)
+        if self.verbose:
+            print(args)
         return subprocess.run(args, stdout=subprocess.PIPE, encoding="UTF-8").stdout
 
     @property
@@ -59,7 +70,7 @@ class XrayBox:
         
         ::
             
-            xray_box.voltge = 60
+            xray_box.voltage = 60
             
             xray_box.voltage
             >> 60
@@ -112,10 +123,37 @@ class XrayBox:
         sh = out.split('\n')[1].split()
         return sh
 
+    @property
+    def error(self):
+        out = self._call("geterr")
+        ec = int(out.split('\n')[1])
+        return ec
+
+    @property
+    def error_msg(self):
+        out = self._call("getemess")
+        msg = out.split('\n')[1]
+        return msg
+
+    def clear_error(self):
+        out = self._call("clear")
+        #potential answers?
+
+    def start_warmup(self, target_voltage):
+        out = self._call("warmup", f"{target_voltage}")
+
+    @property
+    def warmup_time(self):
+        out = self._call("getwtime")
+        wt = out.split('\n')[1].split()[0]
+        wt = int(wt)
+        return wt
+
 class BigXrayBox(XrayBox):
-    def __init__(self):
+    def __init__(self, server = None, verbose = False):
         self._client = "xrayClient"
         self._motor = "Fluorescence"
+        super().__init__(server, verbose)
 
     @property
     def target(self):
