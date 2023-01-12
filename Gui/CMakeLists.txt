@@ -115,9 +115,9 @@ foreach(val RANGE ${len})
         Qt5::Gui
         Qt5::Core
     )  
-    if (${CMAKE_MAJOR_VERSION}$ GREATER "2")
-        target_link_libraries(${exename} PRIVATE project_warnings)
-    endif()
+
+    target_link_libraries(${exename} PRIVATE project_warnings)
+
     set_target_properties(${exename} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
         AUTOMOC ON

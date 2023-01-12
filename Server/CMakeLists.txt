@@ -96,9 +96,7 @@ foreach(val RANGE ${len})
     set_target_properties(${exename} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     )
-    if (${CMAKE_MAJOR_VERSION}$ GREATER "2")
-        target_link_libraries(${exename} PRIVATE project_warnings)
-    endif()
+    target_link_libraries(${exename} PRIVATE project_warnings)
     target_compile_definitions(${exename} PRIVATE REMOTE ${definitions})
     install(TARGETS ${exename}  DESTINATION bin)
 endforeach()

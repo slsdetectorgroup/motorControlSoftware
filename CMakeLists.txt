@@ -38,15 +38,11 @@ set(ClangFormat_EXCLUDE_PATTERNS "build/"
 find_package(ClangFormat)
 
 
-# standard compiler warnings
-if (${CMAKE_MAJOR_VERSION}$ LESS "3")
-    message(STATUS "CMake major version less than 3 using -Wall -Wextra instead of warning list")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
-else()
-    add_library(project_warnings INTERFACE)
-    include(cmake/CompilerWarnings.cmake)
-    set_project_warnings(project_warnings)
-endif()
+#Add warnings
+add_library(project_warnings INTERFACE)
+include(cmake/CompilerWarnings.cmake)
+set_project_warnings(project_warnings)
+
 
 if(USE_SANITIZER)
     target_compile_options(project_warnings INTERFACE -fsanitize=address,undefined -fno-omit-frame-pointer)
