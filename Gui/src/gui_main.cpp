@@ -8,7 +8,7 @@ int main(int argc, char **argv) {
     std::string serverHostname = DEFAULT_SERVER_HOSTNAME;
     if (argc > 2) {
         for (int i = 1; i < argc; ++i) {
-            if (strncmp(argv[i], "-server", 8) == 0) {
+            if (strncmp(argv[i], "--server", 8) == 0) {
                 if (i + 1 == argc) {
                     throw RuntimeError("Cannot scan server hostname option");
                 }

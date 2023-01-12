@@ -6,14 +6,14 @@
 #include <stdexcept>
 #include <stdint.h>
 
-#ifdef XRAYBOX
-#define DEFAULT_SERVER_HOSTNAME ("mpc2128.psi.ch")
-#elif LASERBOX
-#define DEFAULT_SERVER_HOSTNAME ("mpc2085.psi.ch")
-#elif VACUUMBOX
-#define DEFAULT_SERVER_HOSTNAME ("mpc2069.psi.ch")
-#else
+#if defined(VIRTUAL) || defined(GENERIC)
 #define DEFAULT_SERVER_HOSTNAME ("localhost")
+#elif defined(XRAYBOX)
+#define DEFAULT_SERVER_HOSTNAME ("mpc2128.psi.ch")
+#elif defined(LASERBOX)
+#define DEFAULT_SERVER_HOSTNAME ("mpc2085.psi.ch")
+#elif defined(VACUUMBOX)
+#define DEFAULT_SERVER_HOSTNAME ("mpc2069.psi.ch")
 #endif
 #define PORT_NO (1111)
 
