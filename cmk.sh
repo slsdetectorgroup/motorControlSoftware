@@ -34,7 +34,7 @@ Usage: $0
  -x: xray box
  " ; exit 1; }
 
- while getopts ":sxvlmtbcj:ge" opt ; do
+ while getopts ":bcegj:k:lmstvx" opt ; do
 	case $opt in
 	b) 
 		echo "Building of CMake files Required"
