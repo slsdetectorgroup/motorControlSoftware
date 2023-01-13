@@ -15,7 +15,8 @@ set(SOURCES
     src/TubeWidget.cpp 
     src/OptionsWidget.cpp
     ../Client/src/Client.cpp
-    ../include/MySocketTCP.cpp
+    ../include/sls/ClientSocket.cpp
+    ../include/sls/DataSocket.cpp
 )
 
 set(FORMS
@@ -45,7 +46,8 @@ set(HEADERS
     include/TubeWidget.h 
     include/OptionsWidget.h
     ../Client/include/Client.h
-    ../include/MySocketTCP.h
+    ../include/sls/ClientSocket.h
+    ../include/sls/DataSocket.h
     ../include/commonDefs.h
     ../include/logger.h
 )
