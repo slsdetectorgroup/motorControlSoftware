@@ -16,7 +16,7 @@ class ClientSocket : public DataSocket {
     ClientSocket(struct sockaddr_in addr);
 
   private:
-    struct sockaddr_in serverAddr {};
+    struct sockaddr_in serverAddr;
 };
 
 } // namespace sls

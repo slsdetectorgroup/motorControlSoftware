@@ -105,7 +105,8 @@ int DataSocket::read(void *buffer, size_t size) {
 }
 
 int DataSocket::setReceiveTimeout(int us) {
-    timeval t{};
+    timeval t;
+    memset(&t, 0, sizeof(timeval));
     t.tv_sec = 0;
     t.tv_usec = us;
     return ::setsockopt(getSocketId(), SOL_SOCKET, SO_RCVTIMEO, &t,

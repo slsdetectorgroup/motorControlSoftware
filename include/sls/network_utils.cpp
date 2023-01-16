@@ -30,7 +30,8 @@ IpAddr::IpAddr(const char *address) { inet_pton(AF_INET, address, &addr_); }
 std::string IpAddr::str() const { return arr().data(); }
 
 std::array<char, INET_ADDRSTRLEN> IpAddr::arr() const {
-    std::array<char, INET_ADDRSTRLEN> ipstring{};
+    std::array<char, INET_ADDRSTRLEN> ipstring;
+    memset(&ipstring, 0, sizeof(ipstring));
     inet_ntop(AF_INET, &addr_, ipstring.data(), INET_ADDRSTRLEN);
     return ipstring;
 }

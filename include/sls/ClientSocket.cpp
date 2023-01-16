@@ -15,6 +15,8 @@ namespace sls {
 ClientSocket::ClientSocket(const std::string &host,
                            uint16_t port)
     : DataSocket(socket(AF_INET, SOCK_STREAM, 0)) {
+    
+    memset(&serverAddr, 0, sizeof(serverAddr));
 
     struct addrinfo hints, *result;
     memset(&hints, 0, sizeof(hints));
@@ -49,7 +51,9 @@ ClientSocket::ClientSocket(const std::string &host,
 
 ClientSocket::ClientSocket(struct sockaddr_in addr)
     : DataSocket(socket(AF_INET, SOCK_STREAM, 0)) {
-
+  
+    memset(&serverAddr, 0, sizeof(serverAddr));
+    
     if (::connect(getSocketId(), reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) != 0) {
         char address[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &addr.sin_addr, address, INET_ADDRSTRLEN);
