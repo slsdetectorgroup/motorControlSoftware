@@ -32,4 +32,4 @@ class ServerSocket : public DataSocket {
     int serverPort;
 };
 
-}; // namespace sls
+} // namespace sls

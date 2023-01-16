@@ -19,4 +19,4 @@ class ClientSocket : public DataSocket {
     struct sockaddr_in serverAddr {};
 };
 
-}; // namespace sls
+} // namespace sls

@@ -50,4 +50,4 @@ bool replace_first(std::string *s, const std::string &substr,
     return false;
 }
 
-}; // namespace sls
+} // namespace sls

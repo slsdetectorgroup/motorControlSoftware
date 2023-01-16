@@ -72,5 +72,5 @@ struct AnotherUserError : public RuntimeError {
 #define TUBE_OFF_ERROR_PHRASE     ("Tube is probably switched off")
 #define TUBE_STANDBY_ERROR_PHRASE ("Stand-by")
 #define PRESSUR_OFF_ERROR_PHRASE  ("Pressure Gauge is probably switched off")
-#define BOX_IN_USE_ERROR_PHRASE   ("box is in use by")
+#define BOX_IN_USE_ERROR_PHRASE   ("is in use by")
 #define ANOTHER_USER_ERROR_PHRASE ("Another user had updated the server")

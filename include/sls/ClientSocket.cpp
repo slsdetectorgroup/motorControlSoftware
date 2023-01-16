@@ -60,4 +60,4 @@ ClientSocket::ClientSocket(struct sockaddr_in addr)
     }
 }
 
-}; // namespace sls
+} // namespace sls

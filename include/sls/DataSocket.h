@@ -90,4 +90,4 @@ class DataSocket {
     int fnum_{0};
 };
 
-}; // namespace sls
+} // namespace sls

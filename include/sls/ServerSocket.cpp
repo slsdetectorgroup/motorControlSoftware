@@ -56,4 +56,4 @@ DataSocket ServerSocket::accept() {
     return DataSocket(newSocket);
 }
 
-}; // namespace sls
+} // namespace sls
