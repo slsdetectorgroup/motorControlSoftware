@@ -45,14 +45,12 @@ int DecodeFunction(char* mess, int nArg, char* args, lockAttributes& lock, Initi
         return FAIL;
     } 
     
-    // extract time
+    // extract arguments
     std::string timestamp(args + (strlen(args) - TIME_BUFFER_LENGTH),
                         TIME_BUFFER_LENGTH);
     memset(args + strlen(args) - TIME_BUFFER_LENGTH, 0,
         TIME_BUFFER_LENGTH);
     --nArg;
-
-    // scan remaining arguments
     std::istringstream iss(args);
     std::vector<std::string> command = std::vector<std::string>(
         std::istream_iterator<std::string>(iss),
