@@ -2,8 +2,6 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 
-#include "sls/TypeTraits.h"
-
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
@@ -12,6 +10,12 @@
 #include <string>
 #include <vector>
 namespace sls {
+
+//Check that we are not trying to send a vector
+template <typename T> struct is_vector : public std::false_type {};
+template <typename T>
+struct is_vector<std::vector<T>> : public std::true_type {};
+
 
 /* Base class for TCP socket, this is used to send data between detector, client
    and receiver. Specific protocols inherit from this class.*/
@@ -47,18 +51,8 @@ class DataSocket {
         return Send(&data, sizeof(data));
     }
 
-    template <typename T> int Send(const std::vector<T> &vec) {
-        return Send(vec.data(), sizeof(T) * vec.size());
-    }
-
     int Send(const std::string &s);
 
-    // Variadic template to send all arguments
-    template <class... Args> int SendAll(Args &&...args) {
-        auto l = std::initializer_list<int>{Send(args)...};
-        auto sum = std::accumulate(begin(l), end(l), 0);
-        return sum;
-    }
     int Receive(void *buffer, size_t size);
 
     template <typename T> int Receive(T &arg) {

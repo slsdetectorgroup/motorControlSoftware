@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "sls/ServerSocket.h"
-#include "sls/DataSocket.h"
-#include "sls/string_utils.h"
 
 #include "logger.h"
 #include "commonDefs.h"
@@ -42,7 +40,6 @@ ServerSocket::ServerSocket(int port)
 }
 
 DataSocket ServerSocket::accept() {
-    lastClient = thisClient; // update from previous connection
     struct sockaddr_in clientAddr;
     socklen_t addr_size = sizeof clientAddr;
     int newSocket =
@@ -52,7 +49,6 @@ DataSocket ServerSocket::accept() {
     }
     char tc[INET_ADDRSTRLEN]{};
     inet_ntop(AF_INET, &(clientAddr.sin_addr), tc, INET_ADDRSTRLEN);
-    thisClient = IpAddr{tc};
     return DataSocket(newSocket);
 }
 

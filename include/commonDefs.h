@@ -17,7 +17,6 @@
 #endif
 #define PORT_NO (1111)
 
-#define MAX_STR_LENGTH        (1000)
 #define COMMAND_BUFFER_LENGTH (256)
 #define TCP_PACKET_LENGTH     (1024)
 #define TIME_BUFFER_LENGTH    (28)

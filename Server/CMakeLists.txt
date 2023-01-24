@@ -14,8 +14,8 @@ set(SOURCES
     src/Motor.cpp 
     ../include/sls/DataSocket.cpp
     ../include/sls/ServerSocket.cpp
-    ../include/sls/network_utils.cpp
-    ../include/sls/string_utils.cpp
+    # ../include/sls/network_utils.cpp
+    # ../include/sls/string_utils.cpp
 )
 
 set(HEADERS
@@ -33,10 +33,10 @@ set(HEADERS
     include/Motor.h 
     ../include/sls/DataSocket.h
     ../include/sls/ServerSocket.h
-    ../include/sls/network_utils.h
-    ../include/sls/string_utils.h
-    ../include/sls/container_utils.h
-    ../include/sls/TypeTraits.h 
+    # ../include/sls/network_utils.h
+    # ../include/sls/string_utils.h
+    # ../include/sls/container_utils.h
+    # ../include/sls/TypeTraits.h 
     ../include/commonDefs.h
     ../include/ansi.h
     ../include/logger.h

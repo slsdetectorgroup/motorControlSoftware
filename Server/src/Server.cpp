@@ -4,7 +4,6 @@
 #include "Interface.h"
 #include "sls/ServerSocket.h"
 #include "sls/DataSocket.h"
-#include "sls/string_utils.h"
 #include "commonDefs.h"
 
 #include <cstring>
@@ -208,8 +207,10 @@ int main(int argc, char *[]) {
             } catch(const RuntimeError &e) {
                 //"Error reading from socket. Possible socket crash.";
                 // We had an error needs to be sent to client
-                char mess[MAX_STR_LENGTH]{};
-                sls::strcpy_safe(mess, e.what());
+                //TODO! Assert?
+                char mess[TCP_PACKET_LENGTH]{};
+                strncpy(mess, e.what(), TCP_PACKET_LENGTH-1);
+                mess[TCP_PACKET_LENGTH-1] = '\0'; //Just to be safe
                 socket.Send(FAIL);
                 socket.Send(mess); 
                 continue;//disconnect???

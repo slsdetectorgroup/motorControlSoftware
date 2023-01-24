@@ -3,7 +3,6 @@
 #pragma once
 
 #include "sls/DataSocket.h"
-#include "sls/network_utils.h"
 
 #include <cstdint>
 #include <netdb.h>
@@ -17,18 +16,8 @@ class ServerSocket : public DataSocket {
   public:
     ServerSocket(int port);
     DataSocket accept();
-    IpAddr getLastClient() const noexcept { return lastClient; }
-    IpAddr getThisClient() const noexcept { return thisClient; }
-    IpAddr getLockedBy() const noexcept { return lockedBy; }
-    bool differentClients() const noexcept { return lastClient != thisClient; }
-    void setLockedBy(IpAddr addr) { lockedBy = addr; }
-    void setLastClient(IpAddr addr) { lastClient = addr; }
-    int getPort() const noexcept { return serverPort; }
 
   private:
-    IpAddr thisClient;
-    IpAddr lastClient;
-    IpAddr lockedBy;
     int serverPort;
 };
 
