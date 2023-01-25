@@ -10,6 +10,7 @@
 #include "TubeWidget.h"
 
 #include <QCloseEvent>
+#include <QScreen>
 
 #include <iterator>
 
@@ -37,7 +38,7 @@ void Gui::LayoutWindow() {
 #else
     oss << "Motor Control Gui";
 #endif
-    oss << " - Motor Control Software (" << hostname << ")";
+    oss << " - (" << hostname << ")";
     std::string title = oss.str();
     LOG(logINFOBLUE) << title;
     setWindowTitle(title.c_str());
@@ -71,7 +72,23 @@ void Gui::LayoutWindow() {
 #if defined(XRAYBOX) || defined(VACUUMBOX)
     groupTube->setChecked(true);
 #endif
+
+    CheckWindowSize();
     layoutDone = true;
+}
+
+void Gui::CheckWindowSize() {
+    QScreen *screen = QGuiApplication::primaryScreen();
+    QRect  screenGeometry = screen->geometry();
+    int screenHeight = screenGeometry.height() - 100;
+    int screenWidth = screenGeometry.width() - 100;
+
+    if (height() > screenHeight) {
+        resize(width(), screenHeight);
+    }
+    if (width() > screenWidth) {
+        resize(screenWidth, height());
+    }
 }
 
 void Gui::LoadMotorWidgets() {
@@ -241,7 +258,7 @@ void Gui::LoadFwheelWidgets() {
     }
 
     int mainWindowHeight =
-        height() +
+        height() + 
         static_cast<int>(
             ((fwheelWidgets.size() == 0) ? 0 : WINDOW_HEIGHT_FWHEEL_REF) +
             fwheelWidgets.size() * WINDOW_HEIGHT_FWHEEL);
@@ -324,7 +341,7 @@ void Gui::EnablePressureWidget(bool enable) {
             lblPressure->show();
         }
         groupPressure->setChecked(false);
-
+        resize(WINDOW_WIDTH_UNCHECK_TUBE, height());
     } else {
         if (pgauge == NULL) {
             lblPressure->hide();
@@ -344,6 +361,8 @@ void Gui::EnablePressureWidget(bool enable) {
                 SLOT(EnablePressureWidget(bool)));
     }
     optionsWidget->EnablePressure(enable);
+
+    CheckWindowSize();
 }
 
 void Gui::LoadTubeWidget(bool userClick) {
@@ -389,6 +408,7 @@ void Gui::EnableTubeWidget(bool enable) {
             lblTube->show();
         }
         groupTube->setChecked(false);
+        resize(WINDOW_WIDTH_UNCHECK_TUBE, height());
     }
     // enable tube
     else {
@@ -412,6 +432,8 @@ void Gui::EnableTubeWidget(bool enable) {
                 SLOT(EnableTubeWidget(bool)));
     }
     optionsWidget->EnableTube(enable);
+    
+    CheckWindowSize();
 }
 
 void Gui::ShowOptions() {

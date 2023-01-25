@@ -98,6 +98,9 @@ std::pair<int, int> Xray::getTwoIntegers(std::string result) {
 }
 
 int Xray::getErrorCode() {
+#ifdef VIRTUAL
+    return 0;
+#endif
     while (true) {
         try {
             std::string result = interface->TubeSend("sr:12 ", true);
@@ -111,14 +114,26 @@ int Xray::getErrorCode() {
     }
 }
 
-std::string Xray::getErrorMessage() { return interface->TubeSend("er ", true); }
+std::string Xray::getErrorMessage() { 
+#ifdef VIRTUAL
+    return std::string();
+#else
+    return interface->TubeSend("er ", true); 
+#endif
+}
 
 void Xray::clearErrorCode() {
+#ifdef VIRTUAL
+    return;
+#endif
     interface->TubeSend("cl ", false);
     usleep(1 * 1000 * 1000);
 }
 
 bool Xray::isOnStandby() {
+#ifdef VIRTUAL
+    return false;
+#endif
     while (true) {
         try {
             std::string result = interface->TubeSend("sr:12 ", true);
@@ -137,17 +152,25 @@ bool Xray::isOnStandby() {
 }
 
 void Xray::setHVSwitch(bool on) {
+
     std::ostringstream oss;
     if (isOnStandby()) {
         oss << "Cannot set high voltage. Tube is on "
             << TUBE_STANDBY_ERROR_PHRASE << " mode";
         throw RuntimeError(oss.str());
     }
+#ifdef VIRTUAL
+    virtualHV = on;
+#else
     oss << "hv:" << (on ? 1 : 0) << ' ';
     interface->TubeSend(oss.str());
+#endif
 }
 
 bool Xray::getHVSwitch() {
+#ifdef VIRTUAL
+    return virtualHV;
+#endif
     int hv = 1;
     while (hv != TUBE_HV_ON && hv != 0) {
         while (true) {
@@ -198,11 +221,18 @@ void Xray::setVoltage(int value) {
     }
     validateVoltage(value);
     validatePower(value, getCurrent());
+#ifdef VIRTUAL
+    virtualVoltage = value;
+#else
     oss << "sv:" << value << ' ';
     interface->TubeSend(oss.str());
+#endif
 }
 
 int Xray::getVoltage() {
+#ifdef VIRTUAL
+    return virtualVoltage;
+#endif
     while (true) {
         try {
             std::string result = interface->TubeSend("vn ", true);
@@ -234,11 +264,18 @@ void Xray::setCurrent(int value) {
     }
     validateCurrent(value);
     validatePower(getVoltage(), value);
+#ifdef VIRTUAL
+    virtualCurrent = value;
+#else
     oss << "sc:" << value << ' ';
     interface->TubeSend(oss.str());
+#endif
 }
 
 int Xray::getCurrent() {
+#ifdef VIRTUAL
+    return virtualCurrent;
+#endif
     while (true) {
         try {
             std::string result = interface->TubeSend("cn ", true);
@@ -262,11 +299,19 @@ void Xray::setVoltageAndCurrent(int v, int c) {
     validateVoltage(v);
     validateCurrent(c);
     validatePower(v, c);
+#ifdef VIRTUAL
+    virtualVoltage = v;
+    virtualCurrent = c;
+#else
     oss << "sn:" << v << "," << c << ' ';
     interface->TubeSend(oss.str());
+#endif
 }
 
 std::pair<int, int> Xray::getVoltageAndCurrent() {
+#ifdef VIRTUAL
+    return std::make_pair(virtualVoltage, virtualCurrent);
+#endif
     while (true) {
         try {
             std::string result = interface->TubeSend("gn ", true);
@@ -284,6 +329,9 @@ std::pair<int, int> Xray::getVoltageAndCurrent() {
 }
 
 int Xray::getActualVoltage() {
+#ifdef VIRTUAL
+    return virtualVoltage;
+#endif
     while (true) {
         try {
             std::string result = interface->TubeSend("va ", true);
@@ -298,6 +346,9 @@ int Xray::getActualVoltage() {
 }
 
 int Xray::getActualCurrent() {
+#ifdef VIRTUAL
+    return virtualCurrent;
+#endif
     while (true) {
         try {
             std::string result = interface->TubeSend("ca ", true);
@@ -312,6 +363,9 @@ int Xray::getActualCurrent() {
 }
 
 std::pair<int, int> Xray::getActualVoltageAndCurrent() {
+#ifdef VIRTUAL
+    return std::make_pair(virtualVoltage, virtualCurrent);
+#endif
     while (true) {
         try {
             std::string result = interface->TubeSend("ga ", true);
@@ -329,6 +383,9 @@ std::pair<int, int> Xray::getActualVoltageAndCurrent() {
 }
 
 int Xray::getShutterStatus(int index) {
+#ifdef VIRTUAL
+    return (virtualShutter[index] ? 1 : 0);
+#endif
     std::string command;
     int mask = 0;
     int offset = 0;
@@ -375,6 +432,9 @@ int Xray::getShutterStatus(int index) {
 }
 
 bool Xray::isShutterConnected(int index) {
+#ifdef VIRTUAL
+    return true;
+#endif
     int status = getShutterStatus(index);
     if (status == SHUTTER_NOT_CONNECTED) {
         return false;
@@ -393,11 +453,18 @@ void Xray::setShutter(int index, bool on) {
         oss << "Shutter " << index << " not connected";
         throw RuntimeError(oss.str());
     }
+#ifdef VIRTUAL
+    virtualShutter[index] = on;
+#else
     oss << (on ? "os:" : "cs:") << index << ' ';
     interface->TubeSend(oss.str());
+#endif
 }
 
 bool Xray::getShutter(int index) {
+#ifdef VIRTUAL
+    return virtualShutter[index];
+#endif
     int status = SHUTTER_TRANSITION_VAL;
     while (status == SHUTTER_TRANSITION_VAL) {
         status = getShutterStatus(index);
@@ -417,13 +484,17 @@ void Xray::startWarmup(int voltage) {
         throw RuntimeError(oss.str());
     }
     validateVoltage(voltage);
-
+#ifndef VIRTUAL
     oss << "wu:4," << voltage << ' ';
     interface->TubeSend(oss.str());
+#endif
     setHVSwitch(true);
 }
 
 int Xray::getWarmupTimeRemaining() {
+#ifdef VIRTUAL
+    return 0;
+#endif
     while (true) {
         try {
             std::string result = interface->TubeSend("wt ", true);
@@ -447,13 +518,22 @@ bool Xray::isAccessPossible() {
 }
 
 void Xray::sendCommand(std::string command) {
+#ifdef VIRTUAL
+    LOG(logWARNING) << "Cannot send command: [" << command << "] to tube";
+#else
     LOG(logINFO) << "Sending command: [" << command << "] to tube";
     interface->TubeSend(command);
+#endif
 }
 
 std::string Xray::sendCommandAndReadBack(std::string command) {
+#ifdef VIRTUAL
+    LOG(logWARNING) << "Cannot send command to read back: [" << command << "] to tube";
+    return std::string();
+#else
     LOG(logINFO) << "Sending command to read back: [" << command << "] to tube";
     return interface->TubeSend(command, true);
+#endif
 }
 
 void Xray::print() {

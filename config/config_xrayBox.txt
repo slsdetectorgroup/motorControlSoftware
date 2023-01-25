@@ -1,21 +1,21 @@
 #any line containing a # is ignored
 #mode		controller	serial no
-#controller	corvus_1	09040217
+controller	corvus_1	09040217
 controller	corvus_2	09040216
-#controller	corvus_3	09040218
+controller	corvus_3	09040218
 
 #huber: use separate controller (speed and ncalvel 0.23)
 
 
 #mode	name		    axis	controller	lowerlimit	upperlimit
-#motor	Crystal		    1	    corvus_3	0		    360
-#motor	Huber		    2	    corvus_3	-50		    150
+motor	Crystal		    1	    corvus_3	0		    360
+motor	Huber		    2	    corvus_3	-50		    150
 motor	Fluorescence	3	    corvus_2	0		    251.8267
-#motor	Slit_x1		    1	    corvus_2	0		    -1
-#motor	Slit_x2		    2	    corvus_2	0		    -1
-#motor	PSF		        3	    corvus_1	0		    42.4
-#motor	Detector_x	    1	    corvus_1	0		    255.5
-#motor	Detector_y	    1	    corvus_1	0		    102.7
+motor	Slit_x1		    1	    corvus_2	0		    -1
+motor	Slit_x2		    2	    corvus_2	0		    -1
+motor	PSF		        3	    corvus_1	0		    42.4
+motor	Detector_x	    1	    corvus_1	0		    255.5
+motor	Detector_y	    2	    corvus_1	0		    102.7
 
 
 #mode 		    name    energy(KeV) 

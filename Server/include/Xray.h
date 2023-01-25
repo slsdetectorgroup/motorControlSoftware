@@ -4,6 +4,9 @@
 
 #include <utility>
 #include <vector>
+#ifdef VIRTUAL
+#include <array>
+#endif
 
 class Xray {
   public:
@@ -49,4 +52,11 @@ class Xray {
 
     Interface *interface;
     int maxTubePower;
+ 
+#ifdef VIRTUAL
+    bool virtualHV{false};
+    int virtualVoltage{0};
+    int virtualCurrent{0};
+    std::array<bool, 4> virtualShutter{{false, false, false, false}};
+#endif
 };

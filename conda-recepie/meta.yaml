@@ -15,7 +15,7 @@ requirements:
     - {{ compiler('c') }}
     - {{compiler('cxx')}}
     - cmake
-    - qt 4.8.*
+    - qt 5
     - xorg-libxau
 
   host:
@@ -32,15 +32,18 @@ outputs:
   - name: slsdetboxlib
     script: copy_client.sh
 
+
   - name: slsdetboxgui
     script: copy_gui.sh
 
     requirements:
       run:
-        - qt 4.8.*
+        - qt 5
 
   - name: slsdetbox
+    noarch: python
     script: build_pylib.sh
+
 
     requirements:
       build:

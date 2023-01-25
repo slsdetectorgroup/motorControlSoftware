@@ -28,7 +28,7 @@ void FluorWidget::UpdateHolderList() {
 }
 
 void FluorWidget::LayoutWindow() {
-    groupbox->setTitle(name.c_str());
+    lblFluor->setText(name.c_str());
     LoadTargetHolders();
     motor = new MotorWidget(this, name, hostname, statusBar);
     gridPageMotor->addWidget(motor, 0, 0);
@@ -163,7 +163,7 @@ void FluorWidget::GetTarget() {
         bool found = false;
         for (int i = 0; i < comboTarget->count(); ++i) {
             std::string text =
-                std::string(comboTarget->itemText(i).toAscii().data());
+                std::string(comboTarget->itemText(i).toLatin1().data());
             // found match
             if (text == result) {
                 comboTarget->setCurrentIndex(i);
@@ -185,7 +185,7 @@ void FluorWidget::GetTarget() {
 
 void FluorWidget::SetTarget(int index) {
     std::string target =
-        std::string(comboTarget->currentText().toAscii().data());
+        std::string(comboTarget->currentText().toLatin1().data());
     LOG(logINFO) << "Moving " << name << " to target " << target;
     // display energy
     dispEnergy->setText((energy[index] + std::string(" KeV")).c_str());

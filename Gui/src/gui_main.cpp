@@ -2,14 +2,13 @@
 #include "GuiDefs.h"
 
 #include <QApplication>
-#include <QPlastiqueStyle>
 
 int main(int argc, char **argv) {
     // find server hostname
     std::string serverHostname = DEFAULT_SERVER_HOSTNAME;
     if (argc > 2) {
         for (int i = 1; i < argc; ++i) {
-            if (strncmp(argv[i], "-server", 8) == 0) {
+            if (strncmp(argv[i], "--server", 8) == 0) {
                 if (i + 1 == argc) {
                     throw RuntimeError("Cannot scan server hostname option");
                 }
@@ -20,7 +19,7 @@ int main(int argc, char **argv) {
     }
 
     QApplication app(argc, argv);
-    app.setStyle(new QPlastiqueStyle);
+
     // app.setWindowIcon(QIcon(":/icons/images/motorIcon.png"));
     try {
         Gui gui(serverHostname);

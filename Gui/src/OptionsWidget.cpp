@@ -138,7 +138,7 @@ void OptionsWidget::SetMotor() {
     GetPosition();
     GetUpperLimit();
     GetLowerLimit();
-    std::string name = std::string(comboMotor->currentText().toAscii().data());
+    std::string name = std::string(comboMotor->currentText().toLatin1().data());
     bool allowed = true;
     if ((name.find("Slit") != std::string::npos) ||
         (name.find("Fluorescence") != std::string::npos)) {
@@ -151,14 +151,14 @@ void OptionsWidget::SetMotor() {
 
 void OptionsWidget::GetMotorController() {
     std::ostringstream oss;
-    oss << "getcontroller " << comboMotor->currentText().toAscii().data();
+    oss << "getcontroller " << comboMotor->currentText().toLatin1().data();
     std::string result = SendCommand(hostname, 2, oss.str(),
                                      "OptionsWidget::GetMotorController");
     lblMotorControllerValue->setText(result.c_str());
 }
 
 void OptionsWidget::GetPosition() {
-    std::string name = std::string(comboMotor->currentText().toAscii().data());
+    std::string name = std::string(comboMotor->currentText().toLatin1().data());
     disconnect(spinPosition, SIGNAL(valueChanged(double)), this,
                SLOT(SetPosition(double)));
     std::string result =
@@ -182,7 +182,7 @@ void OptionsWidget::SetPosition(double value) {
         GetPosition();
         return;
     }
-    std::string name = std::string(comboMotor->currentText().toAscii().data());
+    std::string name = std::string(comboMotor->currentText().toLatin1().data());
     LOG(logINFO) << "Overwriting current position of " << name << " to "
                  << value;
     std::ostringstream oss;
@@ -195,7 +195,7 @@ void OptionsWidget::SetPosition(double value) {
 }
 
 void OptionsWidget::GetUpperLimit() {
-    std::string name = std::string(comboMotor->currentText().toAscii().data());
+    std::string name = std::string(comboMotor->currentText().toLatin1().data());
     disconnect(spinUpper, SIGNAL(valueChanged(double)), this,
                SLOT(SetUpperLimit(double)));
     std::string result = SendCommand(hostname, 2, "getupper " + name,
@@ -213,7 +213,7 @@ void OptionsWidget::GetUpperLimit() {
 }
 
 void OptionsWidget::SetUpperLimit(double value) {
-    std::string name = std::string(comboMotor->currentText().toAscii().data());
+    std::string name = std::string(comboMotor->currentText().toLatin1().data());
     LOG(logINFO) << "Setting " << name << "'s upper limit to " << value;
     std::ostringstream oss;
     oss << "setupper " << name << ' ' << value;
@@ -225,7 +225,7 @@ void OptionsWidget::SetUpperLimit(double value) {
 }
 
 void OptionsWidget::GetLowerLimit() {
-    std::string name = std::string(comboMotor->currentText().toAscii().data());
+    std::string name = std::string(comboMotor->currentText().toLatin1().data());
     disconnect(spinLower, SIGNAL(valueChanged(double)), this,
                SLOT(SetLowerLimit(double)));
     std::string result = SendCommand(hostname, 2, "getlower " + name,
@@ -243,7 +243,7 @@ void OptionsWidget::GetLowerLimit() {
 }
 
 void OptionsWidget::SetLowerLimit(double value) {
-    std::string name = std::string(comboMotor->currentText().toAscii().data());
+    std::string name = std::string(comboMotor->currentText().toLatin1().data());
     LOG(logINFO) << "Setting " << name << "'s lower limit to " << value;
     std::ostringstream oss;
     oss << "setlower " << name << ' ' << value;
@@ -264,7 +264,7 @@ void OptionsWidget::SetController() {
 
 void OptionsWidget::GetControllerSerialNumber() {
     std::string name =
-        std::string(comboController->currentText().toAscii().data());
+        std::string(comboController->currentText().toLatin1().data());
     std::string result =
         SendCommand(hostname, 2, "getcontserialnumber " + name,
                     "OptionsWidget::GetControllerSerialNumber");
@@ -275,7 +275,7 @@ void OptionsWidget::GetControllerSerialNumber() {
 
 void OptionsWidget::GetControllerInterface() {
     std::string name =
-        std::string(comboController->currentText().toAscii().data());
+        std::string(comboController->currentText().toLatin1().data());
     std::string result = SendCommand(hostname, 2, "getcontinterface " + name,
                                      "OptionsWidget::GetControllerInterface");
     if (!result.empty()) {
@@ -285,7 +285,7 @@ void OptionsWidget::GetControllerInterface() {
 
 void OptionsWidget::GetControllerMotors() {
     std::string name =
-        std::string(comboController->currentText().toAscii().data());
+        std::string(comboController->currentText().toLatin1().data());
     std::string result = SendCommand(hostname, 2, "getcontmotorlist " + name,
                                      "OptionsWidget::GetControllerMotors");
     if (!result.empty()) {
@@ -306,7 +306,7 @@ void OptionsWidget::GetControllerMotors() {
 }
 
 void OptionsWidget::SendCommandToController() {
-    std::string command = dispCont->text().toAscii().data();
+    std::string command = dispCont->text().toLatin1().data();
     std::istringstream iss(command);
     std::vector<std::string> args =
         std::vector<std::string>(std::istream_iterator<std::string>(iss),
@@ -320,7 +320,7 @@ void OptionsWidget::SendCommandToController() {
     }
     dispContResult->clear();
     std::string name =
-        std::string(comboController->currentText().toAscii().data());
+        std::string(comboController->currentText().toLatin1().data());
     int size = static_cast<int>(args.size());
     std::ostringstream oss;
     oss << "sendcontroller " << name << ' ' << command;
@@ -329,7 +329,7 @@ void OptionsWidget::SendCommandToController() {
 }
 
 void OptionsWidget::SendandReadCommandToController() {
-    std::string command = dispCont->text().toAscii().data();
+    std::string command = dispCont->text().toLatin1().data();
     std::istringstream iss(command);
     std::vector<std::string> args =
         std::vector<std::string>(std::istream_iterator<std::string>(iss),
@@ -343,7 +343,7 @@ void OptionsWidget::SendandReadCommandToController() {
     }
     dispContResult->clear();
     std::string name =
-        std::string(comboController->currentText().toAscii().data());
+        std::string(comboController->currentText().toLatin1().data());
     int size = static_cast<int>(args.size());
     std::ostringstream oss;
     oss << "readcontroller " << name << ' ' << command;
@@ -357,7 +357,7 @@ void OptionsWidget::SendandReadCommandToController() {
 
 void OptionsWidget::SetRefPoint() {
     std::string name =
-        std::string(comboReferencePoint->currentText().toAscii().data());
+        std::string(comboReferencePoint->currentText().toLatin1().data());
     std::string result = SendCommand(hostname, 2, "refvals " + name,
                                      "OptionsWidget::SetRefPoint");
     if (!result.empty()) {
@@ -378,7 +378,7 @@ void OptionsWidget::SetRefPoint() {
 }
 
 void OptionsWidget::SetFluor() {
-    std::string name = std::string(comboFluor->currentText().toAscii().data());
+    std::string name = std::string(comboFluor->currentText().toLatin1().data());
     bool enableHolderEdit = (name == "Fluorescence_wheel" ? false : true);
     pushDeleteHolder->setEnabled(enableHolderEdit);
     groupHolder->setEnabled(enableHolderEdit);
@@ -387,7 +387,7 @@ void OptionsWidget::SetFluor() {
 }
 
 void OptionsWidget::GetNumFluorHolders() {
-    std::string name = std::string(comboFluor->currentText().toAscii().data());
+    std::string name = std::string(comboFluor->currentText().toLatin1().data());
     std::string result = SendCommand(hostname, 2, "numflist " + name,
                                      "OptionsWidget::GetNumFluorHolders");
     if (!result.empty()) {
@@ -400,20 +400,20 @@ void OptionsWidget::DeleteHolder() {
                 "OptionsWidget::DeleteHolder") == FAIL) {
         return;
     }
-    std::string name = std::string(comboFluor->currentText().toAscii().data());
+    std::string name = std::string(comboFluor->currentText().toLatin1().data());
     std::string result = SendCommand(hostname, 2, "dellastholder " + name,
                                      "OptionsWidget::DeletHolder");
     GetNumFluorHolders();
 }
 
 void OptionsWidget::AddHolder() {
-    std::string name = std::string(comboFluor->currentText().toAscii().data());
+    std::string name = std::string(comboFluor->currentText().toLatin1().data());
     std::ostringstream oss;
     // already backwards from the gui (target 8 to target 1)
     int size = static_cast<int>(targets.size());
     oss << "addholder " << name << ' ';
     for (size_t i = 0; i < targets.size(); ++i) {
-        oss << targets[i]->text().toAscii().data() << ' ';
+        oss << targets[i]->text().toLatin1().data() << ' ';
         oss << energy[i]->value() << ' ';
     }
     std::string result = SendCommand(hostname, 2 + 2 * size, oss.str(),
@@ -438,7 +438,7 @@ void OptionsWidget::SetFwheel() {
 
 void OptionsWidget::GetFwheelSerialNumber() {
     std::string name =
-        std::string(comboFilterWheel->currentText().toAscii().data());
+        std::string(comboFilterWheel->currentText().toLatin1().data());
     std::string result = SendCommand(hostname, 2, "getfwserialnumber " + name,
                                      "OptionsWidget::GetFwheelSerialNumber");
     if (!result.empty()) {
@@ -448,7 +448,7 @@ void OptionsWidget::GetFwheelSerialNumber() {
 
 void OptionsWidget::GetFwheelInterface() {
     std::string name =
-        std::string(comboFilterWheel->currentText().toAscii().data());
+        std::string(comboFilterWheel->currentText().toLatin1().data());
     std::string result = SendCommand(hostname, 2, "getfwinterface " + name,
                                      "OptionsWidget::GetFwheelInterface");
     if (!result.empty()) {
@@ -471,7 +471,7 @@ void OptionsWidget::GetTubeInterface() {
 }
 
 void OptionsWidget::SendCommandToTube() {
-    std::string command = dispTube->text().toAscii().data();
+    std::string command = dispTube->text().toLatin1().data();
     std::istringstream iss(command);
     std::vector<std::string> args =
         std::vector<std::string>(std::istream_iterator<std::string>(iss),
@@ -492,7 +492,7 @@ void OptionsWidget::SendCommandToTube() {
 }
 
 void OptionsWidget::SendandReadCommandToTube() {
-    std::string command = dispTube->text().toAscii().data();
+    std::string command = dispTube->text().toLatin1().data();
     std::istringstream iss(command);
     std::vector<std::string> args =
         std::vector<std::string>(std::istream_iterator<std::string>(iss),

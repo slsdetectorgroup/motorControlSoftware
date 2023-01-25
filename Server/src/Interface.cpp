@@ -83,10 +83,7 @@ int Interface::getSerialPortNumber() { return serialPortNumber; }
 void Interface::ControllerInterface() {
     std::cout << std::endl;
     LOG(logINFO) << "\tMotorcontroller, checking:" << serial;
-#ifdef VIRTUAL
-    LOG(logINFO) << "\tFound controller port (virtual)";
-    return;
-#endif
+#ifndef VIRTUAL
     serialfd = open(serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
     if (serialfd == -1) {
         LOG(logDEBUG) << "Unable to open port " << serial << " for controller";
@@ -108,12 +105,13 @@ void Interface::ControllerInterface() {
         oss << errno << " from tcsetattr: " << strerror(errno);
         throw std::runtime_error(oss.str());
     }
-
+#endif
     ValidateController();
 }
 
 void Interface::ValidateController() {
     LOG(logINFO) << "\tValidating Controller";
+#ifndef VIRTUAL
     try {
         std::string result =
             ControllerSendCommand(CONTROLLER_IDENTIFY_CMD, true);
@@ -126,9 +124,11 @@ void Interface::ValidateController() {
         LOG(logWARNING) << "Fail";
         throw;
     }
-
+#endif
     LOG(logINFO) << "\tFound controller port";
+#ifndef VIRTUAL
     ControllerWaitForIdle();
+#endif
 }
 
 bool Interface::ControllerIsIdle(std::string result) {
@@ -251,6 +251,7 @@ std::string Interface::ControllerSendCommand(std::string command,
 void Interface::TubeInterface() {
     std::cout << std::endl;
     LOG(logINFO) << "\tXray tube, checking:" << serial;
+#ifndef VIRTUAL
     serialfd = open(serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
     if (serialfd == -1) {
         LOG(logDEBUG) << "Unable to open port " << serial << " for xray tube";
@@ -272,12 +273,13 @@ void Interface::TubeInterface() {
         oss << errno << " from tcsetattr: " << strerror(errno);
         throw std::runtime_error(oss.str());
     }
-
+#endif
     ValidateTube();
 }
 
 void Interface::ValidateTube() {
     LOG(logINFO) << "\tValidating Tube";
+#ifndef VIRTUAL
     try {
         std::string result = TubeSend(TUBE_IDENTIFY_CMD, true);
         if (result.find(std::string(TUBE_MODEL_RESPONSE)) ==
@@ -290,6 +292,7 @@ void Interface::ValidateTube() {
         LOG(logWARNING) << "Fail";
         throw;
     }
+#endif
     LOG(logINFOGREEN) << "\tSuccess";
 }
 
@@ -388,6 +391,7 @@ std::string Interface::TubeSendCommand(std::string command, bool readBack) {
 void Interface::PressureInterface() {
     std::cout << std::endl;
     LOG(logINFO) << "\tPressure, checking:" << serial;
+#ifndef VIRTUAL
     serialfd = open(serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
     if (serialfd == -1) {
         LOG(logDEBUG) << "Unable to open port " << serial
@@ -410,11 +414,12 @@ void Interface::PressureInterface() {
         oss << errno << " from tcsetattr: " << strerror(errno);
         throw std::runtime_error(oss.str());
     }
-
+#endif
     ValidatePressureGauge();
 }
 
 void Interface::ValidatePressureGauge() {
+#ifndef VIRTUAL
     // send \r\n to clear commands sent by other interfaces
     try {
         PressureGaugeSendCommand("\r\n");
@@ -437,6 +442,7 @@ void Interface::ValidatePressureGauge() {
         LOG(logWARNING) << "Fail";
         throw;
     }
+#endif
     LOG(logINFOGREEN) << "\tSuccess";
 }
 
@@ -574,6 +580,7 @@ std::string Interface::PressureGaugeSendCommand(std::string command) {
 void Interface::FilterWheelInterface() {
     std::cout << std::endl;
     LOG(logINFO) << "\tFilter wheel, checking:" << serial;
+#ifndef VIRTUAL
     serialfd = open(serial.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
     if (serialfd == -1) {
         LOG(logDEBUG) << "Unable to open port " << serial
@@ -596,12 +603,13 @@ void Interface::FilterWheelInterface() {
         oss << errno << " from tcsetattr: " << strerror(errno);
         throw std::runtime_error(oss.str());
     }
-
+#endif
     ValidateFilterWheel();
 }
 
 void Interface::ValidateFilterWheel() {
     LOG(logINFO) << "\tValidating Filter Wheel";
+#ifndef VIRTUAL
     int attempts = 0;
     try {
         std::string result =
@@ -618,6 +626,7 @@ void Interface::ValidateFilterWheel() {
             throw;
         }
     }
+#endif
     LOG(logINFO) << "\tFound filter wheel port";
 }
 
