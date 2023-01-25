@@ -2,7 +2,8 @@
    The port number is passed as an argument */
 #include "Initialize.h"
 #include "Interface.h"
-#include "MySocketTCP.h"
+#include "sls/ServerSocket.h"
+#include "sls/DataSocket.h"
 #include "commonDefs.h"
 
 #include <cstring>
@@ -12,21 +13,152 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MIN_ARGUMENTS (6)
+#ifdef XRAYBOX
+#define softwareType "X-Ray"
+#elif LASERBOX
+#define softwareType "Laser"
+#elif VACUUMBOX
+#define softwareType "Vacuum"
+#else
+#define softwareType "Motor Control Server"
+#endif
+
+struct lockAttributes {
+    std::string pid;
+    std::string pcName;
+    std::string username;
+    std::string timestamp;
+    bool status {false};
+    bool proceed {true};
+    bool lastCmdUnlock{false};
+};
+
+
+int DecodeFunction(char* mess, int nArg, char* args, lockAttributes& lock, Initialize& init) {
+    const int minArguments = 6;
+    if (nArg < minArguments) {
+        sprintf(mess,
+                "Invalid number of arguments %d. Require atleast %d\n.",
+                nArg, minArguments);
+        LOG(logERROR) << mess;
+        return FAIL;
+    } 
+    
+    // extract arguments
+    std::string timestamp(args + (strlen(args) - TIME_BUFFER_LENGTH),
+                        TIME_BUFFER_LENGTH);
+    memset(args + strlen(args) - TIME_BUFFER_LENGTH, 0,
+        TIME_BUFFER_LENGTH);
+    --nArg;
+    std::istringstream iss(args);
+    std::vector<std::string> command = std::vector<std::string>(
+        std::istream_iterator<std::string>(iss),
+        std::istream_iterator<std::string>());
+    std::string clientType = command[0];
+    std::string commandName = command[1];
+    std::string pid = command[command.size() - 1];
+    command.pop_back();
+    --nArg;
+    std::string pcName = command[command.size() - 1];
+    command.pop_back();
+    --nArg;
+    std::string userName = command[command.size() - 1];
+    command.pop_back();
+    --nArg;
+    LOG(logDEBUG) << "clienttype:[" << clientType << "], command:["
+                << commandName << "], pid:[" << pid << "], pcName:["
+                << pcName << "], userName:[" << userName
+                << "], timestamp:[" << timestamp << ']';
+
+    // unlock command
+    if (commandName == "unlock") {
+        sprintf(mess,
+                "You have successfully unlocked %s from the server.",
+                lock.username.c_str());
+        lock.status = false;
+        lock.proceed = false;
+        lock.lastCmdUnlock = true;
+        return OK;
+    }
+
+    // already unlocked server (lock it by default and save username, pcname,
+    // pid etc)
+    if (!lock.status) {
+        lock.username = userName;
+        lock.pcName = pcName;
+        lock.pid = pid;
+        lock.timestamp = timestamp;
+        lock.status = true;
+        lock.lastCmdUnlock = false;
+        lock.proceed = true;
+
+        // confirm if the last command was unlock and its a gui command,
+        // the first command should be "list"
+        if (lock.lastCmdUnlock && clientType == "gui" &&
+            commandName != "list") {
+            lock.proceed = false;
+            sprintf(
+                mess,
+                "%s.\n\nYour previous command was unsuccessful. Please "
+                "update your gui!",
+                ANOTHER_USER_ERROR_PHRASE);
+            LOG(logERROR) << mess;
+            return FAIL;
+        }
+    }
+
+    // locked server (validate user)
+    else {
+        lock.proceed = true;
+        if (userName != lock.username || pcName != lock.pcName) {
+            lock.proceed = false;
+            sprintf(mess,
+                    "The %s %s \n\nUser Name\t%s: %s\nPC Name\t\t: %s\nLast "
+                    "Command at\t: %s\n\nPlease check with this person before you use "
+                    "\"unlock\".\n",
+                    softwareType,
+                    BOX_IN_USE_ERROR_PHRASE,
+                    (clientType == "gui" ? "\t" : ""),
+                    lock.username.c_str(), lock.pcName.c_str(),
+                    lock.timestamp.c_str());
+            LOG(logERROR) << mess;
+            return FAIL;
+        }
+    }
+
+    if (lock.proceed) {
+        
+        // close server
+        if (commandName == "close") {
+            LOG(logINFO) << "Closing Server!";
+            strcpy(mess, "Closing server");
+            return GOODBYE;
+        } 
+
+        // other commands
+        command.erase(command.begin());
+        try {
+            std::string result = init.executeCommand(command);
+            strcpy(mess, result.c_str());
+        } catch (const std::exception &e) {
+            strcpy(mess, e.what());
+            lock.timestamp = timestamp;
+            return FAIL;
+        }
+        // update timestamp
+        lock.timestamp = timestamp;
+    }
+    return OK;
+}
+
+
 
 int main(int argc, char *[]) {
 #ifdef VIRTUAL
     LOG(logINFOBLUE) << "Virtual Server";
 #endif
-#ifdef XRAYBOX
-    LOG(logINFOBLUE) << "XRay Box Server";
-#elif LASERBOX
-    LOG(logINFOBLUE) << "Laser Box Server";
-#elif VACUUMBOX
-    LOG(logINFOBLUE) << "Vacuum Box Server";
-#elif GENERIC
-    LOG(logINFOBLUE) << "Motor Control Server";
-#endif
+    LOG(logINFOBLUE) << softwareType << " Box Server";
+
 
     // if socket crash, ignores SISPIPE, prevents global signal handler
     // subsequent read/write to socket gives error - must handle locally
@@ -40,181 +172,55 @@ int main(int argc, char *[]) {
         portno = PORT_NO + 1;
     }
 
-    MySocketTCP *sock = new MySocketTCP(portno);
+    sls::ServerSocket server(portno);
     Initialize init = Initialize();
+    lockAttributes lock;
     LOG(logINFO) << "Ready for commands...";
-
-    std::string lockedPid;
-    std::string lockedPcName;
-    std::string lockedUserName;
-    std::string lockedTimestamp;
-    bool locked = false;
-    bool proceed = true;
-    bool lastCmdUnlock = false;
 
     int ret = OK;
     while (ret != GOODBYE) {
         ret = OK;
-        sock->Connect();
+        try {
+            auto socket = server.accept();
 
-        // get number of arguments
-        int nArg = 0;
-        if (sock->ReceiveDataOnly(&nArg, sizeof(nArg)) < 0) {
-            LOG(logERROR)
-                << "Error reading from socket. Possible socket crash.";
-            sock->Disconnect();
-            continue;
-        }
+            try {
 
-        // get all arguments
-        char args[TCP_PACKET_LENGTH];
-        memset(args, 0, sizeof(args));
-        if (sock->ReceiveDataOnly(args, sizeof(args)) < 0) {
-            LOG(logERROR)
-                << "Error reading from socket. Possible socket crash.";
-            sock->Disconnect();
-            continue;
-        }
-        std::cout << std::endl;
-        LOG(logINFO) << "Server Received: " << args;
+            // get number of arguments
+            int nArg = 0;
+            socket.Receive(nArg);
 
-        char mess[TCP_PACKET_LENGTH];
-        memset(mess, 0, sizeof(mess));
+            // get all arguments
+            char args[TCP_PACKET_LENGTH];
+            socket.Receive(args);
+            std::cout << std::endl;
+            LOG(logINFO) << "Server Received: " << args;
 
-        if (nArg >= MIN_ARGUMENTS) {
-            // extract time
-            std::string timestamp(args + (strlen(args) - TIME_BUFFER_LENGTH),
-                                  TIME_BUFFER_LENGTH);
-            memset(args + strlen(args) - TIME_BUFFER_LENGTH, 0,
-                   TIME_BUFFER_LENGTH);
-            --nArg;
+            // return success/error message
+            char mess[TCP_PACKET_LENGTH];
+            memset(mess, 0, sizeof(mess));
+            ret = DecodeFunction(mess, nArg, args, lock, init);      
+            socket.Send(ret);
+            LOG(logINFO) << "Server Sent: " << mess;
+            socket.Send(mess);
 
-            // scan remaining arguments
-            std::istringstream iss(args);
-            std::vector<std::string> command = std::vector<std::string>(
-                std::istream_iterator<std::string>(iss),
-                std::istream_iterator<std::string>());
-            std::string clientType = command[0];
-            std::string commandName = command[1];
 
-            std::string pid = command[command.size() - 1];
-            command.pop_back();
-            --nArg;
-            std::string pcName = command[command.size() - 1];
-            command.pop_back();
-            --nArg;
-            std::string userName = command[command.size() - 1];
-            command.pop_back();
-            --nArg;
-            LOG(logDEBUG) << "clienttype:[" << clientType << "], command:["
-                          << commandName << "], pid:[" << pid << "], pcName:["
-                          << pcName << "], userName:[" << userName
-                          << "], timestamp:[" << timestamp << ']';
-
-            // unlock command
-            if (commandName == "unlock") {
-                sprintf(mess,
-                        "You have successfully unlocked %s from the server.",
-                        lockedUserName.c_str());
-                locked = false;
-                proceed = false;
-                lastCmdUnlock = true;
+            } catch(const RuntimeError &e) {
+                //"Error reading from socket. Possible socket crash.";
+                // We had an error needs to be sent to client
+                //TODO! Assert?
+                char mess[TCP_PACKET_LENGTH]{};
+                strncpy(mess, e.what(), TCP_PACKET_LENGTH-1);
+                mess[TCP_PACKET_LENGTH-1] = '\0'; //Just to be safe
+                socket.Send(FAIL);
+                socket.Send(mess); 
+                continue;//disconnect???
             }
-
-            // unlocked server (lock it by default and save username, pcname,
-            // pid etc)
-            else if (!locked) {
-                lockedUserName = userName;
-                lockedPcName = pcName;
-                lockedPid = pid;
-                lockedTimestamp = timestamp;
-                locked = true;
-                lastCmdUnlock = false;
-                proceed = true;
-                // if the last command was unlock and its a gui command,
-                // the first command should be "list"
-                if (lastCmdUnlock && clientType == "gui" &&
-                    commandName != "list") {
-                    proceed = false;
-                    ret = FAIL;
-                    sprintf(
-                        mess,
-                        "%s.\n\nYour previous command was unsuccessful. Please "
-                        "update your gui!",
-                        ANOTHER_USER_ERROR_PHRASE);
-                    LOG(logERROR) << mess;
-                }
-            }
-
-            // locked server (validate user)
-            else {
-                proceed = true;
-                if (userName != lockedUserName || pcName != lockedPcName) {
-                    proceed = false;
-                    ret = FAIL;
-                    sprintf(mess,
-                            "The "
-#ifdef XRAYBOX
-                            "x-ray"
-#elif LASERBOX
-                            "laser"
-#elif VACUUMBOX
-                            "vacuum"
-#else
-                            "motorControlServer"
-#endif
-                            " %s \n\nUser Name\t%s: %s\nPC Name\t\t: %s\nLast "
-                            "Command "
-                            "at\t: %s\n\n"
-                            "Please check with this person before you use "
-                            "\"unlock\".\n",
-                            BOX_IN_USE_ERROR_PHRASE,
-                            (clientType == "gui" ? "\t" : ""),
-                            lockedUserName.c_str(), lockedPcName.c_str(),
-                            lockedTimestamp.c_str());
-                    LOG(logERROR) << mess;
-                }
-            }
-            if (proceed) {
-                // close server
-                if (commandName == "close") {
-                    ret = GOODBYE;
-                    LOG(logINFO) << "Closing Server!";
-                    strcpy(mess, "Closing server");
-                } else {
-                    command.erase(command.begin());
-                    try {
-                        std::string result = init.executeCommand(command);
-                        strcpy(mess, result.c_str());
-                    } catch (const std::exception &e) {
-                        ret = FAIL;
-                        strcpy(mess, e.what());
-                    }
-                    // update timestamp
-                    lockedTimestamp = timestamp;
-                }
-            }
+        } catch (const RuntimeError &e) {
+            LOG(logERROR) << "Accept failed";
         }
 
-        // invalid number of arguments to parse command
-        else {
-            ret = FAIL;
-            sprintf(mess,
-                    "Invalid number of arguments %d. Require atleast %d\n.",
-                    nArg, MIN_ARGUMENTS);
-            LOG(logERROR) << mess;
-        }
-
-        if (sock->SendDataOnly(&ret, sizeof(ret)) < 0) {
-            sock->Disconnect();
-            continue;
-        }
-        LOG(logINFO) << "Server Sent: " << mess;
-        sock->SendDataOnly(mess, sizeof(mess));
-        sock->Disconnect();
     }
 
-    delete sock;
     LOG(logINFO) << "Exiting Server!";
 
     return 0;

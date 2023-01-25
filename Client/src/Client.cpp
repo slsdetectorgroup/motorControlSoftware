@@ -1,16 +1,17 @@
 #include "Client.h"
-#include "MySocketTCP.h"
+#include "sls/ClientSocket.h"
 #include "commonDefs.h"
 
 #include <cstring>
 #include <iterator>
 #include <sstream>
 #include <vector>
+#include <unistd.h>
 
 Client::Client(std::string hostname) : hostname(hostname) {}
 
 std::string Client::SendCommand(int nCommand, std::string command) {
-    int portno = PORT_NO;
+    uint16_t portno = PORT_NO;
     if (command.find("stop") != std::string::npos) {
         portno = PORT_NO + 1;
     }
@@ -19,8 +20,7 @@ std::string Client::SendCommand(int nCommand, std::string command) {
     }
 
     // connect
-    MySocketTCP sock(hostname, portno);
-    sock.Connect();
+    sls::ClientSocket client( hostname, portno);
 
     // copy arguments
     char args[TCP_PACKET_LENGTH];
@@ -37,15 +37,15 @@ std::string Client::SendCommand(int nCommand, std::string command) {
     LOG(logDEBUG) << "Sending Command: " << nCommand << " [" << args << ']';
 
     // send command
-    sock.SendDataOnly(&nCommand, sizeof(nCommand));
-    sock.SendDataOnly(args, sizeof(args));
+    client.Send(nCommand);
+    client.Send(args);
 
     // get results
     int ret = OK;
-    sock.ReceiveDataOnly(&ret, sizeof(ret));
+    client.Receive(ret);
     char message[TCP_PACKET_LENGTH];
     memset(message, 0, sizeof(message));
-    sock.ReceiveDataOnly(message, sizeof(message));
+    client.Receive(message);
 
     // throw exceptions
     if (ret == FAIL) {
@@ -62,9 +62,6 @@ std::string Client::SendCommand(int nCommand, std::string command) {
         }
         throw std::runtime_error(message);
     }
-
-    // disconnect
-    sock.Disconnect();
     return std::string(message);
 }
 

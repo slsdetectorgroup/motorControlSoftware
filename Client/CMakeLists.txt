@@ -3,12 +3,14 @@
 set(SOURCES
     src/main.cpp
     src/Client.cpp
-    ../include/MySocketTCP.cpp
+    ../include/sls/ClientSocket.cpp
+    ../include/sls/DataSocket.cpp
 )
 
 set(HEADERS
     include/Client.h
-    ../include/MySocketTCP.h
+    ../include/sls/ClientSocket.h
+    ../include/sls/DataSocket.h
     ../include/commonDefs.h
 )
 
