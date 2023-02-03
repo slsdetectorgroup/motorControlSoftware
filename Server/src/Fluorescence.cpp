@@ -14,7 +14,7 @@
 #define CIRCULAR_OFFSET (0)
 
 #define LINEAR_WIDTH  (34)
-#define LINEAR_OFFSET (12)
+#define LINEAR_OFFSET (6)
 
 #define LINEAR_LASER_POSITION (128)
 #define FLUOR_LASER_NAME      ("Laser")
