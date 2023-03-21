@@ -67,6 +67,9 @@
        <height>30</height>
       </size>
      </property>
+     <property name="focusPolicy">
+      <enum>Qt::ClickFocus</enum>
+     </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
      </property>
@@ -181,6 +184,9 @@
        <width>16777215</width>
        <height>30</height>
       </size>
+     </property>
+     <property name="focusPolicy">
+      <enum>Qt::ClickFocus</enum>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
