@@ -14,7 +14,11 @@
 #define CIRCULAR_OFFSET (0)
 
 #define LINEAR_WIDTH  (34)
+#if VACUUMBOX
+#define LINEAR_OFFSET (12)
+#else
 #define LINEAR_OFFSET (6)
+#endif
 
 #define LINEAR_LASER_POSITION (125)
 #define FLUOR_LASER_NAME      ("Laser")
