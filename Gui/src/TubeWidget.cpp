@@ -32,13 +32,13 @@ void TubeWidget::LayoutWindow() {
 #ifdef XRAYBOX
     chkShutter1->setText("Up");
     chkShutter2->setText("-");
-    chkShutter3->setText("Right");
+    chkShutter3->setText("Direct");
     chkShutter4->setText("-");
 #elif VACUUMBOX
     chkShutter1->setText("-");
-    chkShutter2->setText("Up");
-    chkShutter3->setText("Right");
-    chkShutter4->setText("Down");
+    chkShutter2->setText("Down");
+    chkShutter3->setText("Up");
+    chkShutter4->setText("Direct");
 #endif
 }
 
