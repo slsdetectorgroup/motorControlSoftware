@@ -384,7 +384,7 @@ std::pair<int, int> Xray::getActualVoltageAndCurrent() {
 
 int Xray::getShutterStatus(int index) {
 #ifdef VIRTUAL
-    return (virtualShutter[index] ? 1 : 0);
+    return (virtualShutter[index - 1] ? 1 : 0);
 #endif
     std::string command;
     int mask = 0;
@@ -454,7 +454,7 @@ void Xray::setShutter(int index, bool on) {
         throw RuntimeError(oss.str());
     }
 #ifdef VIRTUAL
-    virtualShutter[index] = on;
+    virtualShutter[index - 1] = on;
 #else
     oss << (on ? "os:" : "cs:") << index << ' ';
     interface->TubeSend(oss.str());
@@ -463,7 +463,7 @@ void Xray::setShutter(int index, bool on) {
 
 bool Xray::getShutter(int index) {
 #ifdef VIRTUAL
-    return virtualShutter[index];
+    return virtualShutter[index - 1];
 #endif
     int status = SHUTTER_TRANSITION_VAL;
     while (status == SHUTTER_TRANSITION_VAL) {

@@ -55,8 +55,8 @@ class Xray {
  
 #ifdef VIRTUAL
     bool virtualHV{false};
-    int virtualVoltage{0};
-    int virtualCurrent{0};
+    int virtualVoltage{2};
+    int virtualCurrent{2};
     std::array<bool, 4> virtualShutter{{false, false, false, false}};
 #endif
 };
