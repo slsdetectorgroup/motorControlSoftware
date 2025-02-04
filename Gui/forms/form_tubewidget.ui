@@ -432,8 +432,7 @@
              </property>
              <property name="icon">
               <iconset resource="../include/icons.qrc">
-               <normaloff>:/icons/images/highvoltageoff.png</normaloff>
-               <normalon>:/icons/images/highvoltage.png</normalon>:/icons/images/highvoltageoff.png</iconset>
+               <normaloff>:/icons/images/highvoltage.png</normaloff>:/icons/images/highvoltage.png</iconset>
              </property>
              <property name="iconSize">
               <size>
