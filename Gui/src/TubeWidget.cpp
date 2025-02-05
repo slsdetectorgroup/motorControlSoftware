@@ -137,6 +137,12 @@ void TubeWidget::GetHighVoltage() {
     connect(pushHighVoltage, SIGNAL(toggled(bool)), this,
             SLOT(SetHighVoltage(bool)));
     bool hv = pushHighVoltage->isChecked();
+    QIcon iconOn(":/icons/images/highvoltage.png");
+    QIcon iconOff(":/icons/images/highvoltageoff.png");
+    if (hv)
+        pushHighVoltage->setIcon(iconOn);
+    else
+        pushHighVoltage->setIcon(iconOff);
     frameShutters->setEnabled(hv);
     CheckWarning();
 }
