@@ -432,7 +432,8 @@
              </property>
              <property name="icon">
               <iconset resource="../include/icons.qrc">
-               <normaloff>:/icons/images/highvoltage.png</normaloff>:/icons/images/highvoltage.png</iconset>
+               <normaloff>:/icons/images/highvoltageoff.png</normaloff>
+               <normalon>:/icons/images/highvoltage.png</normalon>:/icons/images/highvoltageoff.png</iconset>
              </property>
              <property name="iconSize">
               <size>
@@ -929,11 +930,29 @@
                 </color>
                </brush>
               </colorrole>
+              <colorrole role="PlaceholderText">
+               <brush brushstyle="NoBrush">
+                <color alpha="128">
+                 <red>255</red>
+                 <green>0</green>
+                 <blue>0</blue>
+                </color>
+               </brush>
+              </colorrole>
              </active>
              <inactive>
               <colorrole role="Text">
                <brush brushstyle="SolidPattern">
                 <color alpha="255">
+                 <red>255</red>
+                 <green>0</green>
+                 <blue>0</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="PlaceholderText">
+               <brush brushstyle="NoBrush">
+                <color alpha="128">
                  <red>255</red>
                  <green>0</green>
                  <blue>0</blue>
@@ -948,6 +967,15 @@
                  <red>139</red>
                  <green>142</green>
                  <blue>142</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="PlaceholderText">
+               <brush brushstyle="NoBrush">
+                <color alpha="128">
+                 <red>255</red>
+                 <green>0</green>
+                 <blue>0</blue>
                 </color>
                </brush>
               </colorrole>
