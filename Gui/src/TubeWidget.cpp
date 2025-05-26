@@ -205,7 +205,8 @@ void TubeWidget::SetShutters() {
     QCheckBox *checkedBox = qobject_cast<QCheckBox *>(sender());
     for (unsigned int i = 0; i < chkShutters.size(); ++i) {
         if (checkedBox == chkShutters[i]) {
-            LOG(logINFO) << "Setting Shutter " << i << ": "
+            LOG(logINFO) << "Setting Shutter '"
+                         << checkedBox->text().toStdString() << "' : "
                          << (chkShutters[i]->isChecked() ? "on" : "off");
             std::ostringstream oss;
             oss << "shutter " << i + 1 << ' '
