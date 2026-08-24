@@ -4,13 +4,17 @@
 #include "commonDefs.h"
 
 #include <cstring>
+#include <fstream>
 #include <math.h>
 #include <sstream>
 #include <stdio.h>
 
 #define NUM_FWHEEL_VALUES            (6)
-#define FWHEEL_SERIAL_NUM_LINK_PART1 ("more /sys/class/tty/ttyUSB")
+#define FWHEEL_SERIAL_NUM_LINK_PART1 ("/sys/class/tty/ttyUSB")
 #define FWHEEL_SERIAL_NUM_LINK_PART2 ("/device/../../serial")
+// the serial number of the filter wheel that is connected via RS232 to USB
+// converter (cannot read serial number)
+#define FWHEEL_SERIAL_NUM_FALLBACK ("FWU36XCN")
 
 Fwheel::Fwheel(int index, std::string name, std::string serialNumber,
                std::vector<double> valueList)
@@ -29,20 +33,24 @@ bool Fwheel::CheckFWSerialNumber(int usbport, std::string serialNumber) {
     std::ostringstream oss;
     oss << FWHEEL_SERIAL_NUM_LINK_PART1 << usbport
         << FWHEEL_SERIAL_NUM_LINK_PART2;
-    std::string command = oss.str();
+    std::string serialFilePath = oss.str();
 
-    FILE *sysFile = popen(command.c_str(), "r");
-    char output[COMMAND_BUFFER_LENGTH];
-    memset(output, 0, sizeof(output));
-    fgets(output, sizeof(output), sysFile);
-    pclose(sysFile);
+    std::string output;
+    std::ifstream serialFile(serialFilePath.c_str());
+    if (serialFile.good()) {
+        std::getline(serialFile, output);
+    } else {
+        output = FWHEEL_SERIAL_NUM_FALLBACK;
+        LOG(logWARNING) << "Could not read serial link [" << serialFilePath
+                        << "] - using fallback serial [" << output << ']';
+    }
 
-    if (strstr(output, serialNumber.c_str()) != NULL) {
+    if (output.find(serialNumber) != std::string::npos) {
         LOG(logINFOGREEN) << "\tSuccess";
         return true;
     }
     LOG(logINFO) << "Expected to find [" << serialNumber << "] in [" << output
-                 << ']';
+                 << "]";
     LOG(logWARNING) << "Fail";
     return false;
 }
