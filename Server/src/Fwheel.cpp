@@ -10,7 +10,7 @@
 #include <stdio.h>
 
 #define NUM_FWHEEL_VALUES            (6)
-#define FWHEEL_SERIAL_NUM_LINK_PART1 ("more /sys/class/tty/ttyUSB")
+#define FWHEEL_SERIAL_NUM_LINK_PART1 ("/sys/class/tty/ttyUSB")
 #define FWHEEL_SERIAL_NUM_LINK_PART2 ("/device/../../serial")
 // the serial number of the filter wheel that is connected via RS232 to USB
 // converter (cannot read serial number)
@@ -31,7 +31,8 @@ bool Fwheel::CheckFWSerialNumber(int usbport, std::string serialNumber) {
     return true;
 #endif
     std::ostringstream oss;
-    oss << "/sys/class/tty/ttyUSB" << usbport << "/device/../../serial";
+    oss << FWHEEL_SERIAL_NUM_LINK_PART1 << usbport
+        << FWHEEL_SERIAL_NUM_LINK_PART2;
     std::string serialFilePath = oss.str();
 
     std::string output;
